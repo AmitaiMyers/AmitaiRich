@@ -1,0 +1,7 @@
+# Capital Market Roof Simulator — dependencies
+# sqlite3 is part of the Python standard library (no entry needed).
+yfinance>=0.2.40
+streamlit>=1.30
+plotly>=5.18
+pandas>=2.0
+numpy>=1.24
