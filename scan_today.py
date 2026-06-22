@@ -126,7 +126,7 @@ def _scan_scope(scope, algorithm):
     tickers = universe.get_universe(scope)
     print(f"\nScanning {len(tickers)} {scope} stocks with {DEFAULT_BUY}...", flush=True)
     hits, errors = scan_for_buys(tickers, algorithm)
-    print(f"=== BUY candidates as of latest bar ({len(hits)}) — {scope} ===")
+    print(f"=== BUY candidates as of latest bar ({len(hits)}) - {scope} ===")
     if hits.empty:
         print("  (none today)")
     else:
