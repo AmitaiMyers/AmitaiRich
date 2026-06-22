@@ -695,6 +695,20 @@ class BreakoutScanner(Algorithm):
             f"exit_mode must be one of {VALID_EXIT_MODES}, got {mode!r}"
         )
 
+    def describe(self, history_slice):
+        """Display facts for a fired signal: the 52-week roof and the volume surge."""
+        c = self.config
+        close = history_slice["Close"]
+        high = history_slice["High"]
+        volume = history_slice["Volume"]
+        prior_high = high.iloc[-253:-1].max() if len(high) > 253 else high.iloc[:-1].max()
+        volume_avg = indicators.sma(volume, c["vol_avg_period"]).iloc[-1]
+        return {
+            "roof_52w": round(float(prior_high), 2),
+            "pct_vs_52w_high": round((float(close.iloc[-1]) / float(prior_high) - 1) * 100, 1),
+            "vol_x_avg": round(float(volume.iloc[-1]) / float(volume_avg), 1),
+        }
+
 
 class HighBreakout(BreakoutScanner):
     """Roof = the highest high of the prior `roof_lookback` bars (a 52-week-high breakout).

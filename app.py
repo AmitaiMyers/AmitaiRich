@@ -13,9 +13,11 @@ import streamlit as st
 
 import database
 import indicators
+import universe
 from algorithms import ALGORITHMS, build_algorithm
-from batch import compute_batch_summary, run_batch
+from batch import PER_TICKER_ERRORS, compute_batch_summary, run_batch
 from data_engine import fetch_data
+from scan_today import check_holding, scan_for_buys
 from simulation import compute_kpis, run_simulation
 
 st.set_page_config(page_title="Capital Market Roof Simulator", layout="wide")
@@ -24,6 +26,14 @@ st.caption("Local, zero-cost backtesting of breakout strategies on historical st
 
 PRESET_TICKERS = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META", "SPY", "QQQ", "Custom…"]
 FLAGSHIP_NAME = "Bollinger Squeeze + Volume Breakout"
+SCANNER_NAME = "Roof: 52-Week-High Breakout"  # research-recommended daily scanner
+
+# Universe scope labels for "Scan today" -> universe.get_universe scope code.
+SCAN_SCOPES = {
+    "S&P 500 + Nasdaq-100": "sp500_ndx",
+    "S&P 500": "sp500",
+    "Nasdaq-100": "nasdaq100",
+}
 
 # Friendly candle-interval label -> yfinance interval code.
 INTERVAL_OPTIONS = {"Hourly": "1h", "Daily": "1d", "Weekly": "1wk", "Monthly": "1mo"}
@@ -47,13 +57,23 @@ def render_sidebar():
         st.header("Configuration")
 
         mode = st.radio(
-            "Mode", ["Single stock", "Batch scan"], horizontal=True,
-            help="Single = one ticker with full charts. Batch = run the same strategy "
-                 "across many tickers and get a comparison summary.",
+            "Mode", ["Single stock", "Batch scan", "Scan today"],
+            help="Single = one ticker with full charts. Batch = backtest one strategy "
+                 "across many tickers. Scan today = which stocks fire a BUY on the "
+                 "latest bar, across the whole market.",
         )
 
         ticker = "AAPL"
         tickers = []
+        scan_scope = "sp500_ndx"
+        as_of = pd.Timestamp.today().normalize()
+        if mode == "Scan today":
+            scope_label = st.selectbox("Universe to scan", list(SCAN_SCOPES.keys()), index=0)
+            scan_scope = SCAN_SCOPES[scope_label]
+            as_of = st.date_input("Scan as of", value=pd.Timestamp.today().normalize(),
+                                  help="Which day's close to scan. Defaults to today.")
+            st.caption("First run downloads data for the whole universe (slow); "
+                       "repeat runs the same day are cached.")
         if mode == "Single stock":
             ticker_choice = st.selectbox("Ticker", PRESET_TICKERS, index=0)
             ticker = (
@@ -91,8 +111,12 @@ def render_sidebar():
         )
 
         algo_names = list(ALGORITHMS.keys())
-        buy_name = st.selectbox("Buy strategy", algo_names, index=_algo_index(FLAGSHIP_NAME))
-        sell_name = st.selectbox("Sell strategy", algo_names, index=_algo_index(FLAGSHIP_NAME))
+        default_buy = SCANNER_NAME if mode == "Scan today" else FLAGSHIP_NAME
+        buy_name = st.selectbox("Buy strategy", algo_names, index=_algo_index(default_buy))
+        if mode == "Scan today":
+            sell_name = buy_name  # the buy scan does not use exit logic
+        else:
+            sell_name = st.selectbox("Sell strategy", algo_names, index=_algo_index(FLAGSHIP_NAME))
 
         st.subheader("Test toggles")
         stop_mode = st.selectbox(
@@ -126,14 +150,24 @@ def render_sidebar():
             slow_period = int(st.number_input("SMA slow period", 5, 300, 50))
             hold_bars = int(st.number_input("Dummy hold bars", 1, 60, 5))
 
+        with st.expander("Breakout (roof) parameters", expanded=(mode == "Scan today")):
+            roof_lookback = int(st.number_input(
+                "Roof lookback (bars; 252 = 52-week high)", 20, 1000, 252))
+            vol_surge_mult = float(st.number_input(
+                "Volume surge × average (0 = off)", 0.0, 5.0, 1.5, 0.1))
+            use_htf = 1 if st.checkbox("Require weekly-trend agreement", value=False) else 0
+
         use_cache = st.checkbox("Use local price cache", value=True)
-        button_label = "🚀 Run Scan" if mode == "Batch scan" else "🚀 Run Simulation"
+        button_labels = {"Batch scan": "🚀 Run Scan", "Scan today": "🔭 Scan Today"}
+        button_label = button_labels.get(mode, "🚀 Run Simulation")
         run_clicked = st.button(button_label, type="primary", use_container_width=True)
 
     return {
         "mode": mode,
         "ticker": ticker,
         "tickers": tickers,
+        "scan_scope": scan_scope,
+        "as_of": str(as_of),
         "start_date": str(start_date),
         "end_date": str(end_date),
         "interval": interval,
@@ -160,6 +194,9 @@ def render_sidebar():
         "fast_period": fast_period,
         "slow_period": slow_period,
         "hold_bars": hold_bars,
+        "roof_lookback": roof_lookback,
+        "vol_surge_mult": vol_surge_mult,
+        "use_htf": use_htf,
     }
 
 
@@ -208,6 +245,21 @@ def execute_batch(params):
     )
     st.session_state["result_kind"] = "batch"
     st.session_state["batch_id"] = batch_id
+    st.session_state["params"] = params
+
+
+def execute_scan(params):
+    """Run the daily BUY scan across the chosen universe; stash hits in session state."""
+    tickers = universe.get_universe(params["scan_scope"], use_cache=params["use_cache"])
+    buy_algo = build_algorithm(params["buy_name"], params)
+    hits, errors = scan_for_buys(
+        tickers, buy_algo, as_of=params["as_of"],
+        interval=params["interval"], use_cache=params["use_cache"],
+    )
+    st.session_state["result_kind"] = "scan"
+    st.session_state["scan_hits"] = hits
+    st.session_state["scan_errors"] = errors
+    st.session_state["scan_universe_size"] = len(tickers)
     st.session_state["params"] = params
 
 
@@ -378,18 +430,83 @@ def render_batch_results():
         )
 
 
+def render_scan_results():
+    """Render today's BUY candidates across the scanned universe + a holdings check."""
+    params = st.session_state["params"]
+    hits = st.session_state["scan_hits"]
+    errors = st.session_state["scan_errors"]
+    n_universe = st.session_state["scan_universe_size"]
+
+    st.subheader(f"Scan today — {params['buy_name']}  ·  as of {params['as_of'][:10]}")
+    cols = st.columns(4)
+    cols[0].metric("Universe scanned", n_universe)
+    cols[1].metric("BUY signals", len(hits))
+    cols[2].metric("No data", len(errors))
+    cols[3].metric("Volume filter",
+                   f"{params['vol_surge_mult']:g}× avg" if params["vol_surge_mult"] else "off")
+
+    if hits.empty:
+        st.info("No stocks broke their roof on volume on this bar — a normal outcome "
+                "(breakouts are rare). Try another date, a different universe, or relax "
+                "the roof / volume parameters in the sidebar.")
+    else:
+        st.markdown("**Stocks to consider buying** (largest volume surge first)")
+        st.dataframe(hits, use_container_width=True, hide_index=True)
+        st.download_button(
+            "⬇ Download buy list (CSV)", hits.to_csv(index=False),
+            file_name=f"buys_{params['as_of'][:10]}.csv", mime="text/csv",
+        )
+
+    st.markdown("---")
+    st.markdown("**Already holding something? Check if today says sell.**")
+    hc = st.columns([1.2, 1, 1, 0.8])
+    hold_ticker = hc[0].text_input("Ticker held", value="", key="hold_ticker").strip().upper()
+    hold_entry_date = hc[1].date_input("Entry date", value=pd.Timestamp.today().normalize(),
+                                       key="hold_entry_date")
+    hold_entry_price = hc[2].number_input("Entry price ($, 0 = use close)", min_value=0.0,
+                                          value=0.0, key="hold_entry_price")
+    check_clicked = hc[3].button("Check", use_container_width=True)
+    if check_clicked and hold_ticker:
+        algo = build_algorithm(params["buy_name"], params)
+        try:
+            verdict = check_holding(
+                hold_ticker, algo, str(hold_entry_date),
+                entry_price=(hold_entry_price or None), as_of=params["as_of"],
+                stop_mode=params["stop_mode"], interval=params["interval"],
+                use_cache=params["use_cache"],
+            )
+        except PER_TICKER_ERRORS as exc:
+            st.warning(f"Couldn't check {hold_ticker}: {exc}")
+        else:
+            badge = "🟢" if verdict["verdict"] == "HOLD" else "🔴"
+            st.markdown(
+                f"{badge} **{verdict['verdict']}** — {verdict['reason']}   ·   "
+                f"entry ${verdict['entry_price']} → last ${verdict['last_close']} "
+                f"(**{verdict['open_pnl_%']:+.1f}%**)   ·   stop ${verdict['stop_price']}   ·   "
+                f"{verdict['bars_held']} bars held"
+            )
+    elif check_clicked:
+        st.warning("Enter a ticker to check.")
+
+
 params = render_sidebar()
 if params["run_clicked"]:
     if params["mode"] == "Batch scan":
         with st.spinner(f"Scanning {len(params['tickers'])} stocks… (first run downloads data)"):
             execute_batch(params)
+    elif params["mode"] == "Scan today":
+        with st.spinner("Scanning the universe for breakouts… (first run downloads data)"):
+            execute_scan(params)
     else:
         with st.spinner("Running simulation…"):
             execute_run(params)
 
 if "result_kind" in st.session_state:
-    if st.session_state["result_kind"] == "batch":
+    kind = st.session_state["result_kind"]
+    if kind == "batch":
         render_batch_results()
+    elif kind == "scan":
+        render_scan_results()
     else:
         render_results()
 else:
