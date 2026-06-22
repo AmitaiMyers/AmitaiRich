@@ -34,6 +34,9 @@ RESEARCH_DB = "research.db"
 START_CAPITAL = 10_000.0
 TRAIN = ("2010-01-01", "2018-12-31")
 TEST = ("2019-01-01", "2025-12-31")
+# Out-of-sample window extended to the present so recent base-breakouts (e.g. DELL's
+# 2026 move above its multi-year roof) fall inside the scanner's test range.
+OOS = ("2019-01-01", "2026-06-20")
 
 # 50 diversified S&P large caps spanning all 11 GICS sectors.
 UNIVERSE_50 = [
@@ -57,15 +60,35 @@ UNIVERSE_50 = [
     "LIN", "NEE", "DUK", "AMT",
 ]
 
+# Another ~50 liquid large/mid caps (all listed before 2014 so train data is clean).
+UNIVERSE_EXTRA = [
+    "QCOM", "TXN", "AMD", "INTC", "IBM", "ACN", "INTU", "AMAT", "MU", "ADI",
+    "T", "TMUS", "CMCSA", "CHTR", "LOW", "TJX", "BKNG", "GM", "MAR", "ORLY",
+    "MDLZ", "CL", "MO", "PM", "GIS", "ABT", "DHR", "BMY", "AMGN", "GILD",
+    "CVS", "ISRG", "MDT", "VRTX", "REGN", "MS", "C", "WFC", "SCHW", "BLK",
+    "SPGI", "RTX", "DE", "MMM", "GD", "EMR", "CSX", "NSC", "SLB", "EOG",
+    # DELL: re-listed Dec 2018 (skipped on TRAIN for lack of history) — the owner's
+    # worked example of a multi-year roof broken in 2026.
+    "DELL",
+]
+
+# Full ~100-name universe used by the production-model research.
+UNIVERSE = UNIVERSE_50 + UNIVERSE_EXTRA
+
+# A fast subset for grid screening (broad sector coverage in ~40 names). Finalists
+# are then re-validated on the full universe out-of-sample.
+SCREEN_UNIVERSE = UNIVERSE_50[:40]
+
 
 def run_config(strategy_name, config, period, sizing_mode="all_in", stop_mode="tightest",
-               sell_name=None, leverage=1.0, db_path=RESEARCH_DB):
-    """Run one strategy config across the universe for a period; return batch_id."""
+               sell_name=None, leverage=1.0, db_path=RESEARCH_DB, universe=None):
+    """Run one strategy config across a universe for a period; return batch_id."""
     buy = build_algorithm(strategy_name, config)
     sell = build_algorithm(sell_name or strategy_name, config)
     start, end = period
     return run_batch(
-        UNIVERSE_50, start, end, START_CAPITAL, buy, sell,
+        universe if universe is not None else UNIVERSE,
+        start, end, START_CAPITAL, buy, sell,
         stop_mode=stop_mode, sizing_mode=sizing_mode, fill_mode="close",
         interval="1d", leverage=leverage, use_cache=True, db_path=db_path,
     )
@@ -107,11 +130,186 @@ def portfolio_metrics(equity, periods_per_year=252):
             "sharpe": sharpe, "calmar": calmar}
 
 
+def evaluate(strategies, period, db_path, periods_per_year=252):
+    """Run per-stock daily strategies and return portfolio-level metrics, ranked by Sharpe.
+
+    `strategies` is a list of (label, algorithm_name, config). Each is run across the
+    universe with the production daily-scan engine; the equal-weight portfolio curve
+    is scored on total return / CAGR / max drawdown / Sharpe / Calmar.
+    """
+    rows = []
+    for label, name, cfg in strategies:
+        batch_id = run_config(name, cfg, period, db_path=db_path)
+        metrics = portfolio_metrics(portfolio_equity(batch_id, db_path), periods_per_year)
+        metrics["strategy"] = label
+        rows.append(metrics)
+        print(f"  done: {label:38s} ret={metrics['total_return']*100:7.1f}%  "
+              f"dd={metrics['max_dd']*100:6.1f}%  sharpe={metrics['sharpe']:.2f}  calmar={metrics['calmar']:.2f}")
+    df = pd.DataFrame(rows)[["strategy", "total_return", "cagr", "max_dd", "sharpe", "calmar"]]
+    return df.sort_values("sharpe", ascending=False)
+
+
+# ---------------------------------------------------------------------------
+# Scanner evaluation
+#
+# A breakout scanner is a stock-PICKER, not an equal-weight basket: it flags a few
+# names to buy and you hold each while it works. The right unit of analysis is the
+# individual signal (a round-trip trade), pooled across every stock and date. These
+# functions answer: when the scanner says BUY, what happens?
+# ---------------------------------------------------------------------------
+
+def scanner_trades(batch_id, db_path=RESEARCH_DB):
+    """Every round-trip trade across all stocks in a batch, with per-trade return.
+
+    Only one position is open per stock at a time, so BUY/SELL rows strictly
+    alternate; we pair them in order. Return = sell_price / buy_price - 1.
+    """
+    conn = database.get_connection(db_path)
+    results = database.get_batch_results(conn, batch_id)
+    ok = results[results["status"] == "ok"]
+    rows = []
+    for _, result in ok.iterrows():
+        run_id = result["run_id"]
+        if pd.isna(run_id):
+            continue
+        trades = database.get_trades(conn, int(run_id))
+        buys = trades[trades["trade_type"] == "BUY"].reset_index(drop=True)
+        sells = trades[trades["trade_type"] == "SELL"].reset_index(drop=True)
+        for k in range(min(len(buys), len(sells))):
+            entry_price = float(buys.loc[k, "price"])
+            exit_price = float(sells.loc[k, "price"])
+            rows.append({
+                "ticker": result["ticker"],
+                "entry_date": buys.loc[k, "date"],
+                "exit_date": sells.loc[k, "date"],
+                "entry_price": entry_price,
+                "exit_price": exit_price,
+                "ret": exit_price / entry_price - 1.0,
+            })
+    conn.close()
+    return pd.DataFrame(rows)
+
+
+def scanner_stats(batch_id, db_path=RESEARCH_DB):
+    """Pooled per-signal statistics for a batch — how good are the scanner's picks?
+
+    Key fields:
+      n_signals     : how many BUY signals fired (across all stocks)
+      win_rate      : share of signals that closed profitable
+      avg_ret       : mean per-trade return = expectancy per signal
+      total_edge    : sum of per-trade returns (aggregate edge if you took every
+                      signal with equal stake; ignores capital/overlap constraints)
+      pct_gt_50/100 : share of signals that gained >50% / >100% (big-mover capture)
+      max_ret       : best single signal (did it catch a DELL-type move?)
+    """
+    trades = scanner_trades(batch_id, db_path)
+    if trades.empty:
+        return {"n_signals": 0, "win_rate": 0.0, "avg_ret": 0.0, "median_ret": 0.0,
+                "avg_win": 0.0, "avg_loss": 0.0, "total_edge": 0.0,
+                "pct_gt_50": 0.0, "pct_gt_100": 0.0, "max_ret": 0.0}
+    ret = trades["ret"]
+    wins = ret[ret > 0]
+    losses = ret[ret <= 0]
+    return {
+        "n_signals": int(len(ret)),
+        "win_rate": float((ret > 0).mean()),
+        "avg_ret": float(ret.mean()),
+        "median_ret": float(ret.median()),
+        "avg_win": float(wins.mean()) if len(wins) else 0.0,
+        "avg_loss": float(losses.mean()) if len(losses) else 0.0,
+        "total_edge": float(ret.sum()),
+        "pct_gt_50": float((ret > 0.5).mean()),
+        "pct_gt_100": float((ret > 1.0).mean()),
+        "max_ret": float(ret.max()),
+    }
+
+
+def evaluate_scanner(strategies, period, db_path=RESEARCH_DB, sort_key="total_edge", universe=None):
+    """Run breakout-scanner configs and rank them by pooled per-signal profitability.
+
+    `strategies` is a list of (label, algorithm_name, config). Ranked by `total_edge`
+    (aggregate harvested return) by default — the closest single number to "most
+    profitable across all the picks it made".
+    """
+    rows = []
+    for label, name, cfg in strategies:
+        batch_id = run_config(name, cfg, period, db_path=db_path, universe=universe)
+        stats = scanner_stats(batch_id, db_path)
+        stats["strategy"] = label
+        rows.append(stats)
+        print(f"  done: {label:32s} n={stats['n_signals']:4d} win={stats['win_rate']*100:3.0f}% "
+              f"avg={stats['avg_ret']*100:5.1f}% edge={stats['total_edge']:6.1f} "
+              f">50%={stats['pct_gt_50']*100:3.0f}% max={stats['max_ret']*100:5.0f}%")
+    cols = ["strategy", "n_signals", "win_rate", "avg_ret", "median_ret",
+            "total_edge", "pct_gt_50", "pct_gt_100", "max_ret"]
+    return pd.DataFrame(rows)[cols].sort_values(sort_key, ascending=False)
+
+
+def scanner_grid():
+    """Phase A — grid each roof type x exit mode on TRAIN, ranked by aggregate edge."""
+    configs = []
+    for lookback in (126, 252, 504):
+        for exit_mode in ("trailing", "structural", "target"):
+            configs.append((f"High lb={lookback} {exit_mode}", "Roof: 52-Week-High Breakout",
+                            {"roof_lookback": lookback, "exit_mode": exit_mode}))
+    for bandwidth in (0.10, 0.15):
+        for exit_mode in ("trailing", "structural", "target"):
+            configs.append((f"Squeeze bw={bandwidth} {exit_mode}", "Roof: Volatility-Squeeze Breakout",
+                            {"bandwidth_threshold": bandwidth, "exit_mode": exit_mode}))
+    for lookback in (120, 250):
+        for base in (20, 40):
+            for exit_mode in ("trailing", "structural", "target"):
+                configs.append((f"Pivot lb={lookback} base={base} {exit_mode}",
+                                "Roof: Pivot-Resistance Breakout",
+                                {"roof_lookback": lookback, "base_bars": base, "exit_mode": exit_mode}))
+    print(f"=== SCANNER GRID on TRAIN {TRAIN}, {len(SCREEN_UNIVERSE)} screen stocks, "
+          f"{len(configs)} configs ===", flush=True)
+    df = evaluate_scanner(configs, TRAIN, universe=SCREEN_UNIVERSE)
+    print("\n--- TRAIN ranked by aggregate edge ---")
+    print(df.to_string(index=False))
+
+
+def validate_oos(strategies, period=OOS, db_path="oos.db"):
+    """Validate finalist scanner configs out-of-sample on the FULL universe.
+
+    Reports two complementary views per strategy:
+      - SCANNER quality: per-signal hit-rate, expectancy, big-mover capture.
+      - SYSTEM performance: the equal-weight per-stock portfolio's return / CAGR /
+        max drawdown / Sharpe (so it is comparable to Buy & Hold as a tradeable system).
+    Returns a DataFrame; also prints a DELL trade log for each strategy as an
+    illustration of whether it caught the owner's worked example.
+    """
+    rows = []
+    for label, name, cfg in strategies:
+        batch_id = run_config(name, cfg, period, db_path=db_path, universe=UNIVERSE)
+        stats = scanner_stats(batch_id, db_path)
+        port = portfolio_metrics(portfolio_equity(batch_id, db_path))
+        rows.append({
+            "strategy": label,
+            "n_sig": stats["n_signals"], "win%": round(stats["win_rate"] * 100, 0),
+            "avg%": round(stats["avg_ret"] * 100, 1), "edge": round(stats["total_edge"], 1),
+            ">100%": round(stats["pct_gt_100"] * 100, 1), "max%": round(stats["max_ret"] * 100, 0),
+            "port_ret%": round(port["total_return"] * 100, 0), "cagr%": round(port["cagr"] * 100, 1),
+            "maxDD%": round(port["max_dd"] * 100, 1), "sharpe": round(port["sharpe"], 2),
+        })
+        dell = scanner_trades(batch_id, db_path)
+        dell = dell[dell["ticker"] == "DELL"] if not dell.empty else dell
+        print(f"  done: {label}", flush=True)
+        if not dell.empty:
+            for _, t in dell.iterrows():
+                print(f"      DELL {t['entry_date'][:10]} @ {t['entry_price']:.0f} -> "
+                      f"{t['exit_date'][:10]} @ {t['exit_price']:.0f}  {t['ret']*100:+.0f}%", flush=True)
+    df = pd.DataFrame(rows).sort_values("sharpe", ascending=False)
+    print("\n--- OOS VALIDATION (full universe) ---")
+    print(df.to_string(index=False))
+    return df
+
+
 def load_price_matrix(period):
     """Daily close prices for the universe as a (dates x tickers) DataFrame."""
     start, end = period
     closes = {}
-    for ticker in UNIVERSE_50:
+    for ticker in UNIVERSE:
         try:
             closes[ticker] = fetch_data(ticker, start, end, interval="1d", use_cache=True)["Close"]
         except SimulatorError:
@@ -260,6 +458,7 @@ DISPATCH = {
     "tune_trend": tune_trend,
     "tune_sma": tune_sma,
     "tune_bollinger": tune_bollinger,
+    "scanner_grid": scanner_grid,
 }
 
 if __name__ == "__main__":

@@ -65,3 +65,19 @@ def recent_swing_low(low, lookback):
 def recent_swing_high(high, lookback):
     """Highest high over the trailing `lookback` bars."""
     return high.rolling(window=lookback).max()
+
+
+def roc(series, period):
+    """Rate of change over `period` bars = trailing return (e.g. 0.10 = +10%)."""
+    return series.pct_change(periods=period)
+
+
+def rsi(close, period=14):
+    """Relative Strength Index (0-100) using simple rolling averages of gains/losses."""
+    delta = close.diff()
+    gain = delta.clip(lower=0.0)
+    loss = -delta.clip(upper=0.0)
+    avg_gain = gain.rolling(window=period).mean()
+    avg_loss = loss.rolling(window=period).mean()
+    relative_strength = avg_gain / avg_loss
+    return 100.0 - (100.0 / (1.0 + relative_strength))
