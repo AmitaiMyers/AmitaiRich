@@ -14,6 +14,7 @@ CLI:  python scan_sell_today.py [positions.csv]
 
 import os
 import sys
+from datetime import date
 
 import pandas as pd
 
@@ -88,6 +89,8 @@ def _cli():
     path = sys.argv[1] if len(sys.argv) > 1 else POSITIONS_FILE
     positions = load_positions(path)
     algorithm = build_algorithm(DEFAULT_BUY, SELL_CONFIG)
+    scan_date = date.today().strftime("%Y-%m-%d")
+    print(f"\n{scan_date}", flush=True)
     print(f"Checking {len(positions)} holding(s) from {path} "
           f"with {DEFAULT_BUY} (trailing exit, {STOP_MODE} stop)...", flush=True)
     verdicts, errors = scan_holdings(positions, algorithm)

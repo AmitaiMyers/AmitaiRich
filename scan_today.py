@@ -124,6 +124,8 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
 def _scan_scope(scope, algorithm):
     """Run the BUY scan for one universe scope and print its candidates."""
     tickers = universe.get_universe(scope)
+    scan_date = date.today().strftime("%Y-%m-%d")
+    print(f"\n{scan_date}", flush=True)
     print(f"\nScanning {len(tickers)} {scope} stocks with {DEFAULT_BUY}...", flush=True)
     hits, errors = scan_for_buys(tickers, algorithm)
     print(f"=== BUY candidates as of latest bar ({len(hits)}) - {scope} ===")

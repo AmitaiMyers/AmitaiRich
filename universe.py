@@ -78,6 +78,10 @@ def get_nasdaq100(use_cache=True, refresh=False):
     """The ~101 Nasdaq-100 symbols (Yahoo-normalized)."""
     return _get("nasdaq100", NDX_URL, {"ticker", "symbol"}, use_cache, refresh)
 
+# def get_magic_formula(use_cache=True, refresh=False):
+#     """The ~1000 Magic Formula symbols (Yahoo-normalized)."""
+#     return _get("magic_formula",  , {"ticker", "symbol"}, use_cache, refresh)
+
 
 def get_universe(scope="sp500_ndx", use_cache=True, refresh=False):
     """Return the symbol list for a scope.
@@ -90,5 +94,7 @@ def get_universe(scope="sp500_ndx", use_cache=True, refresh=False):
         return get_sp500(use_cache, refresh)
     if scope == "nasdaq100":
         return get_nasdaq100(use_cache, refresh)
+    # if scope == "magic_formula":
+    #     return get_magic_formula(use_cache, refresh)
     union = get_sp500(use_cache, refresh) + get_nasdaq100(use_cache, refresh)
     return list(dict.fromkeys(union))
