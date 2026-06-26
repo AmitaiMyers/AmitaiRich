@@ -15,9 +15,25 @@ simulation; `calculate_sell` covers the discretionary/target exit.
 Strategies are registered in ALGORITHMS so the dashboard can list them.
 """
 
+import math
+
 import exits
 import indicators
 from errors import ConfigurationError
+
+
+def _atr_swing_stop(config, entry_price, history_slice, stop_mode):
+    """Shared catastrophe stop: widest/tightest of {recent swing low, entry - k*ATR}.
+
+    Used by the hold-winner / panel-designed strategies, which all protect with the
+    same two-candidate stop (only the ATR multiple and lookback differ via config).
+    """
+    close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
+    average_true_range = indicators.atr(high, low, close, config["atr_period"])
+    swing_low = indicators.recent_swing_low(low, config["swing_lookback"])
+    candidates = [float(swing_low.iloc[-1]),
+                  float(entry_price - config["atr_mult"] * average_true_range.iloc[-1])]
+    return select_stop(candidates, entry_price, stop_mode)
 
 
 def _merge_config(defaults, overrides):
@@ -826,6 +842,327 @@ class PivotBreakout(BreakoutScanner):
         return based_below and fresh_cross
 
 
+# ---------------------------------------------------------------------------
+# Hold-winner riders
+#
+# Two low-turnover trend strategies built for the explicit goal of riding winners
+# for long stretches with the FEWEST possible buy/sell actions: each has a SINGLE
+# structural exit (a slow moving-average breakdown) so ordinary pullbacks are
+# tolerated, plus a WIDE ATR catastrophe stop that only fires on a real collapse.
+# They differ solely in the entry signal (breakout vs. absolute momentum), so a
+# head-to-head isolates which entry best captures durable trends.
+# ---------------------------------------------------------------------------
+
+class TrendRider(Algorithm):
+    """Buy a confirmed breakout in an uptrend; exit only on a structural trend break.
+
+    ENTRY: today's close is a fresh `breakout_lookback`-bar high AND above the long
+           `trend_ma` SMA (buy strength that is already trending up).
+    STOP:  widest/tightest of {recent swing low, entry - atr_mult*ATR} (wide by default).
+    EXIT:  close falls back below the `exit_ma` SMA — the trend is treated as over.
+
+    One slow exit + a wide stop => few trades and long holds, by construction.
+    """
+
+    name = "Trend Rider (breakout + MA exit)"
+    DEFAULTS = {
+        "breakout_lookback": 100,
+        "trend_ma": 200,
+        "exit_ma": 100,
+        "atr_period": 14,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["breakout_lookback"], c["trend_ma"], c["exit_ma"],
+                   c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close, high = history_slice["Close"], history_slice["High"]
+        prior_high = high.iloc[-(c["breakout_lookback"] + 1):-1].max()
+        breakout = bool(close.iloc[-1] > float(prior_high))
+        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return breakout and in_trend
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        close = history_slice["Close"]
+        return bool(close.iloc[-1] < indicators.sma(close, c["exit_ma"]).iloc[-1])
+
+
+class MomentumRider(Algorithm):
+    """Buy strong absolute momentum in an uptrend; hold until the long trend breaks.
+
+    Like TimeSeriesMomentum but deliberately lower-turnover: it does NOT sell when
+    momentum merely dips negative (that whipsaws) — it exits ONLY when price closes
+    below the long `trend_ma`, so a winner is ridden as long as its primary uptrend
+    holds.
+
+    ENTRY: trailing `mom_lookback` return > `mom_threshold` AND close > `trend_ma` SMA.
+    STOP:  widest/tightest of {recent swing low, entry - atr_mult*ATR}.
+    EXIT:  close < `trend_ma` SMA.
+    """
+
+    name = "Momentum Rider (ROC + MA exit)"
+    DEFAULTS = {
+        "mom_lookback": 126,
+        "mom_threshold": 0.0,
+        "trend_ma": 200,
+        "atr_period": 14,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["mom_lookback"], c["trend_ma"], c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close = history_slice["Close"]
+        momentum = indicators.roc(close, c["mom_lookback"]).iloc[-1]
+        strong = bool(momentum > c["mom_threshold"])
+        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return strong and in_trend
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        close = history_slice["Close"]
+        return bool(close.iloc[-1] < indicators.sma(close, c["trend_ma"]).iloc[-1])
+
+
+# ---------------------------------------------------------------------------
+# Panel-designed candidates (from an adversarial strategy-design study)
+#
+# Four research-driven trend/momentum riders that each add ONE idea the existing
+# book lacks, all keeping the hold-winner / low-turnover discipline:
+#   - Vol-Adjusted Momentum Rider : rank trend strength as return-per-unit-risk
+#     (ATR-normalised momentum) -> targets Sharpe, not raw CAGR-with-ugly-vol.
+#   - Dual-Confirm Trend Hold     : exit only when a slow Donchian low AND the
+#     200-day MA both break -> the lowest-churn, longest-hold exit available.
+#   - Efficiency-Ratio Trend Rider: gate entries on Kaufman path-efficiency so
+#     only clean (non-choppy) trends are bought -> fewer whipsaws.
+#   - Two-Speed Donchian          : asymmetric channel (fast entry, slow self-
+#     trailing exit) + 200-MA filter -> a parameter-light structural baseline.
+# ---------------------------------------------------------------------------
+
+class VolAdjustedMomentumRider(Algorithm):
+    """Buy risk-adjusted momentum in an uptrend; hold until the long MA breaks.
+
+    Ranks trend strength as ROC normalised by volatility (ATR as a % of price), so
+    it favours strong AND smooth advancers rather than the most volatile names —
+    directly aimed at risk-adjusted (Sharpe) return.
+
+    ENTRY: close > `trend_ma` SMA AND  ROC(`mom_lookback`) / (ATR(`atr_period`)/close)
+           >= `score_threshold`.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  close < `exit_ma` SMA (single structural exit).
+    """
+
+    name = "Vol-Adjusted Momentum Rider"
+    DEFAULTS = {
+        "mom_lookback": 126,
+        "atr_period": 20,
+        "trend_ma": 200,
+        "exit_ma": 200,
+        "score_threshold": 8.0,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["mom_lookback"], c["trend_ma"], c["exit_ma"],
+                   c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
+        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
+            return False
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        average_true_range = float(indicators.atr(high, low, close, c["atr_period"]).iloc[-1])
+        last = float(close.iloc[-1])
+        if math.isnan(momentum) or math.isnan(average_true_range) or average_true_range <= 0 or last <= 0:
+            return False
+        score = momentum / (average_true_range / last)
+        return bool(score >= c["score_threshold"])
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        return exits.ma_breakdown_hit(history_slice, self.config["exit_ma"])
+
+
+class DualConfirmTrendHold(Algorithm):
+    """52-week-high breakout in an uptrend; exit only when TWO slow signals agree.
+
+    The lowest-churn exit in the set: a dip under the slow Donchian low that still
+    holds the 200-day MA does NOT sell — both must break together, so ordinary
+    pullbacks are tolerated and winners are held until a real regime change.
+
+    ENTRY: close is a fresh `entry_lookback`-bar high AND close > `trend_ma` SMA.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  close < the prior `exit_lookback`-bar low  AND  close < `exit_ma` SMA.
+    """
+
+    name = "Dual-Confirm Trend Hold"
+    DEFAULTS = {
+        "entry_lookback": 252,
+        "trend_ma": 200,
+        "exit_lookback": 100,
+        "exit_ma": 200,
+        "atr_period": 20,
+        "atr_mult": 3.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["entry_lookback"], c["trend_ma"], c["exit_lookback"],
+                   c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close, high = history_slice["Close"], history_slice["High"]
+        roof = high.iloc[-(c["entry_lookback"] + 1):-1].max()
+        breakout = bool(close.iloc[-1] > float(roof))
+        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return breakout and in_trend
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        close, low = history_slice["Close"], history_slice["Low"]
+        prior_low = low.iloc[-(c["exit_lookback"] + 1):-1].min()
+        donchian_break = bool(close.iloc[-1] < float(prior_low))
+        ma_break = exits.ma_breakdown_hit(history_slice, c["exit_ma"])
+        return donchian_break and ma_break
+
+
+class EfficiencyTrendRider(Algorithm):
+    """Buy near-52-week-high uptrends ONLY when the path is efficient (not choppy).
+
+    A Kaufman Efficiency-Ratio gate screens out noisy run-ups that whipsaw ordinary
+    trend strategies; a wide chandelier trailing exit then rides clean trends for
+    multiple quarters.
+
+    ENTRY: close > `trend_ma` SMA AND close >= `proximity` x 52-week high AND
+           EfficiencyRatio(`er_period`) >= `er_threshold`.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  chandelier trailing stop (`trail_atr_mult` x ATR below highest-high-since-entry).
+    """
+
+    name = "Efficiency-Ratio Trend Rider"
+    DEFAULTS = {
+        "high_lookback": 252,
+        "proximity": 0.92,
+        "trend_ma": 200,
+        "er_period": 30,
+        "er_threshold": 0.40,
+        "atr_period": 22,
+        "atr_mult": 3.0,
+        "swing_lookback": 22,
+        "trail_atr_period": 22,
+        "trail_atr_mult": 5.0,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["high_lookback"], c["trend_ma"], c["er_period"], c["atr_period"],
+                   c["swing_lookback"], c["trail_atr_period"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close, high = history_slice["Close"], history_slice["High"]
+        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
+            return False
+        high_52w = float(indicators.recent_swing_high(high, c["high_lookback"]).iloc[-1])
+        if not bool(close.iloc[-1] >= c["proximity"] * high_52w):
+            return False
+        er = float(indicators.efficiency_ratio(close, c["er_period"]).iloc[-1])
+        if math.isnan(er):
+            return False
+        return bool(er >= c["er_threshold"])
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        return exits.chandelier_hit(position, history_slice, c["trail_atr_period"], c["trail_atr_mult"])
+
+
+class TwoSpeedDonchian(Algorithm):
+    """Asymmetric Donchian: fast breakout entry, slow self-trailing channel exit.
+
+    The exit channel is deliberately much longer than the entry channel, so the
+    trailing low ratchets up with price and almost never sells inside a healthy
+    uptrend. A 200-day MA filter keeps entries with the primary trend. The most
+    parameter-light rider here — a structural baseline the others must beat.
+
+    ENTRY: close > prior `entry_lookback`-bar high AND close > `trend_ma` SMA.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  close < the prior `exit_lookback`-bar low (exit_lookback >> entry_lookback).
+    """
+
+    name = "Two-Speed Donchian"
+    DEFAULTS = {
+        "entry_lookback": 40,
+        "exit_lookback": 120,
+        "trend_ma": 200,
+        "atr_period": 20,
+        "atr_mult": 3.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["entry_lookback"], c["exit_lookback"], c["trend_ma"],
+                   c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close, high = history_slice["Close"], history_slice["High"]
+        prior_high = high.iloc[-(c["entry_lookback"] + 1):-1].max()
+        breakout = bool(close.iloc[-1] > float(prior_high))
+        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return breakout and in_trend
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        close, low = history_slice["Close"], history_slice["Low"]
+        prior_low = low.iloc[-(c["exit_lookback"] + 1):-1].min()
+        return bool(close.iloc[-1] < float(prior_low))
+
+
 # Registry consumed by the simulation and the dashboard dropdowns.
 ALGORITHMS = {
     BollingerSqueezeBreakout.name: BollingerSqueezeBreakout,
@@ -839,6 +1176,12 @@ ALGORITHMS = {
     HighBreakout.name: HighBreakout,
     SqueezeBreakout.name: SqueezeBreakout,
     PivotBreakout.name: PivotBreakout,
+    TrendRider.name: TrendRider,
+    MomentumRider.name: MomentumRider,
+    VolAdjustedMomentumRider.name: VolAdjustedMomentumRider,
+    DualConfirmTrendHold.name: DualConfirmTrendHold,
+    EfficiencyTrendRider.name: EfficiencyTrendRider,
+    TwoSpeedDonchian.name: TwoSpeedDonchian,
     BuyAndHold.name: BuyAndHold,
     DummyAlgorithm.name: DummyAlgorithm,
 }

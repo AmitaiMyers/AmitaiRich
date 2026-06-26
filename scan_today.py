@@ -137,9 +137,9 @@ def _scan_scope(scope, algorithm):
 
 
 def _cli():
-    """Scan the S&P 500 then the Nasdaq-100 in one run, one after another."""
+    """Scan the S&P 500, the Nasdaq-100, then the custom watchlist, one after another."""
     algorithm = build_algorithm(DEFAULT_BUY, DEFAULT_CONFIG)
-    for scope in ("sp500", "nasdaq100"):
+    for scope in ("sp500", "nasdaq100", "watchlist"):
         _scan_scope(scope, algorithm)
 
 

@@ -72,6 +72,18 @@ def roc(series, period):
     return series.pct_change(periods=period)
 
 
+def efficiency_ratio(close, period):
+    """Kaufman Efficiency Ratio = |net change| / sum of |bar-to-bar changes|.
+
+    A trend-quality measure in [0, 1]: ~1.0 is a clean straight move, near 0 is
+    choppy/noisy. NaN until `period`+1 bars exist, and undefined (NaN via 0/0) on a
+    perfectly flat stretch — callers treat NaN as "no signal" rather than filling it.
+    """
+    net = (close - close.shift(period)).abs()
+    gross = close.diff().abs().rolling(window=period).sum()
+    return net / gross
+
+
 def rsi(close, period=14):
     """Relative Strength Index (0-100) using simple rolling averages of gains/losses."""
     delta = close.diff()
