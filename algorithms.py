@@ -1009,6 +1009,21 @@ class VolAdjustedMomentumRider(Algorithm):
     def calculate_sell(self, position, history_slice):
         return exits.ma_breakdown_hit(history_slice, self.config["exit_ma"])
 
+    def describe(self, history_slice):
+        """Display facts for a fired BUY: the volatility-adjusted momentum score + trend."""
+        c = self.config
+        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        average_true_range = float(indicators.atr(high, low, close, c["atr_period"]).iloc[-1])
+        last = float(close.iloc[-1])
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        score = momentum / (average_true_range / last) if average_true_range > 0 else float("nan")
+        return {
+            "mom_%": round(momentum * 100, 1),
+            "vol_adj_score": round(score, 1),
+            "pct_vs_200ma": round((last / sma_long - 1) * 100, 1),
+        }
+
 
 class DualConfirmTrendHold(Algorithm):
     """52-week-high breakout in an uptrend; exit only when TWO slow signals agree.

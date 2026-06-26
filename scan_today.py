@@ -25,10 +25,18 @@ from data_engine import fetch_data
 from simulation import Position
 import universe
 
-# The strategy the research recommends as the breakout scanner (52-week-high roof
-# + volume confirmation). Exit params are irrelevant to a BUY scan.
-DEFAULT_BUY = "Roof: 52-Week-High Breakout"
-DEFAULT_CONFIG = {"roof_lookback": 252, "vol_surge_mult": 1.5}
+# The strategy chosen by the 300-train / 100-test portfolio research (see
+# research_26062026.md): the Vol-Adjusted Momentum Rider. BUY when price is above
+# its 200-day SMA and its volatility-adjusted 6-month momentum
+# (ROC(126) / (ATR(20)/price)) clears a high bar; HOLD until price closes back
+# below the 200-day SMA (with a wide ATR catastrophe stop underneath). It beat the
+# old Roof-breakout default decisively out-of-sample (Sharpe 0.91 vs 0.54) by
+# holding winners ~200 days instead of churning, which also makes it cost-robust.
+DEFAULT_BUY = "Vol-Adjusted Momentum Rider"
+DEFAULT_CONFIG = {"mom_lookback": 126, "score_threshold": 12.0}
+# The research sized risk off this 'widest' (most room) catastrophe stop; the SELL
+# check (check_holding) should use the same mode to match the backtested system.
+DEFAULT_STOP_MODE = "widest"
 
 
 def _window(as_of, lookback_days):
@@ -70,13 +78,17 @@ def scan_for_buys(tickers, algorithm, as_of=None, lookback_days=600,
             hits.append(row)
 
     hits_df = pd.DataFrame(hits)
-    if not hits_df.empty and "vol_x_avg" in hits_df.columns:
-        hits_df = hits_df.sort_values("vol_x_avg", ascending=False).reset_index(drop=True)
+    # Rank the strongest candidate first by whichever strength fact the algorithm
+    # reports: the vol-adjusted momentum score (current default) or volume surge.
+    for strength_col in ("vol_adj_score", "vol_x_avg"):
+        if not hits_df.empty and strength_col in hits_df.columns:
+            hits_df = hits_df.sort_values(strength_col, ascending=False).reset_index(drop=True)
+            break
     return hits_df, pd.DataFrame(errors)
 
 
 def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
-                  lookback_days=900, stop_mode="tightest", interval="1d", use_cache=True):
+                  lookback_days=900, stop_mode=DEFAULT_STOP_MODE, interval="1d", use_cache=True):
     """Return today's HOLD/SELL verdict for a position you already hold.
 
     Reconstructs the position: the stop is what the algorithm would have set at the
