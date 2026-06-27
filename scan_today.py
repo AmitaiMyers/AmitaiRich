@@ -12,9 +12,9 @@ history, so we fetch a recent window up to `as_of`. Per-ticker data failures (la
 listings, bad symbols) are collected and returned, not raised — same boundary
 policy as batch.py. A ConfigurationError (a setup mistake) is NOT caught.
 
-CLI:  python scan_today.py   (the full daily routine: a BUY scan across the
-S&P 500, Nasdaq-100 and watchlist, then a HOLD/SELL check on every open position
-listed in positions.csv — BUYs first, then SELLs, in that order)
+CLI:  python scan_today.py   (the full daily routine: a single BUY list across the
+S&P 500, Nasdaq-100 and watchlist, de-duplicated and ranked best-to-least, then a
+HOLD/SELL check on every open position in positions.csv — BUYs first, then SELLs)
 """
 
 import os
@@ -69,6 +69,9 @@ def scan_for_buys(tickers, algorithm, as_of=None, lookback_days=600,
     needed = algorithm.warmup_bars() + 1
     hits, errors = [], []
 
+    # De-duplicate (some universe CSVs list a symbol more than once) so each name
+    # is scanned and reported once, and we don't waste a fetch on repeats.
+    tickers = list(dict.fromkeys(t.strip().upper() for t in tickers))
     for ticker in tickers:
         try:
             df = fetch_data(ticker, start_str, end_str, interval=interval, use_cache=use_cache)
@@ -175,15 +178,42 @@ def check_positions(algorithm, positions_path=POSITIONS_CSV, as_of=None,
     return verdicts_df, pd.DataFrame(errors)
 
 
-def _scan_scope(scope, algorithm):
-    """Run the BUY scan for one universe scope and print its candidates."""
-    tickers = universe.get_universe(scope)
-    print(f"\nScanning {len(tickers)} {scope} stocks with {DEFAULT_BUY}...", flush=True)
+# Short tags marking which source list a candidate belongs to (a name can be in
+# more than one, e.g. an S&P 500 stock that is also in the Nasdaq-100).
+SCOPE_TAGS = {"sp500": "SPX", "nasdaq100": "NDX", "watchlist": "WL"}
+
+
+def _combined_universe():
+    """All scopes merged into one de-duplicated list, plus a per-ticker source tag.
+
+    Returns (tickers, sources): `tickers` is every unique symbol across the scopes
+    (order preserved); `sources[ticker]` is a tag like 'SPX/NDX' showing the lists
+    it appears in.
+    """
+    sources, order = {}, []
+    for scope, tag in SCOPE_TAGS.items():
+        for raw in universe.get_universe(scope):
+            ticker = raw.strip().upper()
+            if ticker not in sources:
+                sources[ticker] = []
+                order.append(ticker)
+            if tag not in sources[ticker]:
+                sources[ticker].append(tag)
+    return order, {ticker: "/".join(tags) for ticker, tags in sources.items()}
+
+
+def _scan_all(algorithm):
+    """Scan every scope as ONE universe and print a single best-to-least ranked list."""
+    tickers, sources = _combined_universe()
+    print(f"\nScanning {len(tickers)} unique stocks with {DEFAULT_BUY}...", flush=True)
     hits, errors = scan_for_buys(tickers, algorithm)
-    print(f"=== BUY candidates as of latest bar ({len(hits)}) - {scope} ===")
+    print(f"=== BUY candidates, ranked best to least ({len(hits)}) ===")
     if hits.empty:
         print("  (none today)")
     else:
+        hits = hits.copy()
+        hits.insert(0, "rank", range(1, len(hits) + 1))
+        hits.insert(2, "src", hits["ticker"].map(sources))
         print(hits.to_string(index=False))
     print(f"({len(errors)} tickers skipped for missing data)")
 
@@ -205,12 +235,12 @@ def _sell_check(algorithm):
 
 
 def _cli():
-    """Full daily routine: BUY scan (S&P 500, Nasdaq-100, watchlist) then the
-    HOLD/SELL check on positions.csv — BUYs first, then SELLs, in that order."""
+    """Full daily routine: a single best-to-least ranked BUY list across the S&P 500,
+    Nasdaq-100 and watchlist, then the HOLD/SELL check on positions.csv — BUYs first,
+    then SELLs, in that order."""
     algorithm = build_algorithm(DEFAULT_BUY, DEFAULT_CONFIG)
     print(date.today().strftime("%Y-%m-%d"), flush=True)
-    for scope in ("sp500", "nasdaq100", "watchlist"):
-        _scan_scope(scope, algorithm)
+    _scan_all(algorithm)
     _sell_check(algorithm)
 
 

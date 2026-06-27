@@ -85,7 +85,7 @@ def _download_and_prepare(ticker, start_date, end_date, interval):
     df = df[REQUIRED_COLUMNS].copy()
     df.index = pd.to_datetime(df.index)
     df.index.name = "Date"
-    return df
+    return _drop_forming_bar(df)
 
 
 def _flatten_columns(df, ticker):
@@ -119,6 +119,22 @@ def _validate_columns(df, ticker):
         )
 
 
+def _drop_forming_bar(df):
+    """Drop trailing still-forming session bars (OHLC all NaN).
+
+    yfinance serves a row for the current, not-yet-finalized session with NaN OHLC
+    (often with a partial Volume) until the day's data settles. That is an
+    incomplete observation, not corrupt history, so we remove only such TRAILING
+    rows — never fill them, and never touch interior NaNs (which remain a hard
+    DataIntegrityError via `_validate_no_nan`). Decisions then run on the latest
+    COMPLETE bar.
+    """
+    ohlc = ["Open", "High", "Low", "Close"]
+    while len(df) and bool(df[ohlc].iloc[-1].isna().all()):
+        df = df.iloc[:-1]
+    return df
+
+
 def _validate_no_nan(df, ticker):
     """Raise if any OHLCV value is NaN. We never silently fill missing data."""
     nan_counts = df[REQUIRED_COLUMNS].isna().sum()
@@ -141,7 +157,8 @@ def _load_from_cache(cache_path, ticker):
     df = pd.read_csv(cache_path, index_col=0, parse_dates=True)
     df.index.name = "Date"
     _validate_columns(df, ticker)
-    return df[REQUIRED_COLUMNS].copy()
+    # Clean any forming bar a previous (mid-session) run may have cached.
+    return _drop_forming_bar(df[REQUIRED_COLUMNS].copy())
 
 
 def _save_to_cache(df, cache_path):
