@@ -12,9 +12,12 @@ history, so we fetch a recent window up to `as_of`. Per-ticker data failures (la
 listings, bad symbols) are collected and returned, not raised — same boundary
 policy as batch.py. A ConfigurationError (a setup mistake) is NOT caught.
 
-CLI:  python scan_today.py   (scans S&P 500 then Nasdaq-100, one after another)
+CLI:  python scan_today.py   (the full daily routine: a BUY scan across the
+S&P 500, Nasdaq-100 and watchlist, then a HOLD/SELL check on every open position
+listed in positions.csv — BUYs first, then SELLs, in that order)
 """
 
+import os
 from datetime import date
 
 import pandas as pd
@@ -22,6 +25,7 @@ import pandas as pd
 from algorithms import build_algorithm
 from batch import PER_TICKER_ERRORS
 from data_engine import fetch_data
+from errors import InsufficientDataError
 from simulation import Position
 import universe
 
@@ -37,6 +41,10 @@ DEFAULT_CONFIG = {"mom_lookback": 126, "score_threshold": 12.0}
 # The research sized risk off this 'widest' (most room) catastrophe stop; the SELL
 # check (check_holding) should use the same mode to match the backtested system.
 DEFAULT_STOP_MODE = "widest"
+
+# Open positions to run the daily HOLD/SELL check against (ticker, entry_date,
+# entry_price). Edit this file as you enter/exit trades.
+POSITIONS_CSV = "positions.csv"
 
 
 def _window(as_of, lookback_days):
@@ -103,6 +111,13 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     entry_index = int(df.index.searchsorted(pd.Timestamp(entry_date)))
     if entry_index >= len(df):
         raise PER_TICKER_ERRORS[0](f"{ticker}: entry date {entry_date} is after the last bar.")
+    if (entry_index + 1) < algorithm.warmup_bars():
+        # A recent listing without enough history before entry to compute the
+        # strategy's stop / exit indicators — surface it as a per-position data
+        # skip rather than letting an indicator NaN crash the whole check.
+        raise InsufficientDataError(
+            f"{ticker}: only {entry_index + 1} bars before entry {entry_date}; "
+            f"need {algorithm.warmup_bars()} for the strategy's warmup.")
 
     entry_slice = df.iloc[: entry_index + 1]
     fill_price = float(entry_price) if entry_price else float(df["Close"].iloc[entry_index])
@@ -133,11 +148,36 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     }
 
 
+def check_positions(algorithm, positions_path=POSITIONS_CSV, as_of=None,
+                    interval="1d", use_cache=True):
+    """Run the HOLD/SELL check on every open position in a positions CSV.
+
+    The CSV has columns `ticker, entry_date, entry_price`. Each row is reconstructed
+    and run through the same stop + sell logic as check_holding. Per-position data
+    failures are collected and returned, not raised (same boundary policy as the BUY
+    scan). Returns (verdicts, errors) DataFrames with SELLs sorted to the top.
+    """
+    positions = pd.read_csv(positions_path)
+    verdicts, errors = [], []
+    for _, row in positions.iterrows():
+        ticker = str(row["ticker"]).strip().upper()
+        try:
+            verdicts.append(check_holding(
+                ticker, algorithm, row["entry_date"], entry_price=row["entry_price"],
+                as_of=as_of, interval=interval, use_cache=use_cache))
+        except PER_TICKER_ERRORS as exc:
+            errors.append({"ticker": ticker, "error": type(exc).__name__})
+
+    verdicts_df = pd.DataFrame(verdicts)
+    if not verdicts_df.empty:
+        # SELLs first (action items at the top), then HOLDs.
+        verdicts_df = verdicts_df.sort_values("verdict", ascending=False).reset_index(drop=True)
+    return verdicts_df, pd.DataFrame(errors)
+
+
 def _scan_scope(scope, algorithm):
     """Run the BUY scan for one universe scope and print its candidates."""
     tickers = universe.get_universe(scope)
-    scan_date = date.today().strftime("%Y-%m-%d")
-    print(f"\n{scan_date}", flush=True)
     print(f"\nScanning {len(tickers)} {scope} stocks with {DEFAULT_BUY}...", flush=True)
     hits, errors = scan_for_buys(tickers, algorithm)
     print(f"=== BUY candidates as of latest bar ({len(hits)}) - {scope} ===")
@@ -148,11 +188,30 @@ def _scan_scope(scope, algorithm):
     print(f"({len(errors)} tickers skipped for missing data)")
 
 
+def _sell_check(algorithm):
+    """Run the HOLD/SELL check on positions.csv and print verdicts (SELLs first)."""
+    if not os.path.exists(POSITIONS_CSV):
+        print(f"\n(no {POSITIONS_CSV} found — skipping HOLD/SELL check)")
+        return
+    verdicts, errors = check_positions(algorithm)
+    n_sell = int((verdicts["verdict"] == "SELL").sum()) if not verdicts.empty else 0
+    print(f"\n=== HOLD/SELL check on {len(verdicts)} positions ({n_sell} SELL) ===")
+    if verdicts.empty:
+        print("  (no open positions)")
+    else:
+        print(verdicts.to_string(index=False))
+    if len(errors):
+        print(f"({len(errors)} positions skipped for missing data: {', '.join(errors['ticker'])})")
+
+
 def _cli():
-    """Scan the S&P 500, the Nasdaq-100, then the custom watchlist, one after another."""
+    """Full daily routine: BUY scan (S&P 500, Nasdaq-100, watchlist) then the
+    HOLD/SELL check on positions.csv — BUYs first, then SELLs, in that order."""
     algorithm = build_algorithm(DEFAULT_BUY, DEFAULT_CONFIG)
+    print(date.today().strftime("%Y-%m-%d"), flush=True)
     for scope in ("sp500", "nasdaq100", "watchlist"):
         _scan_scope(scope, algorithm)
+    _sell_check(algorithm)
 
 
 if __name__ == "__main__":
