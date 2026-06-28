@@ -17,6 +17,7 @@ S&P 500, Nasdaq-100 and watchlist, de-duplicated and ranked best-to-least, then 
 HOLD/SELL check on every open position in positions.csv — BUYs first, then SELLs)
 """
 
+import json
 import os
 from datetime import date
 
@@ -27,6 +28,7 @@ from batch import PER_TICKER_ERRORS
 from data_engine import fetch_data
 from errors import InsufficientDataError
 from simulation import Position
+import indicators
 import universe
 
 # The strategy chosen by the 300-train / 100-test portfolio research (see
@@ -45,6 +47,10 @@ DEFAULT_STOP_MODE = "widest"
 # Open positions to run the daily HOLD/SELL check against (ticker, entry_date,
 # entry_price). Edit this file as you enter/exit trades.
 POSITIONS_CSV = "positions.csv"
+
+# Remembers each day's full BUY ranking so the next scan can show how far each
+# candidate moved up/down the list (a stock climbing the ranks = strengthening).
+STATE_FILE = "scan_state.json"
 
 
 def _window(as_of, lookback_days):
@@ -142,10 +148,29 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     else:
         verdict, reason = "HOLD", "trend intact"
 
+    # The rising trend-break exit (the strategy's MA exit) is the real sell line for
+    # a winner — far above the fixed catastrophe stop and climbing with the trend.
+    # `to_exit_%` is the cushion: how far the close can fall before that exit fires.
+    exit_ma = algorithm.config["exit_ma"] if "exit_ma" in algorithm.config else None
+    if exit_ma is not None and len(df) >= exit_ma:
+        exit_level = float(indicators.sma(df["Close"], exit_ma).iloc[-1])
+        to_exit = round((last_close / exit_level - 1) * 100, 1)
+        exit_level = round(exit_level, 2)
+    else:
+        exit_level, to_exit = None, None
+
+    # Recent (1-month) momentum so a fading holding is visible before it sells:
+    # 'down' = losing momentum / price falling lately, 'up' = still pushing higher.
+    recent = indicators.roc(df["Close"], 21).iloc[-1]
+    mom_1m = round(float(recent) * 100, 1) if not pd.isna(recent) else None
+    trend = "flat" if mom_1m is None else ("down" if mom_1m < -1 else ("up" if mom_1m > 1 else "flat"))
+
     return {
         "ticker": ticker, "verdict": verdict, "reason": reason,
+        "trend": trend, "mom_1m_%": mom_1m,
         "entry_price": round(fill_price, 2), "last_close": round(last_close, 2),
         "open_pnl_%": round((last_close / fill_price - 1) * 100, 1),
+        "exit_level": exit_level, "to_exit_%": to_exit,
         "stop_price": round(stop_price, 2) if stop_price is not None else None,
         "bars_held": bars_held,
     }
@@ -173,8 +198,11 @@ def check_positions(algorithm, positions_path=POSITIONS_CSV, as_of=None,
 
     verdicts_df = pd.DataFrame(verdicts)
     if not verdicts_df.empty:
-        # SELLs first (action items at the top), then HOLDs.
-        verdicts_df = verdicts_df.sort_values("verdict", ascending=False).reset_index(drop=True)
+        # SELLs first (action items); within each group, the smallest cushion to the
+        # exit first, so the holdings closest to selling bubble to the top.
+        verdicts_df = verdicts_df.sort_values(
+            ["verdict", "to_exit_%"], ascending=[False, True], na_position="last"
+        ).reset_index(drop=True)
     return verdicts_df, pd.DataFrame(errors)
 
 
@@ -202,19 +230,119 @@ def _combined_universe():
     return order, {ticker: "/".join(tags) for ticker, tags in sources.items()}
 
 
+def _held_tickers(positions_path=POSITIONS_CSV):
+    """Symbols already held (from positions.csv) — these are hidden from the BUY list."""
+    if not os.path.exists(positions_path):
+        return set()
+    return {str(t).strip().upper() for t in pd.read_csv(positions_path)["ticker"]}
+
+
+def _load_state(path):
+    """Load the saved {date: {ticker: [rank, score]}} history (empty if none yet)."""
+    if not os.path.exists(path):
+        return {}
+    with open(path) as fh:
+        return json.load(fh)
+
+
+def _save_state(path, state, today, snapshot, keep=10):
+    """Record today's full ranking (rank + score per ticker), keeping last `keep` days."""
+    state[today] = snapshot
+    for old in sorted(state)[:-keep]:
+        del state[old]
+    with open(path, "w") as fh:
+        json.dump(state, fh, indent=0)
+
+
+def _prev_snapshot(state, today):
+    """The snapshot (ticker -> [rank, score]) from the most recent day BEFORE today,
+    so same-day re-runs still compare against yesterday rather than against this run."""
+    prior = [d for d in state if d < today]
+    return state[max(prior)] if prior else {}
+
+
+def _rank_change(ticker, new_rank, prev):
+    """ASCII rank-move tag: 'NEW', '+n' (climbed n places), '-n' (fell), '0' (same)."""
+    if ticker not in prev:
+        return "NEW"
+    delta = prev[ticker][0] - new_rank          # positive => moved UP the list
+    return f"+{delta}" if delta > 0 else (str(delta) if delta < 0 else "0")
+
+
+def _score_change(ticker, new_score, prev):
+    """Signed change in the vol-adjusted score vs the previous scan ('NEW' if absent)."""
+    if ticker not in prev:
+        return "NEW"
+    return f"{new_score - prev[ticker][1]:+.1f}"
+
+
+def _fmt_list(names, cap=15):
+    """Comma-join names, truncating to `cap` with a '(+N more)' tail."""
+    names = list(names)
+    if len(names) <= cap:
+        return ", ".join(names)
+    return ", ".join(names[:cap]) + f", (+{len(names) - cap} more)"
+
+
 def _scan_all(algorithm):
-    """Scan every scope as ONE universe and print a single best-to-least ranked list."""
+    """Scan every scope as ONE universe; print a single best-to-least ranked BUY list
+    with day-over-day rank- and score-change, a 'top risers' line, a new/dropped
+    summary, and holdings hidden.
+
+    Rank, score and their changes are computed on the FULL candidate ranking BEFORE
+    hiding holdings, so they reflect momentum — not which names you own.
+    """
     tickers, sources = _combined_universe()
     print(f"\nScanning {len(tickers)} unique stocks with {DEFAULT_BUY}...", flush=True)
     hits, errors = scan_for_buys(tickers, algorithm)
-    print(f"=== BUY candidates, ranked best to least ({len(hits)}) ===")
     if hits.empty:
+        print("=== BUY candidates, ranked best to least (0) ===")
         print("  (none today)")
-    else:
-        hits = hits.copy()
-        hits.insert(0, "rank", range(1, len(hits) + 1))
-        hits.insert(2, "src", hits["ticker"].map(sources))
-        print(hits.to_string(index=False))
+        print(f"({len(errors)} tickers skipped for missing data)")
+        return
+
+    hits = hits.copy()
+    hits.insert(0, "rank", range(1, len(hits) + 1))
+    hits["src"] = hits["ticker"].map(sources)
+
+    today = date.today().strftime("%Y-%m-%d")
+    state = _load_state(STATE_FILE)
+    prev = _prev_snapshot(state, today)
+    hits["chg"] = [_rank_change(t, r, prev) for t, r in zip(hits["ticker"], hits["rank"])]
+    hits["dscore"] = [_score_change(t, s, prev) for t, s in zip(hits["ticker"], hits["vol_adj_score"])]
+    _save_state(STATE_FILE, state, today,
+                {t: [int(r), float(s)] for t, r, s in
+                 zip(hits["ticker"], hits["rank"], hits["vol_adj_score"])})
+
+    held = _held_tickers()
+    hidden = [t for t in hits["ticker"] if t in held]
+    shown = hits[~hits["ticker"].isin(held)]
+
+    # Top risers: biggest rank climbs among buyable candidates (needs a prior scan).
+    if prev:
+        climbs = [(t, prev[t][0] - r) for t, r in zip(shown["ticker"], shown["rank"])
+                  if t in prev and prev[t][0] - r > 0]
+        climbs.sort(key=lambda x: -x[1])
+        if climbs:
+            print("Top risers vs last scan: "
+                  + ", ".join(f"{t} (+{d})" for t, d in climbs[:5]))
+
+    print(f"=== BUY candidates, ranked best to least "
+          f"({len(shown)} shown; {len(hidden)} held hidden) ===")
+    cols = [c for c in ("rank", "chg", "dscore", "ticker", "src", "date", "close",
+                        "mom_%", "vol_adj_score", "pct_vs_200ma") if c in shown.columns]
+    print(shown[cols].to_string(index=False) if not shown.empty else "  (all candidates already held)")
+
+    # New entrants / dropped-off vs the previous scan.
+    if prev:
+        new_names = [t for t in hits["ticker"] if t not in prev and t not in held]
+        dropped = sorted(set(prev) - set(hits["ticker"]))
+        if new_names:
+            print(f"New today (just qualified): {_fmt_list(new_names)}")
+        if dropped:
+            print(f"Dropped off (lost momentum): {_fmt_list(dropped)}")
+    if hidden:
+        print(f"(held, hidden from BUY list: {', '.join(hidden)})")
     print(f"({len(errors)} tickers skipped for missing data)")
 
 
@@ -229,7 +357,10 @@ def _sell_check(algorithm):
     if verdicts.empty:
         print("  (no open positions)")
     else:
-        print(verdicts.to_string(index=False))
+        cols = [c for c in ("ticker", "verdict", "reason", "trend", "mom_1m_%", "last_close",
+                            "open_pnl_%", "exit_level", "to_exit_%", "stop_price", "bars_held")
+                if c in verdicts.columns]
+        print(verdicts[cols].to_string(index=False))
     if len(errors):
         print(f"({len(errors)} positions skipped for missing data: {', '.join(errors['ticker'])})")
 
