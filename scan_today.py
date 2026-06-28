@@ -31,18 +31,20 @@ from simulation import Position
 import indicators
 import universe
 
-# The strategy chosen by the 300-train / 100-test portfolio research (see
-# research_26062026.md): the Vol-Adjusted Momentum Rider. BUY when price is above
-# its 200-day SMA and its volatility-adjusted 6-month momentum
-# (ROC(126) / (ATR(20)/price)) clears a high bar; HOLD until price closes back
-# below the 200-day SMA (with a wide ATR catastrophe stop underneath). It beat the
-# old Roof-breakout default decisively out-of-sample (Sharpe 0.91 vs 0.54) by
-# holding winners ~200 days instead of churning, which also makes it cost-robust.
-DEFAULT_BUY = "Vol-Adjusted Momentum Rider"
-DEFAULT_CONFIG = {"mom_lookback": 126, "score_threshold": 12.0}
+# The strategy chosen by the GROWTH research (see research_26062026.md): the
+# "Growth Momentum Rider" — buy the biggest healthy growers (raw 6-month momentum
+# ROC(126) >= 30% AND price above its 200-day SMA); HOLD until price closes back
+# below the 200-day SMA, with a wide ATR catastrophe stop underneath. Optimized for
+# maximum CAGR under a ~40% drawdown cap, it beat the previous Vol-Adjusted champion
+# out-of-sample on growth (CAGR 14.7% vs 13.3%, maxDD -33.5%) by using a higher
+# raw-momentum entry bar to catch the strongest movers, while riding winners ~180 days.
+DEFAULT_BUY = "Momentum Rider (ROC + MA exit)"
+DEFAULT_CONFIG = {"mom_lookback": 126, "mom_threshold": 0.30, "atr_period": 20}
 # The research sized risk off this 'widest' (most room) catastrophe stop; the SELL
 # check (check_holding) should use the same mode to match the backtested system.
 DEFAULT_STOP_MODE = "widest"
+# The daily BUY list shows the top-N candidates by growth potential (raw momentum).
+TOP_N = 30
 
 # Open positions to run the daily HOLD/SELL check against (ticker, entry_date,
 # entry_price). Edit this file as you enter/exit trades.
@@ -96,8 +98,9 @@ def scan_for_buys(tickers, algorithm, as_of=None, lookback_days=600,
 
     hits_df = pd.DataFrame(hits)
     # Rank the strongest candidate first by whichever strength fact the algorithm
-    # reports: the vol-adjusted momentum score (current default) or volume surge.
-    for strength_col in ("vol_adj_score", "vol_x_avg"):
+    # reports: raw momentum (current growth default), the vol-adjusted score, or
+    # the volume surge.
+    for strength_col in ("mom_%", "vol_adj_score", "vol_x_avg"):
         if not hits_df.empty and strength_col in hits_df.columns:
             hits_df = hits_df.sort_values(strength_col, ascending=False).reset_index(drop=True)
             break
@@ -151,7 +154,14 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     # The rising trend-break exit (the strategy's MA exit) is the real sell line for
     # a winner — far above the fixed catastrophe stop and climbing with the trend.
     # `to_exit_%` is the cushion: how far the close can fall before that exit fires.
-    exit_ma = algorithm.config["exit_ma"] if "exit_ma" in algorithm.config else None
+    # The MA the strategy actually exits on: exit_ma if it has one, else the trend MA
+    # (the Momentum Rider sells on a close below its trend_ma).
+    if "exit_ma" in algorithm.config:
+        exit_ma = algorithm.config["exit_ma"]
+    elif "trend_ma" in algorithm.config:
+        exit_ma = algorithm.config["trend_ma"]
+    else:
+        exit_ma = None
     if exit_ma is not None and len(df) >= exit_ma:
         exit_level = float(indicators.sma(df["Close"], exit_ma).iloc[-1])
         to_exit = round((last_close / exit_level - 1) * 100, 1)
@@ -309,16 +319,24 @@ def _scan_all(algorithm):
     state = _load_state(STATE_FILE)
     prev = _prev_snapshot(state, today)
     hits["chg"] = [_rank_change(t, r, prev) for t, r in zip(hits["ticker"], hits["rank"])]
-    hits["dscore"] = [_score_change(t, s, prev) for t, s in zip(hits["ticker"], hits["vol_adj_score"])]
-    _save_state(STATE_FILE, state, today,
-                {t: [int(r), float(s)] for t, r, s in
-                 zip(hits["ticker"], hits["rank"], hits["vol_adj_score"])})
+    # The ranking/score column the strategy's describe() produced — raw momentum for
+    # the growth default, the vol-adjusted score for the previous champion.
+    score_col = next((c for c in ("mom_%", "vol_adj_score", "vol_x_avg") if c in hits.columns), None)
+    if score_col is not None:
+        hits["dscore"] = [_score_change(t, s, prev) for t, s in zip(hits["ticker"], hits[score_col])]
+        snapshot = {t: [int(r), float(s)] for t, r, s in
+                    zip(hits["ticker"], hits["rank"], hits[score_col])}
+    else:
+        hits["dscore"] = "NEW"
+        snapshot = {t: [int(r), 0.0] for t, r in zip(hits["ticker"], hits["rank"])}
+    _save_state(STATE_FILE, state, today, snapshot)
 
     held = _held_tickers()
     hidden = [t for t in hits["ticker"] if t in held]
-    shown = hits[~hits["ticker"].isin(held)]
+    buyable = hits[~hits["ticker"].isin(held)]
+    shown = buyable.head(TOP_N)   # the daily top-N by growth potential
 
-    # Top risers: biggest rank climbs among buyable candidates (needs a prior scan).
+    # Top risers: biggest rank climbs among the shown top-N (needs a prior scan).
     if prev:
         climbs = [(t, prev[t][0] - r) for t, r in zip(shown["ticker"], shown["rank"])
                   if t in prev and prev[t][0] - r > 0]
@@ -327,8 +345,8 @@ def _scan_all(algorithm):
             print("Top risers vs last scan: "
                   + ", ".join(f"{t} (+{d})" for t, d in climbs[:5]))
 
-    print(f"=== BUY candidates, ranked best to least "
-          f"({len(shown)} shown; {len(hidden)} held hidden) ===")
+    print(f"=== BUY candidates: top {len(shown)} of {len(buyable)} buyable "
+          f"({len(hidden)} held hidden) ===")
     cols = [c for c in ("rank", "chg", "dscore", "ticker", "src", "date", "close",
                         "mom_%", "vol_adj_score", "pct_vs_200ma") if c in shown.columns]
     print(shown[cols].to_string(index=False) if not shown.empty else "  (all candidates already held)")

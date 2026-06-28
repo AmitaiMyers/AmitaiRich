@@ -943,6 +943,16 @@ class MomentumRider(Algorithm):
         close = history_slice["Close"]
         return bool(close.iloc[-1] < indicators.sma(close, c["trend_ma"]).iloc[-1])
 
+    def describe(self, history_slice):
+        """Display facts for a fired BUY: raw 6-month momentum + distance above the 200-MA."""
+        c = self.config
+        close = history_slice["Close"]
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        last = float(close.iloc[-1])
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return {"mom_%": round(momentum * 100, 1),
+                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+
 
 # ---------------------------------------------------------------------------
 # Panel-designed candidates (from an adversarial strategy-design study)
@@ -1178,6 +1188,129 @@ class TwoSpeedDonchian(Algorithm):
         return bool(close.iloc[-1] < float(prior_low))
 
 
+# ---------------------------------------------------------------------------
+# Growth-maximizing riders
+#
+# Tuned for the "grow as high as possible" objective (maximize CAGR, drawdown
+# capped) rather than smoothness: buy the biggest healthy movers (raw momentum,
+# not volatility-normalized), and ride them with a chandelier trailing stop that
+# ratchets off the run-up high — capturing more of a big move and exiting on a
+# defined pullback from the peak (faster than a lagging MA), which lets them chase
+# larger winners while bounding the giveback.
+# ---------------------------------------------------------------------------
+
+class GrowthRider(Algorithm):
+    """Buy strong raw-momentum names in an uptrend; ride with a chandelier trailing stop.
+
+    ENTRY: close > SMA(trend_ma) AND ROC(mom_lookback) >= mom_threshold.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  chandelier — close falls trail_atr_mult*ATR below the highest high since entry.
+    """
+
+    name = "Growth Rider (momentum + chandelier)"
+    DEFAULTS = {
+        "mom_lookback": 126,
+        "mom_threshold": 0.30,
+        "trend_ma": 200,
+        "atr_period": 20,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+        "trail_atr_period": 22,
+        "trail_atr_mult": 6.0,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["mom_lookback"], c["trend_ma"], c["atr_period"],
+                   c["swing_lookback"], c["trail_atr_period"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close = history_slice["Close"]
+        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
+            return False
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        if math.isnan(momentum):
+            return False
+        return bool(momentum >= c["mom_threshold"])
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        c = self.config
+        return exits.chandelier_hit(position, history_slice,
+                                    c["trail_atr_period"], c["trail_atr_mult"])
+
+    def describe(self, history_slice):
+        c = self.config
+        close = history_slice["Close"]
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        last = float(close.iloc[-1])
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return {"mom_%": round(momentum * 100, 1),
+                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+
+
+class AcceleratingMomentumRider(Algorithm):
+    """Buy momentum that is ACCELERATING (recent faster than older), in an uptrend.
+
+    Targets names entering their fastest growth phase: the short-window return
+    exceeds the long-window return and is positive, with price above the long MA.
+    Rides via a moving-average exit.
+
+    ENTRY: close > SMA(trend_ma) AND ROC(fast) > ROC(slow) AND ROC(fast) > 0.
+    STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT:  close < SMA(exit_ma).
+    """
+
+    name = "Accelerating Momentum Rider"
+    DEFAULTS = {
+        "fast": 63,
+        "slow": 252,
+        "trend_ma": 200,
+        "exit_ma": 150,
+        "atr_period": 20,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["fast"], c["slow"], c["trend_ma"], c["exit_ma"],
+                   c["atr_period"], c["swing_lookback"]) + 2
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close = history_slice["Close"]
+        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
+            return False
+        fast = float(indicators.roc(close, c["fast"]).iloc[-1])
+        slow = float(indicators.roc(close, c["slow"]).iloc[-1])
+        if math.isnan(fast) or math.isnan(slow):
+            return False
+        return bool(fast > slow and fast > 0.0)
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        return exits.ma_breakdown_hit(history_slice, self.config["exit_ma"])
+
+    def describe(self, history_slice):
+        c = self.config
+        close = history_slice["Close"]
+        fast = float(indicators.roc(close, c["fast"]).iloc[-1])
+        last = float(close.iloc[-1])
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        return {"mom_%": round(fast * 100, 1),
+                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+
+
 # Registry consumed by the simulation and the dashboard dropdowns.
 ALGORITHMS = {
     BollingerSqueezeBreakout.name: BollingerSqueezeBreakout,
@@ -1197,6 +1330,8 @@ ALGORITHMS = {
     DualConfirmTrendHold.name: DualConfirmTrendHold,
     EfficiencyTrendRider.name: EfficiencyTrendRider,
     TwoSpeedDonchian.name: TwoSpeedDonchian,
+    GrowthRider.name: GrowthRider,
+    AcceleratingMomentumRider.name: AcceleratingMomentumRider,
     BuyAndHold.name: BuyAndHold,
     DummyAlgorithm.name: DummyAlgorithm,
 }
