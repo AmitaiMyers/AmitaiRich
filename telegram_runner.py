@@ -56,11 +56,11 @@ def main() -> None:
 
     # Run the daily buy candidates discovery scan
     buy_output = run_script("scan_today.py")
-    send_telegram_report(token, chat_id, "🔭 DAILY BUY SCAN CANDIDATES", buy_output)
-
-    # Run the open holdings stop-loss/discretionary sell evaluation
-    sell_output = run_script("scan_sell_today.py")
-    send_telegram_report(token, chat_id, "🚨 DAILY SELL VERDICTS REPORT", sell_output)
+    send_telegram_report(token, chat_id, "🔭 DAILY SCAN", buy_output)
+    #
+    # # Run the open holdings stop-loss/discretionary sell evaluation
+    # sell_output = run_script("scan_sell_today.py")
+    # send_telegram_report(token, chat_id, "🚨 DAILY SELL VERDICTS REPORT", sell_output)
 
 
 if __name__ == "__main__":
