@@ -251,28 +251,190 @@ def sweep():
     df.to_csv(f"{rp.RESULTS_DIR}\\sweep_results.csv", index=False)
 
 
+# Growth finalists carried to out-of-sample validation. Tuple:
+# (label, buy, cfg, stop, sell, sellcfg, maxPos). sell/sellcfg None => single-strategy.
+CHAND = "Growth Rider (momentum + chandelier)"
+VAM = "Vol-Adjusted Momentum Rider"
+FINALISTS_GROWTH = [
+    ("CHAMPION VolAdjMom thr=12 mp=15", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
+     "widest", None, None, 15),
+    ("MIX VolAdj10+Chand6 mp=15 (max CAGR)", VAM, {"mom_lookback": 126, "score_threshold": 10.0},
+     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 15),
+    ("MIX VolAdj12+Chand6 mp=15", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
+     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 15),
+    ("MIX VolAdj12+Chand6 mp=20", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
+     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 20),
+    ("MIX Growth+200MA mp=15", CHAND, {"mom_threshold": 0.30}, "widest",
+     "Momentum Rider (ROC + MA exit)", {"trend_ma": 200}, 15),
+]
+
+
 def validate():
-    """Finalists out-of-sample on the 100 unseen TEST stocks vs Buy & Hold."""
+    """Growth finalists out-of-sample on the 100 unseen TEST stocks vs Buy & Hold."""
     _, test_stocks = rp.build_split()
     closes = rp.load_closes(test_stocks)
     market = rp.load_market_close()
-    pcfg = PortfolioConfig()
     rows = []
-    print(f"=== OUT-OF-SAMPLE VALIDATION: {len(FINALISTS)} finalists x {len(test_stocks)} test stocks ===",
+    print(f"=== OOS VALIDATION: {len(FINALISTS_GROWTH)} finalists x {len(test_stocks)} test stocks ===",
           flush=True)
-    for label, algo, cfg, stop in FINALISTS:
-        row = rp.eval_config(label, algo, cfg, test_stocks, closes, market, pcfg, stop, "test")
+    for label, buy, cfg, stop, sell, sellcfg, mp in FINALISTS_GROWTH:
+        pcfg = PortfolioConfig(max_positions=mp)
+        row = rp.eval_config(label, buy, cfg, test_stocks, closes, market, pcfg, stop, "test",
+                             sell_strategy=sell, sell_config=sellcfg)
         rows.append(row)
-        print(f"  {label:34s} cagr={row['cagr']:5.1f}% sharpe={row['sharpe']:.2f} "
-              f"maxDD={row['maxDD']:6.1f}% calmar={row['calmar']:.2f}", flush=True)
-    bench = rp.benchmark_metrics(closes, pcfg)
-    print("\n=== TEST RESULTS (ranked by Sharpe) ===")
-    df = rp._print_rows(rows, bench)
-    df.to_csv(f"{rp.RESULTS_DIR}\\test_results.csv", index=False)
+        print(f"  {label:36s} cagr={row['cagr']:5.1f}% maxDD={row['maxDD']:6.1f}% "
+              f"calmar={row['calmar']:.2f} sharpe={row['sharpe']:.2f}", flush=True)
+    bench = rp.benchmark_metrics(closes, PortfolioConfig())
+    print("\n=== OOS TEST RESULTS (ranked by CAGR) ===")
+    df = _print_growth(rows, bench)
+    df.to_csv(f"{rp.RESULTS_DIR}\\test_growth_results.csv", index=False)
+
+
+# ---------------------------------------------------------------------------
+# Growth objective: maximize CAGR subject to a max-drawdown ceiling.
+# ---------------------------------------------------------------------------
+
+DD_CAP = 40.0   # only configs with maxDD >= -DD_CAP% qualify as "growth winners"
+
+
+def growth_configs():
+    """Growth grid. Each tuple: (label, buy_algo, buy_cfg, stop[, sell_algo, sell_cfg]).
+
+    Includes the champion family (to beat), raw-momentum growth riders, accelerating
+    momentum, the trend/breakout riders that showed high OOS CAGR last time, and
+    MIXED buy/sell combos (two algorithms in one strategy).
+    """
+    C = []
+    for thr in (8.0, 10.0, 12.0):
+        C.append((f"VolAdjMom thr={thr}", "Vol-Adjusted Momentum Rider",
+                  {"mom_lookback": 126, "score_threshold": thr}, "widest"))
+    for mt in (0.20, 0.30, 0.40):
+        for tm in (5.0, 8.0):
+            C.append((f"GrowthRider mt={mt} trail={tm}", "Growth Rider (momentum + chandelier)",
+                      {"mom_threshold": mt, "trail_atr_mult": tm}, "widest"))
+    C.append(("AccelMom 63/252 x150", "Accelerating Momentum Rider",
+              {"fast": 63, "slow": 252, "exit_ma": 150}, "widest"))
+    C.append(("AccelMom 63/252 x200", "Accelerating Momentum Rider",
+              {"fast": 63, "slow": 252, "exit_ma": 200}, "widest"))
+    C.append(("MomRider mom=126", "Momentum Rider (ROC + MA exit)",
+              {"mom_lookback": 126, "trend_ma": 200}, "widest"))
+    C.append(("TrendRider bl=50 xMA=200", "Trend Rider (breakout + MA exit)",
+              {"breakout_lookback": 50, "exit_ma": 200, "trend_ma": 200, "atr_mult": 3.0}, "widest"))
+    C.append(("Donchian e=200 x=100", "Trend Follower (Donchian)",
+              {"entry_lookback": 200, "exit_lookback": 100, "use_trend_filter": 0, "atr_mult": 3.0}, "widest"))
+    C.append(("TwoSpeed e=40 x=120", "Two-Speed Donchian",
+              {"entry_lookback": 40, "exit_lookback": 120}, "widest"))
+    C.append(("TSMom mom=252", "Time-Series Momentum (absolute)",
+              {"mom_lookback": 252, "ma_period": 200, "atr_mult": 3.0}, "widest"))
+    # Mixed buy/sell — two algorithms in one strategy (entry from one, exit from another).
+    C.append(("MIX VolAdj-entry + Chandelier-exit", "Vol-Adjusted Momentum Rider",
+              {"mom_lookback": 126, "score_threshold": 10.0}, "widest",
+              "Growth Rider (momentum + chandelier)", {"trail_atr_mult": 6.0}))
+    C.append(("MIX Growth-entry + 200MA-exit", "Growth Rider (momentum + chandelier)",
+              {"mom_threshold": 0.30}, "widest",
+              "Momentum Rider (ROC + MA exit)", {"trend_ma": 200}))
+    C.append(("MIX Breakout-entry + Chandelier-exit", "Trend Rider (breakout + MA exit)",
+              {"breakout_lookback": 50, "trend_ma": 200}, "widest",
+              "Growth Rider (momentum + chandelier)", {"trail_atr_mult": 6.0}))
+    return C
+
+
+def _print_growth(rows, bench):
+    """Rank by CAGR, flag which meet the drawdown cap, and name the growth winner."""
+    df = pd.DataFrame(rows)
+    df["ddOK"] = df["maxDD"] >= -DD_CAP            # maxDD is negative; within cap if >= -40
+    df = df.sort_values("cagr", ascending=False).reset_index(drop=True)
+    show = ["strategy", "maxPos", "cagr", "maxDD", "calmar", "sharpe", "totRet",
+            "nTaken", "avgHoldDays", "ddOK"]
+    print(df[show].to_string(index=False))
+    print(f"\n  BENCHMARK Buy&Hold: cagr={bench['cagr']*100:.1f}% maxDD={bench['max_dd']*100:.1f}% "
+          f"sharpe={bench['sharpe']:.2f} calmar={bench['calmar']:.2f}")
+    capped = df[df["ddOK"]]
+    if not capped.empty:
+        w = capped.iloc[0]
+        print(f"\n>>> GROWTH WINNER (max CAGR within maxDD<= {DD_CAP}%): {w['strategy']}")
+        print(f"    CAGR={w['cagr']}%  maxDD={w['maxDD']}%  Calmar={w['calmar']}  Sharpe={w['sharpe']}  "
+              f"trades={w['nTaken']}  avgHold={w['avgHoldDays']}d")
+    return df
+
+
+def growth():
+    """Growth grid on the 300 train stocks, ranked by CAGR under the drawdown cap."""
+    train_stocks, _ = rp.build_split()
+    closes = rp.load_closes(train_stocks)
+    market = rp.load_market_close()
+    cfgs = growth_configs()
+    print(f"=== GROWTH GRID: {len(cfgs)} configs x (maxPos 15,20) x {len(train_stocks)} stocks ===",
+          flush=True)
+    rows = []
+    for i, tup in enumerate(cfgs):
+        label, buy, cfg, stop = tup[0], tup[1], tup[2], tup[3]
+        sell = tup[4] if len(tup) > 4 else None
+        sellcfg = tup[5] if len(tup) > 5 else None
+        for mp in (15, 20):
+            pcfg = PortfolioConfig(max_positions=mp)
+            r = rp.eval_config(f"{label} | mp={mp}", buy, cfg, train_stocks, closes, market,
+                               pcfg, stop, "train", sell_strategy=sell, sell_config=sellcfg)
+            rows.append(r)
+            print(f"  [{i+1}/{len(cfgs)}] {label:34s} mp={mp} cagr={r['cagr']:5.1f}% "
+                  f"maxDD={r['maxDD']:6.1f}% calmar={r['calmar']:.2f} hold={r['avgHoldDays']:.0f}d",
+                  flush=True)
+    bench = rp.benchmark_metrics(closes, PortfolioConfig())
+    print("\n=== GROWTH RESULTS (ranked by CAGR) ===")
+    df = _print_growth(rows, bench)
+    df.to_csv(f"{rp.RESULTS_DIR}\\growth_results.csv", index=False)
+
+
+def refine_growth_configs():
+    """Zoom into the growth leader: VolAdj-momentum ENTRY + chandelier EXIT, tuning
+    the chandelier width (the main drawdown lever) to pull maxDD under the cap while
+    keeping the high CAGR. Tuple: (label, buy, cfg, stop[, sell, sellcfg])."""
+    C = []
+    for thr in (10.0, 12.0):
+        for trail in (3.0, 4.0, 5.0, 6.0):
+            C.append((f"MIX VolAdj{int(thr)}+Chand{trail}", "Vol-Adjusted Momentum Rider",
+                      {"mom_lookback": 126, "score_threshold": thr}, "widest",
+                      "Growth Rider (momentum + chandelier)",
+                      {"trail_atr_mult": trail, "trail_atr_period": 22}))
+    for trail in (4.0, 5.0):        # tighter catastrophe stop variant
+        C.append((f"MIX VolAdj10+Chand{trail} tight", "Vol-Adjusted Momentum Rider",
+                  {"mom_lookback": 126, "score_threshold": 10.0}, "tightest",
+                  "Growth Rider (momentum + chandelier)", {"trail_atr_mult": trail}))
+    C.append(("MIX Growth+200MA", "Growth Rider (momentum + chandelier)",
+              {"mom_threshold": 0.30}, "widest",
+              "Momentum Rider (ROC + MA exit)", {"trend_ma": 200}))
+    return C
+
+
+def refine_growth():
+    """Refine the growth leader (mixed VolAdj-entry + chandelier-exit) on train stocks."""
+    train_stocks, _ = rp.build_split()
+    closes = rp.load_closes(train_stocks)
+    market = rp.load_market_close()
+    cfgs = refine_growth_configs()
+    print(f"=== REFINE-GROWTH: {len(cfgs)} configs x (maxPos 12,15,20) x {len(train_stocks)} ===",
+          flush=True)
+    rows = []
+    for i, tup in enumerate(cfgs):
+        label, buy, cfg, stop = tup[0], tup[1], tup[2], tup[3]
+        sell = tup[4] if len(tup) > 4 else None
+        sellcfg = tup[5] if len(tup) > 5 else None
+        for mp in (12, 15, 20):
+            pcfg = PortfolioConfig(max_positions=mp)
+            r = rp.eval_config(f"{label} | mp={mp}", buy, cfg, train_stocks, closes, market,
+                               pcfg, stop, "train", sell_strategy=sell, sell_config=sellcfg)
+            rows.append(r)
+            print(f"  [{i+1}/{len(cfgs)}] {label:28s} mp={mp} cagr={r['cagr']:5.1f}% "
+                  f"maxDD={r['maxDD']:6.1f}% calmar={r['calmar']:.2f} sharpe={r['sharpe']:.2f}", flush=True)
+    bench = rp.benchmark_metrics(closes, PortfolioConfig())
+    print("\n=== REFINE-GROWTH RESULTS (ranked by CAGR) ===")
+    df = _print_growth(rows, bench)
+    df.to_csv(f"{rp.RESULTS_DIR}\\refine_growth_results.csv", index=False)
 
 
 DISPATCH = {"split": split, "smoke": smoke, "train": train, "refine": refine,
-            "sweep": sweep, "validate": validate}
+            "sweep": sweep, "validate": validate, "growth": growth,
+            "refine_growth": refine_growth}
 
 
 def main(argv):

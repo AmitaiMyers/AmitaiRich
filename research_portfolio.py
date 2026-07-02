@@ -139,33 +139,42 @@ def load_market_close():
     return fetch_data(MARKET_TICKER, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)["Close"]
 
 
-def _config_key(strategy, config, stop_mode, universe_tag):
-    blob = json.dumps({"s": strategy, "c": config, "m": stop_mode, "u": universe_tag},
-                      sort_keys=True)
-    return hashlib.md5(blob.encode()).hexdigest()[:16]
+def _config_key(strategy, config, stop_mode, universe_tag, sell_strategy=None, sell_config=None):
+    payload = {"s": strategy, "c": config, "m": stop_mode, "u": universe_tag}
+    # Only add sell fields to the key when the SELL algorithm differs from the buy
+    # one, so single-strategy cache entries from earlier runs stay valid.
+    if sell_strategy is not None:
+        payload["ss"] = sell_strategy
+        payload["sc"] = sell_config
+    return hashlib.md5(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
 def _gen_one(args):
-    """Worker: generate one ticker's round-trip trades for a strategy config."""
-    ticker, strategy, config, stop_mode = args
+    """Worker: generate one ticker's round-trip trades for a (buy, sell) config pair."""
+    ticker, strategy, config, stop_mode, sell_strategy, sell_config = args
     try:
         df = fetch_data(ticker, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)
     except SimulatorError:
         return ticker, []
     buy = build_algorithm(strategy, config)
-    sell = build_algorithm(strategy, config)
+    # A distinct SELL algorithm lets one strategy's entry pair with another's exit
+    # (two algorithms in one strategy). build_algorithm filters unknown keys, so
+    # passing the buy config to a different sell class is safe.
+    sell = build_algorithm(sell_strategy if sell_strategy is not None else strategy,
+                           sell_config if sell_config is not None else config)
     return ticker, simulate_ticker_trades(ticker, df, buy, sell, stop_mode)
 
 
-def gen_trades(strategy, config, tickers, stop_mode, universe_tag, n_workers=N_WORKERS):
-    """All tickers' trades for one config (disk-cached, parallelised)."""
-    key = _config_key(strategy, config, stop_mode, universe_tag)
+def gen_trades(strategy, config, tickers, stop_mode, universe_tag,
+               sell_strategy=None, sell_config=None, n_workers=N_WORKERS):
+    """All tickers' trades for one (buy, sell) config (disk-cached, parallelised)."""
+    key = _config_key(strategy, config, stop_mode, universe_tag, sell_strategy, sell_config)
     cache_path = os.path.join(TRADE_CACHE, f"{key}.pkl")
     if os.path.exists(cache_path):
         with open(cache_path, "rb") as fh:
             return pickle.load(fh)
 
-    work = [(t, strategy, config, stop_mode) for t in tickers]
+    work = [(t, strategy, config, stop_mode, sell_strategy, sell_config) for t in tickers]
     trades_by_ticker = {}
     with ProcessPoolExecutor(max_workers=n_workers) as pool:
         for ticker, trades in pool.map(_gen_one, work, chunksize=4):
@@ -192,9 +201,10 @@ def benchmark_metrics(closes, pcfg, periods_per_year=252):
 
 
 def eval_config(label, strategy, config, tickers, closes, market_close, pcfg,
-                stop_mode, universe_tag, n_workers=N_WORKERS):
-    """Run one strategy config through the portfolio; return a metrics row."""
-    trades = gen_trades(strategy, config, tickers, stop_mode, universe_tag, n_workers)
+                stop_mode, universe_tag, sell_strategy=None, sell_config=None, n_workers=N_WORKERS):
+    """Run one (buy, sell) config through the portfolio; return a metrics row."""
+    trades = gen_trades(strategy, config, tickers, stop_mode, universe_tag,
+                        sell_strategy, sell_config, n_workers)
     result = run_portfolio(trades, closes, pcfg, market_close=market_close)
     m = result.metrics
     return {
