@@ -33,6 +33,7 @@ from concurrent.futures import ProcessPoolExecutor
 import pandas as pd
 
 import analytics
+import indicators
 from algorithms import build_algorithm
 from data_engine import fetch_data
 from errors import SimulatorError
@@ -139,19 +140,35 @@ def load_market_close():
     return fetch_data(MARKET_TICKER, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)["Close"]
 
 
-def _config_key(strategy, config, stop_mode, universe_tag, sell_strategy=None, sell_config=None):
+# Per-process cache of the SPY 'risk-on' regime (close > 200-day SMA), so each
+# worker computes it once and reuses it across the tickers it handles.
+_REGIME_CACHE = {}
+
+
+def _spy_regime():
+    """Boolean Series: is SPY above its 200-day SMA (market risk-on) on each date?"""
+    if "series" not in _REGIME_CACHE:
+        spy = load_market_close()
+        _REGIME_CACHE["series"] = spy > indicators.sma(spy, 200)
+    return _REGIME_CACHE["series"]
+
+
+def _config_key(strategy, config, stop_mode, universe_tag, sell_strategy=None,
+                sell_config=None, regime=False):
     payload = {"s": strategy, "c": config, "m": stop_mode, "u": universe_tag}
-    # Only add sell fields to the key when the SELL algorithm differs from the buy
-    # one, so single-strategy cache entries from earlier runs stay valid.
+    # Only add optional fields to the key when they are in play, so single-strategy /
+    # no-regime cache entries from earlier runs stay valid.
     if sell_strategy is not None:
         payload["ss"] = sell_strategy
         payload["sc"] = sell_config
+    if regime:
+        payload["rg"] = True
     return hashlib.md5(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
 def _gen_one(args):
     """Worker: generate one ticker's round-trip trades for a (buy, sell) config pair."""
-    ticker, strategy, config, stop_mode, sell_strategy, sell_config = args
+    ticker, strategy, config, stop_mode, sell_strategy, sell_config, regime = args
     try:
         df = fetch_data(ticker, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)
     except SimulatorError:
@@ -162,19 +179,22 @@ def _gen_one(args):
     # passing the buy config to a different sell class is safe.
     sell = build_algorithm(sell_strategy if sell_strategy is not None else strategy,
                            sell_config if sell_config is not None else config)
-    return ticker, simulate_ticker_trades(ticker, df, buy, sell, stop_mode)
+    regime_ok = None
+    if regime:
+        regime_ok = _spy_regime().reindex(df.index, method="ffill").fillna(False).to_numpy()
+    return ticker, simulate_ticker_trades(ticker, df, buy, sell, stop_mode, regime_ok=regime_ok)
 
 
 def gen_trades(strategy, config, tickers, stop_mode, universe_tag,
-               sell_strategy=None, sell_config=None, n_workers=N_WORKERS):
+               sell_strategy=None, sell_config=None, regime=False, n_workers=N_WORKERS):
     """All tickers' trades for one (buy, sell) config (disk-cached, parallelised)."""
-    key = _config_key(strategy, config, stop_mode, universe_tag, sell_strategy, sell_config)
+    key = _config_key(strategy, config, stop_mode, universe_tag, sell_strategy, sell_config, regime)
     cache_path = os.path.join(TRADE_CACHE, f"{key}.pkl")
     if os.path.exists(cache_path):
         with open(cache_path, "rb") as fh:
             return pickle.load(fh)
 
-    work = [(t, strategy, config, stop_mode, sell_strategy, sell_config) for t in tickers]
+    work = [(t, strategy, config, stop_mode, sell_strategy, sell_config, regime) for t in tickers]
     trades_by_ticker = {}
     with ProcessPoolExecutor(max_workers=n_workers) as pool:
         for ticker, trades in pool.map(_gen_one, work, chunksize=4):
@@ -201,10 +221,11 @@ def benchmark_metrics(closes, pcfg, periods_per_year=252):
 
 
 def eval_config(label, strategy, config, tickers, closes, market_close, pcfg,
-                stop_mode, universe_tag, sell_strategy=None, sell_config=None, n_workers=N_WORKERS):
+                stop_mode, universe_tag, sell_strategy=None, sell_config=None,
+                regime=False, n_workers=N_WORKERS):
     """Run one (buy, sell) config through the portfolio; return a metrics row."""
     trades = gen_trades(strategy, config, tickers, stop_mode, universe_tag,
-                        sell_strategy, sell_config, n_workers)
+                        sell_strategy, sell_config, regime, n_workers)
     result = run_portfolio(trades, closes, pcfg, market_close=market_close)
     m = result.metrics
     return {

@@ -33,13 +33,15 @@ import universe
 
 # The strategy chosen by the GROWTH research (see research_26062026.md): the
 # "Growth Momentum Rider" — buy the biggest healthy growers (raw 6-month momentum
-# ROC(126) >= 30% AND price above its 200-day SMA); HOLD until price closes back
+# ROC(126) >= 25% AND price above its 200-day SMA); HOLD until price closes back
 # below the 200-day SMA, with a wide ATR catastrophe stop underneath. Optimized for
-# maximum CAGR under a ~40% drawdown cap, it beat the previous Vol-Adjusted champion
-# out-of-sample on growth (CAGR 14.7% vs 13.3%, maxDD -33.5%) by using a higher
-# raw-momentum entry bar to catch the strongest movers, while riding winners ~180 days.
+# maximum CAGR under a ~40% drawdown cap. Out-of-sample it grows $ fastest when you
+# hold ~20 of these at once (see below): CAGR 15.5%, maxDD -32.6%, Calmar 0.48 — a
+# robust beat over both the Vol-Adjusted champion and last round's 15-position variant.
+# (A market-regime filter and a chandelier exit tested BETTER in-sample but FAILED
+# out-of-sample, so they were rejected — the simple momentum core is what generalizes.)
 DEFAULT_BUY = "Momentum Rider (ROC + MA exit)"
-DEFAULT_CONFIG = {"mom_lookback": 126, "mom_threshold": 0.30, "atr_period": 20}
+DEFAULT_CONFIG = {"mom_lookback": 126, "mom_threshold": 0.25, "atr_period": 20}
 # The research sized risk off this 'widest' (most room) catastrophe stop; the SELL
 # check (check_holding) should use the same mode to match the backtested system.
 DEFAULT_STOP_MODE = "widest"

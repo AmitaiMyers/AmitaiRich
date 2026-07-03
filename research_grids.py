@@ -252,20 +252,22 @@ def sweep():
 
 
 # Growth finalists carried to out-of-sample validation. Tuple:
-# (label, buy, cfg, stop, sell, sellcfg, maxPos). sell/sellcfg None => single-strategy.
-CHAND = "Growth Rider (momentum + chandelier)"
-VAM = "Vol-Adjusted Momentum Rider"
+# (label, buy, cfg, stop, sell, sellcfg, maxPos, regime). The regime challengers use
+# the SPY-200MA market filter; the current winner (no regime) is the baseline to beat.
+MR = "Momentum Rider (ROC + MA exit)"
+
+
+def _mr(thr):
+    return {"mom_lookback": 126, "mom_threshold": thr, "atr_period": 20, "trend_ma": 200}
+
+
 FINALISTS_GROWTH = [
-    ("CHAMPION VolAdjMom thr=12 mp=15", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
-     "widest", None, None, 15),
-    ("MIX VolAdj10+Chand6 mp=15 (max CAGR)", VAM, {"mom_lookback": 126, "score_threshold": 10.0},
-     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 15),
-    ("MIX VolAdj12+Chand6 mp=15", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
-     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 15),
-    ("MIX VolAdj12+Chand6 mp=20", VAM, {"mom_lookback": 126, "score_threshold": 12.0},
-     "widest", CHAND, {"trail_atr_mult": 6.0, "trail_atr_period": 22}, 20),
-    ("MIX Growth+200MA mp=15", CHAND, {"mom_threshold": 0.30}, "widest",
-     "Momentum Rider (ROC + MA exit)", {"trend_ma": 200}, 15),
+    ("CURRENT winner MomRider thr=0.30", MR, _mr(0.30), "widest", None, None, 15, False),
+    ("MomRider thr=0.25 +regime mp=20", MR, _mr(0.25), "widest", None, None, 20, True),
+    ("MomRider thr=0.25 +regime mp=15", MR, _mr(0.25), "widest", None, None, 15, True),
+    ("MomRider thr=0.20 +regime mp=20", MR, _mr(0.20), "widest", None, None, 20, True),
+    ("MomRider thr=0.30 +regime mp=20", MR, _mr(0.30), "widest", None, None, 20, True),
+    ("MomRider thr=0.30 +regime mp=15", MR, _mr(0.30), "widest", None, None, 15, True),
 ]
 
 
@@ -277,17 +279,17 @@ def validate():
     rows = []
     print(f"=== OOS VALIDATION: {len(FINALISTS_GROWTH)} finalists x {len(test_stocks)} test stocks ===",
           flush=True)
-    for label, buy, cfg, stop, sell, sellcfg, mp in FINALISTS_GROWTH:
+    for label, buy, cfg, stop, sell, sellcfg, mp, regime in FINALISTS_GROWTH:
         pcfg = PortfolioConfig(max_positions=mp)
         row = rp.eval_config(label, buy, cfg, test_stocks, closes, market, pcfg, stop, "test",
-                             sell_strategy=sell, sell_config=sellcfg)
+                             sell_strategy=sell, sell_config=sellcfg, regime=regime)
         rows.append(row)
         print(f"  {label:36s} cagr={row['cagr']:5.1f}% maxDD={row['maxDD']:6.1f}% "
               f"calmar={row['calmar']:.2f} sharpe={row['sharpe']:.2f}", flush=True)
     bench = rp.benchmark_metrics(closes, PortfolioConfig())
     print("\n=== OOS TEST RESULTS (ranked by CAGR) ===")
     df = _print_growth(rows, bench)
-    df.to_csv(f"{rp.RESULTS_DIR}\\test_growth_results.csv", index=False)
+    df.to_csv(f"{rp.RESULTS_DIR}\\test_regime_results.csv", index=False)
 
 
 # ---------------------------------------------------------------------------
@@ -432,9 +434,38 @@ def refine_growth():
     df.to_csv(f"{rp.RESULTS_DIR}\\refine_growth_results.csv", index=False)
 
 
+def regime_grid():
+    """Beat the current winner: sweep entry aggressiveness (lower momentum threshold /
+    more positions) WITH and WITHOUT the SPY-200MA regime filter (go to cash in bear
+    markets). The regime filter should cut drawdowns, letting a more aggressive entry
+    lift CAGR while staying under the ~40% drawdown cap."""
+    train_stocks, _ = rp.build_split()
+    closes = rp.load_closes(train_stocks)
+    market = rp.load_market_close()
+    thresholds = (0.15, 0.20, 0.25, 0.30, 0.40)
+    combos = [(thr, rg) for thr in thresholds for rg in (False, True)]
+    print(f"=== REGIME GRID: {len(combos)} (thr,regime) x mp(15,20) x {len(train_stocks)} stocks ===",
+          flush=True)
+    rows = []
+    for thr, regime in combos:
+        cfg = {"mom_lookback": 126, "mom_threshold": thr, "atr_period": 20, "trend_ma": 200}
+        tag = f"MomRider thr={thr}{' +regime' if regime else ''}"
+        for mp in (15, 20):
+            pcfg = PortfolioConfig(max_positions=mp)
+            r = rp.eval_config(f"{tag} | mp={mp}", "Momentum Rider (ROC + MA exit)", cfg,
+                               train_stocks, closes, market, pcfg, "widest", "train", regime=regime)
+            rows.append(r)
+            print(f"  {tag:28s} mp={mp} cagr={r['cagr']:5.1f}% maxDD={r['maxDD']:6.1f}% "
+                  f"calmar={r['calmar']:.2f} sharpe={r['sharpe']:.2f}", flush=True)
+    bench = rp.benchmark_metrics(closes, PortfolioConfig())
+    print("\n=== REGIME GRID RESULTS (ranked by CAGR) ===")
+    df = _print_growth(rows, bench)
+    df.to_csv(f"{rp.RESULTS_DIR}\\regime_results.csv", index=False)
+
+
 DISPATCH = {"split": split, "smoke": smoke, "train": train, "refine": refine,
             "sweep": sweep, "validate": validate, "growth": growth,
-            "refine_growth": refine_growth}
+            "refine_growth": refine_growth, "regime": regime_grid}
 
 
 def main(argv):

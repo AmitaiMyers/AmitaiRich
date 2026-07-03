@@ -82,7 +82,7 @@ class PortfolioResult:
 # Stage 1 — per-stock trade generation (lean in-memory mirror of run_simulation)
 # ---------------------------------------------------------------------------
 
-def simulate_ticker_trades(ticker, df, buy_algo, sell_algo, stop_mode="tightest"):
+def simulate_ticker_trades(ticker, df, buy_algo, sell_algo, stop_mode="tightest", regime_ok=None):
     """Replay one stock through the strategy; return its round-trip trades.
 
     Mirrors simulation.run_simulation with fill_mode='close': enter at today's
@@ -90,6 +90,11 @@ def simulate_ticker_trades(ticker, df, buy_algo, sell_algo, stop_mode="tightest"
     low pierces the stop (gap-downs fill at the worse of stop/open), otherwise exit
     at the close when the sell signal fires; liquidate any open position at the
     final close. Sizing is irrelevant here (1 share) — the portfolio sizes later.
+
+    `regime_ok` (optional): a boolean array aligned to `df` (one per bar). When it is
+    False, the market regime is "off" — no new entries are taken and any open
+    position is force-exited at that bar's close (go to cash). It is a fixed global
+    series (e.g. SPY above its 200-day MA), so exits stay path-independent.
     """
     warmup = max(buy_algo.warmup_bars(), sell_algo.warmup_bars())
     if len(df) <= warmup + 1:
@@ -107,6 +112,7 @@ def simulate_ticker_trades(ticker, df, buy_algo, sell_algo, stop_mode="tightest"
 
     for i in range(warmup, total_bars):
         slice_today = df.iloc[: i + 1]
+        regime_on = True if regime_ok is None else bool(regime_ok[i])
 
         # (B) Intrabar catastrophe stop — checked before any close-based decision.
         if position is not None and position["stop_price"] is not None \
@@ -118,9 +124,20 @@ def simulate_ticker_trades(ticker, df, buy_algo, sell_algo, stop_mode="tightest"
                 exit_date=dates[i], exit_price=float(fill), exit_reason="stop"))
             position = None
 
-        # (C) Close-based signal generation.
+        # (B2) Market-regime off (e.g. SPY below its 200-day MA): go to cash —
+        # force-exit any open position at the close and take no new entries. A fixed
+        # global regime series keeps exits path-independent, so the overlay still holds.
+        if position is not None and not regime_on:
+            trades.append(TickerTrade(
+                ticker=ticker, entry_date=position["entry_date"],
+                entry_price=position["entry_price"], stop_price=position["stop_price"],
+                exit_date=dates[i], exit_price=float(close[i]), exit_reason="regime"))
+            position = None
+
+        # (C) Close-based signal generation (only ENTER while the regime is on; an
+        # open position is still managed by its sell signal below).
         if position is None:
-            if buy_algo.scan_and_buy(slice_today):
+            if regime_on and buy_algo.scan_and_buy(slice_today):
                 entry_price = float(close[i])
                 stop_price = _stop_or_none(buy_algo, entry_price, slice_today, stop_mode)
                 # An entry we cannot protect with a stop below entry (a degenerate
