@@ -463,9 +463,51 @@ def regime_grid():
     df.to_csv(f"{rp.RESULTS_DIR}\\regime_results.csv", index=False)
 
 
+def squeeze_grid():
+    """The owner's combined BUY idea: squeeze breakout + momentum + anti-overextension.
+
+    Grid: bandwidth (0.15, 0.20) x mom_threshold (0.10, 0.15, 0.25) x max_ext
+    (0.40, 0.60, off) at maxPos=20, vs the current production winner as baseline.
+    ext=9.99 disables the cap so the cap's own effect is measurable. Ranked by CAGR
+    under the <=40% drawdown cap.
+    """
+    train_stocks, _ = rp.build_split()
+    closes = rp.load_closes(train_stocks)
+    market = rp.load_market_close()
+    rows = []
+    baseline_cfg = {"mom_lookback": 126, "mom_threshold": 0.25, "atr_period": 20, "trend_ma": 200}
+    pcfg20 = PortfolioConfig(max_positions=20)
+    r = rp.eval_config("BASELINE MomRider thr=0.25 mp=20", "Momentum Rider (ROC + MA exit)",
+                       baseline_cfg, train_stocks, closes, market, pcfg20, "widest", "train")
+    rows.append(r)
+    print(f"  BASELINE cagr={r['cagr']:5.1f}% maxDD={r['maxDD']:6.1f}% calmar={r['calmar']:.2f}",
+          flush=True)
+
+    grid = [(bw, mt, ext)
+            for bw in (0.15, 0.20)
+            for mt in (0.10, 0.15, 0.25)
+            for ext in (0.40, 0.60, 9.99)]
+    print(f"=== SQUEEZE GRID: {len(grid)} configs x maxPos=20 x {len(train_stocks)} stocks ===",
+          flush=True)
+    for i, (bw, mt, ext) in enumerate(grid):
+        cfg = {"bandwidth_threshold": bw, "mom_threshold": mt, "max_ext": ext}
+        label = f"SqzMom bw={bw} mom={mt} ext={'off' if ext > 9 else ext}"
+        r = rp.eval_config(label, "Squeeze Momentum Breakout", cfg, train_stocks, closes,
+                           market, pcfg20, "widest", "train")
+        rows.append(r)
+        print(f"  [{i+1}/{len(grid)}] {label:34s} cagr={r['cagr']:5.1f}% maxDD={r['maxDD']:6.1f}% "
+              f"calmar={r['calmar']:.2f} sharpe={r['sharpe']:.2f} nTaken={r['nTaken']} "
+              f"hold={r['avgHoldDays']:.0f}d", flush=True)
+    bench = rp.benchmark_metrics(closes, PortfolioConfig())
+    print("\n=== SQUEEZE GRID RESULTS (ranked by CAGR) ===")
+    df = _print_growth(rows, bench)
+    df.to_csv(f"{rp.RESULTS_DIR}\\squeeze_results.csv", index=False)
+
+
 DISPATCH = {"split": split, "smoke": smoke, "train": train, "refine": refine,
             "sweep": sweep, "validate": validate, "growth": growth,
-            "refine_growth": refine_growth, "regime": regime_grid}
+            "refine_growth": refine_growth, "regime": regime_grid,
+            "squeeze": squeeze_grid}
 
 
 def main(argv):

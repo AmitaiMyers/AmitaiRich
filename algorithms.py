@@ -916,6 +916,7 @@ class MomentumRider(Algorithm):
         "mom_lookback": 126,
         "mom_threshold": 0.0,
         "trend_ma": 200,
+        "max_ext": 9.99,   # skip buys more than this fraction above trend_ma; 9.99 = off
         "atr_period": 14,
         "atr_mult": 4.0,
         "swing_lookback": 20,
@@ -932,8 +933,12 @@ class MomentumRider(Algorithm):
         close = history_slice["Close"]
         momentum = indicators.roc(close, c["mom_lookback"]).iloc[-1]
         strong = bool(momentum > c["mom_threshold"])
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return strong and in_trend
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        last = float(close.iloc[-1])
+        in_trend = bool(last > sma_long)
+        # The danger-zone cap: skip names already stretched far above their trend.
+        not_extended = bool(last <= (1.0 + c["max_ext"]) * sma_long)
+        return strong and in_trend and not_extended
 
     def compute_stop(self, entry_price, history_slice, stop_mode):
         return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
@@ -1311,6 +1316,121 @@ class AcceleratingMomentumRider(Algorithm):
                 "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
 
 
+class SqueezeMomentumBuy(Algorithm):
+    """Squeeze breakout + momentum confirmation + anti-overextension (owner's combo).
+
+    The thesis: buy momentum stocks at a CALM re-entry point, not after a spike.
+    Three gates must all pass on today's bar:
+
+    1. SQUEEZE BREAKOUT (the flagship setup): bandwidth < `bandwidth_threshold` for
+       `min_squeeze_candles` bars ending yesterday, closes inside the bands, volume
+       contracting; today a bullish candle closes above the upper band on
+       > `vol_breakout_mult` x average volume.
+    2. UP MOMENTUM (Momentum Rider's gate): ROC(`mom_lookback`) >= `mom_threshold`
+       AND close > `trend_ma` SMA.
+    3. NOT OVEREXTENDED (the danger-zone filter): close no more than `max_ext`
+       above the `trend_ma` SMA (e.g. 0.60 = skip stocks >60% above their 200-day
+       MA). The squeeze itself already excludes parabolic names — this cap makes
+       the exclusion explicit and tunable.
+
+    STOP: widest/tightest of {swing low, entry - atr_mult*ATR}.
+    EXIT: close < `trend_ma` SMA (the proven ride-the-trend exit).
+    """
+
+    name = "Squeeze Momentum Breakout"
+    DEFAULTS = {
+        "bb_period": 20,
+        "bb_std": 2.0,
+        "bandwidth_threshold": 0.15,
+        "min_squeeze_candles": 5,
+        "vol_avg_period": 20,
+        "vol_breakout_mult": 1.5,
+        "mom_lookback": 126,
+        "mom_threshold": 0.15,
+        "trend_ma": 200,
+        "max_ext": 0.60,
+        "atr_period": 20,
+        "atr_mult": 4.0,
+        "swing_lookback": 20,
+    }
+
+    def warmup_bars(self):
+        c = self.config
+        return max(c["bb_period"] + c["min_squeeze_candles"], c["vol_avg_period"],
+                   c["mom_lookback"], c["trend_ma"], c["atr_period"], c["swing_lookback"]) + 2
+
+    def _squeeze_breakout_today(self, history_slice):
+        """The flagship squeeze-then-breakout test (window ends yesterday; breakout today)."""
+        c = self.config
+        close = history_slice["Close"]
+        open_ = history_slice["Open"]
+        volume = history_slice["Volume"]
+
+        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
+        band_width = indicators.bandwidth(upper, lower, middle)
+        volume_avg = indicators.sma(volume, c["vol_avg_period"])
+
+        n = c["min_squeeze_candles"]
+        window = slice(-(n + 1), -1)
+
+        window_bandwidth = band_width.iloc[window]
+        if window_bandwidth.isna().any():
+            return False
+        if not bool((window_bandwidth < c["bandwidth_threshold"]).all()):
+            return False
+        window_close = close.iloc[window]
+        inside = (window_close <= upper.iloc[window]) & (window_close >= lower.iloc[window])
+        if not bool(inside.all()):
+            return False
+        if not bool(volume.iloc[window].mean() < volume_avg.iloc[-2]):
+            return False
+
+        breakout = bool(close.iloc[-1] > upper.iloc[-1])
+        bullish = bool(close.iloc[-1] > open_.iloc[-1])
+        volume_surge = bool(volume.iloc[-1] > c["vol_breakout_mult"] * float(volume_avg.iloc[-1]))
+        return breakout and bullish and volume_surge
+
+    def scan_and_buy(self, history_slice):
+        c = self.config
+        if len(history_slice) < self.warmup_bars():
+            return False
+        close = history_slice["Close"]
+
+        # Gate 2: up momentum in an established trend.
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        if math.isnan(momentum) or momentum < c["mom_threshold"]:
+            return False
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        last = float(close.iloc[-1])
+        if not last > sma_long:
+            return False
+
+        # Gate 3: not overextended (the danger-zone cap).
+        if last > (1.0 + c["max_ext"]) * sma_long:
+            return False
+
+        # Gate 1 (most expensive, checked last): squeeze breakout today.
+        return self._squeeze_breakout_today(history_slice)
+
+    def compute_stop(self, entry_price, history_slice, stop_mode):
+        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
+
+    def calculate_sell(self, position, history_slice):
+        return exits.ma_breakdown_hit(history_slice, self.config["trend_ma"])
+
+    def describe(self, history_slice):
+        c = self.config
+        close = history_slice["Close"]
+        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
+        last = float(close.iloc[-1])
+        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
+        bw = float(indicators.bandwidth(upper, lower, middle).iloc[-2])
+        return {"mom_%": round(momentum * 100, 1),
+                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1),
+                "squeeze_bw": round(bw, 3)}
+
+
 # Registry consumed by the simulation and the dashboard dropdowns.
 ALGORITHMS = {
     BollingerSqueezeBreakout.name: BollingerSqueezeBreakout,
@@ -1332,6 +1452,7 @@ ALGORITHMS = {
     TwoSpeedDonchian.name: TwoSpeedDonchian,
     GrowthRider.name: GrowthRider,
     AcceleratingMomentumRider.name: AcceleratingMomentumRider,
+    SqueezeMomentumBuy.name: SqueezeMomentumBuy,
     BuyAndHold.name: BuyAndHold,
     DummyAlgorithm.name: DummyAlgorithm,
 }
