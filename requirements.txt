@@ -5,3 +5,7 @@ streamlit>=1.30
 plotly>=5.18
 pandas>=2.0
 numpy>=1.24
+
+# Day-trading simulator (sim/) — FastAPI server for the canvas front-end.
+fastapi>=0.110
+uvicorn>=0.29

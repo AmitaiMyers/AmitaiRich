@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROOF·SIM — Day-Trading Simulator</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a0e14'/%3E%3Cpath d='M4 10h2v3H4zM7 5h2v8H7zM10 7h2v6h-2z' fill='%23f0b429'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ Header ══ -->
+  <header class="header">
+    <div class="brand"><span class="brand-mark">ROOF·SIM</span></div>
+    <div id="tabs" class="tabs"></div>
+    <div class="header-right">
+      <label class="mini-label">SESSION</label>
+      <input type="date" id="date" class="date-input">
+      <div class="divider"></div>
+      <div class="readouts">
+        <div class="readout"><span class="readout-label">CASH</span><span id="cash" class="readout-val">—</span></div>
+        <div class="readout"><span class="readout-label">EQUITY</span><span id="equity" class="readout-val">—</span></div>
+        <div class="readout"><span class="readout-label">DAY P&amp;L</span><span id="daypnl" class="readout-val">—</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ Main ══ -->
+  <div class="main">
+    <!-- Chart pane -->
+    <section class="chart-pane">
+      <div class="chart-head">
+        <span id="active-sym" class="active-sym">—</span>
+        <span id="active-name" class="active-name"></span>
+        <span id="last" class="last-price">—</span>
+        <span id="last-chg" class="last-chg"></span>
+        <div class="chart-tools">
+          <div id="intervals" class="intervals"></div>
+          <div class="divider"></div>
+          <button id="draw-btn" class="tool-btn" title="Draw trend line (click-drag on chart)">╱ LINE</button>
+          <button id="del-btn" class="tool-btn danger hidden" title="Delete selected line (or press Del)">DEL</button>
+          <button id="clear-btn" class="tool-btn muted hidden" title="Remove all lines">CLEAR</button>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart"></canvas>
+        <div id="loading" class="loading">LOADING SESSION DATA…</div>
+        <div id="chart-error" class="chart-error hidden"></div>
+      </div>
+    </section>
+
+    <!-- Right column: book / entry / tape -->
+    <aside class="rail">
+      <div class="book">
+        <div class="panel-head">
+          <span>ORDER BOOK</span><span id="spread" class="mono">SPRD —</span>
+        </div>
+        <div class="book-body">
+          <div id="asks" class="book-side"></div>
+          <div class="book-mid">
+            <span id="bid" class="bid">—</span><span class="times">×</span><span id="ask" class="ask">—</span>
+          </div>
+          <div id="bids" class="book-side"></div>
+        </div>
+      </div>
+
+      <!-- Order entry -->
+      <div class="entry">
+        <div class="entry-row">
+          <label class="mini-label">QTY</label>
+          <input type="number" id="qty" class="qty-input" value="100" min="1" step="10">
+          <span id="notional" class="notional">≈ —</span>
+        </div>
+        <div class="entry-buttons">
+          <button id="buy" class="buy-btn">BUY —</button>
+          <button id="sell" class="sell-btn">SELL —</button>
+        </div>
+      </div>
+
+      <!-- Tape -->
+      <div class="tape">
+        <div class="panel-head-simple">TIME &amp; SALES</div>
+        <div id="tape" class="tape-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ══ Blotter ══ -->
+  <div class="blotter">
+    <div class="positions">
+      <div class="panel-head-simple">POSITIONS</div>
+      <div class="positions-body">
+        <div class="pos-grid pos-header">
+          <span>SYM</span><span class="r">QTY</span><span class="r">AVG</span>
+          <span class="r">LAST</span><span class="r">UNRLZD</span><span class="r">RLZD</span>
+        </div>
+        <div id="positions"></div>
+        <div id="no-positions" class="empty-note"></div>
+      </div>
+    </div>
+    <div class="fills">
+      <div class="panel-head-simple">FILLS</div>
+      <div id="fills" class="fills-body"></div>
+    </div>
+  </div>
+
+  <!-- ══ Playback bar ══ -->
+  <footer class="playback">
+    <div class="transport">
+      <button id="jump-open" class="pb-btn" title="Jump to open">|◀</button>
+      <button id="step-back" class="pb-btn" title="Step back 1s">−1</button>
+      <button id="play" class="pb-btn play" title="Play / pause (Space)">▶</button>
+      <button id="step-fwd" class="pb-btn" title="Step forward 1s">+1</button>
+      <button id="jump-close" class="pb-btn" title="Jump to close">▶|</button>
+    </div>
+    <span class="mono time-edge">09:30</span>
+    <input type="range" id="scrub" class="scrub" min="0" max="23399" value="0">
+    <span class="mono time-edge">16:00</span>
+    <div id="speeds" class="speeds"></div>
+    <div class="clock-box">
+      <span id="clock" class="clock">09:30:00</span>
+      <span id="play-state" class="play-state">PAUSED</span>
+    </div>
+  </footer>
+
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
