@@ -85,6 +85,14 @@ SIM_SOURCE=synthetic python -m sim.server      # serve fabricated data offline
 - **Visual order book** — bid/ask depth ladder with size bars and live spread,
   plus resting-liquidity S/R walls drawn on the chart.
 - **Order entry** — quantity + one-click BUY @ ask / SELL @ bid (supports shorts).
+- **Bracket / stop-loss orders** — attach an OCO (one-cancels-other) stop and/or
+  take-profit to a position. Type levels or leave blank for suggested defaults, then
+  *BRACKET*. Levels show as dashed lines on the chart and in a WORKING ORDERS list
+  (✕ to cancel). Orders fire **intrabar** as the clock advances — frame-rate
+  independent (the whole traversed interval is scanned, so a level crossed between
+  ticks at 60× is never skipped), across all tickers, and fill at the level (tagged
+  STP/TGT in the blotter). Scrubbing/rewinding never triggers fills; brackets
+  auto-cancel/resize when you manually close, flip, or reduce the position.
 - **Time & Sales** tape, **Positions** blotter (avg / last / unrealized /
   realized P&L) and a **Fills** log.
 - **Playback transport** — jump-to-open/close, step ±1s, play/pause, a full-session

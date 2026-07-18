@@ -20,6 +20,7 @@ const state = {
   idx: 0, playing: false, speed: 10, ival: 15, ticker: 'AAPL', date: mostRecentWeekday(),
   qty: 100, loading: true, cash: null, posMap: {}, fills: [], sessions: null,
   lines: [], drawMode: false, sel: -1, draft: null,
+  orders: [], orderSeq: 0,   // working stop/target (bracket) orders + id counter
   order: ['AAPL', 'MSFT', 'NVDA', 'TSLA', 'SPY'], names: {},
 };
 
@@ -45,6 +46,7 @@ function fmtPnl(v) {
 }
 function pnlColor(v) { return v > 0.005 ? UP : v < -0.005 ? DN : NEUTRAL; }
 function fmtSize(v) { return v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1) + 'K' : String(v); }
+function round2(v) { return Math.round(v * 100) / 100; }
 
 // ── market data helpers (ported) ─────────────────────────────────────────────
 function priceAt(t, i) {
@@ -93,13 +95,12 @@ function levelSize(price, idx) {
 }
 
 // ── trading (ported) ─────────────────────────────────────────────────────────
-function applyFill(side, qty) {
-  const { ticker, idx, posMap, fills, sessions } = state;
-  if (!sessions || qty < 1) return;
-  const q = quote(ticker, idx);
-  const price = side === 'BUY' ? q.ask : q.bid;
+// Core position/cash/fills mutation, shared by manual fills and order triggers.
+// `tag` marks the fill source ('STP'/'TGT'); null for a manual order. Does NOT render.
+function bookTrade(sym, side, qty, price, idx, tag) {
+  const posMap = state.posMap;
   const dir = side === 'BUY' ? 1 : -1;
-  const pos = posMap[ticker] || { qty: 0, avg: 0, realized: 0 };
+  const pos = posMap[sym] || { qty: 0, avg: 0, realized: 0 };
   let { qty: q0, avg, realized } = pos;
   if (q0 === 0 || Math.sign(q0) === dir) {
     avg = (avg * Math.abs(q0) + price * qty) / (Math.abs(q0) + qty); q0 += dir * qty;
@@ -111,8 +112,120 @@ function applyFill(side, qty) {
     if (q0 === 0) avg = 0;
   }
   state.cash -= dir * qty * price;
-  state.posMap = { ...posMap, [ticker]: { qty: q0, avg, realized } };
-  state.fills = [{ time: fmtT(idx), side, sym: ticker, qty, price }, ...fills].slice(0, 40);
+  state.posMap = { ...posMap, [sym]: { qty: q0, avg, realized } };
+  state.fills = [{ time: fmtT(idx), side, sym, qty, price, tag: tag || null }, ...state.fills].slice(0, 40);
+}
+
+// Manual market order on the active ticker, filled at the current bid/ask.
+function applyFill(side, qty) {
+  const { ticker, idx, sessions } = state;
+  if (!sessions || qty < 1) return;
+  const q = quote(ticker, idx);
+  const price = side === 'BUY' ? q.ask : q.bid;
+  bookTrade(ticker, side, qty, price, idx, null);
+  syncOrders(ticker);   // reconcile any bracket with the new position
+  render();
+}
+
+// ── bracket / stop-loss engine ────────────────────────────────────────────────
+// A working order = { id, sym, kind:'STOP'|'TARGET', tag, side:'BUY'|'SELL',
+//   dir: +1 (fire when price >= level) | -1 (fire when price <= level), level, qty, group }.
+// OCO: orders sharing a `group` cancel each other when one fills.
+
+// Suggested default bracket levels relative to the last price + position direction.
+function suggestedLevels(ticker, idx, long) {
+  const last = priceAt(ticker, idx);
+  return long
+    ? { stop: round2(last * 0.99), target: round2(last * 1.02) }
+    : { stop: round2(last * 1.01), target: round2(last * 0.98) };
+}
+
+// Keep a ticker's working orders consistent with its actual position:
+// a SELL exit only protects a long, a BUY exit only protects a short; cap qty
+// to what's held; drop orders that no longer protect anything.
+function syncOrders(sym) {
+  const pos = state.posMap[sym];
+  const held = pos ? pos.qty : 0;
+  state.orders = state.orders.filter((o) => {
+    if (o.sym !== sym) return true;
+    const valid = (o.side === 'SELL' && held > 0) || (o.side === 'BUY' && held < 0);
+    if (!valid) return false;
+    o.qty = Math.min(o.qty, Math.abs(held));
+    return o.qty >= 1;
+  });
+}
+
+// Execute a triggered order at its level, then cancel its OCO sibling(s).
+function fireOrder(o, idx) {
+  const pos = state.posMap[o.sym];
+  const held = pos ? pos.qty : 0;
+  const exitQty = Math.min(o.qty, Math.abs(held));
+  state.orders = state.orders.filter((x) => x.group !== o.group);   // OCO: drop the whole group
+  if (exitQty >= 1) bookTrade(o.sym, o.side, exitQty, o.level, idx, o.tag);
+  syncOrders(o.sym);
+}
+
+// Scan every revealed second in [fromSec, toSec] (inclusive), in time order, so
+// triggers are frame-rate independent — a level crossed between idx and idx+step
+// at high speed is never skipped. Evaluates ALL tickers (time advances for all).
+function scanTriggers(fromSec, toSec) {
+  const s = state.sessions;
+  for (let i = fromSec; i <= toSec; i++) {
+    if (!state.orders.length) break;
+    const firing = state.orders.filter((o) => {
+      const p = s[o.sym].prices[i];
+      return o.dir > 0 ? p >= o.level : p <= o.level;
+    });
+    for (const o of firing) {
+      if (state.orders.includes(o)) fireOrder(o, i);   // still active (not cancelled by a sibling)
+    }
+  }
+}
+
+// The single funnel for every clock change. Forward transport moves pass
+// allowTriggers=true so resting orders can fill; scrubbing/rewinding pass false.
+function advanceTo(newIdx, allowTriggers) {
+  newIdx = Math.max(0, Math.min(TICKS - 1, newIdx));
+  const oldIdx = state.idx;
+  if (allowTriggers && newIdx > oldIdx && state.sessions && state.orders.length) {
+    scanTriggers(oldIdx + 1, newIdx);
+  }
+  state.idx = newIdx;
+}
+
+// Attach an OCO bracket (stop and/or target) to the active ticker's position.
+function attachBracket() {
+  const { ticker, idx, sessions } = state;
+  const hint = $('bracket-hint');
+  if (!sessions) return;
+  const pos = state.posMap[ticker];
+  if (!pos || pos.qty === 0) {
+    hint.textContent = 'No position in ' + ticker + ' to protect.'; hint.className = 'bracket-hint err'; return;
+  }
+  const long = pos.qty > 0, last = priceAt(ticker, idx), sug = suggestedLevels(ticker, idx, long);
+  const stopRaw = $('stop-price').value.trim(), tgtRaw = $('target-price').value.trim();
+  let stop = stopRaw ? parseFloat(stopRaw) : null;
+  let tgt = tgtRaw ? parseFloat(tgtRaw) : null;
+  if (stop === null && tgt === null) { stop = sug.stop; tgt = sug.target; } // both blank → full default bracket
+  const errs = [];
+  if (stop !== null) {
+    if (isNaN(stop)) errs.push('stop is not a number');
+    else if (long && stop >= last) errs.push('long stop must be below ' + last.toFixed(2));
+    else if (!long && stop <= last) errs.push('short stop must be above ' + last.toFixed(2));
+  }
+  if (tgt !== null) {
+    if (isNaN(tgt)) errs.push('target is not a number');
+    else if (long && tgt <= last) errs.push('long target must be above ' + last.toFixed(2));
+    else if (!long && tgt >= last) errs.push('short target must be below ' + last.toFixed(2));
+  }
+  if (errs.length) { hint.textContent = errs.join('; '); hint.className = 'bracket-hint err'; return; }
+  const side = long ? 'SELL' : 'BUY', group = ++state.orderSeq, qty = Math.abs(pos.qty);
+  state.orders = state.orders.filter((o) => o.sym !== ticker); // one bracket per ticker — replace
+  if (stop !== null) state.orders.push({ id: ++state.orderSeq, sym: ticker, kind: 'STOP', tag: 'STP', side, dir: long ? -1 : 1, level: round2(stop), qty, group });
+  if (tgt !== null) state.orders.push({ id: ++state.orderSeq, sym: ticker, kind: 'TARGET', tag: 'TGT', side, dir: long ? 1 : -1, level: round2(tgt), qty, group });
+  hint.textContent = 'Attached: ' + [stop !== null ? 'stop ' + stop.toFixed(2) : null, tgt !== null ? 'target ' + tgt.toFixed(2) : null].filter(Boolean).join(' / ');
+  hint.className = 'bracket-hint ok';
+  $('stop-price').value = ''; $('target-price').value = '';
   render();
 }
 
@@ -223,6 +336,17 @@ function draw() {
   ctx.setLineDash([]);
   ctx.fillStyle = lc; ctx.fillRect(cw, y(last) - 8, axW, 16);
   ctx.fillStyle = '#0a0e14'; ctx.fillText(last.toFixed(2), cw + 6, y(last));
+  // working stop/target levels for the active ticker (dashed S/R lines)
+  ctx.font = '9px "IBM Plex Mono",monospace'; ctx.textAlign = 'left';
+  state.orders.forEach((o) => {
+    if (o.sym !== state.ticker || o.level < lo || o.level > hi) return;
+    const col = o.kind === 'STOP' ? DN : UP, yy = y(o.level);
+    ctx.strokeStyle = col; ctx.setLineDash([6, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(cw, yy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.fillText(o.kind + ' ' + o.level.toFixed(2), 4, yy - 4);
+  });
+  ctx.font = '10px "IBM Plex Mono",monospace';
   // save transform for mouse handlers, then draw user trend lines
   view = { lo, hi, priceH, cw, N, endC, cs };
   const lx = (sec) => cw - (endC - sec / cs + 0.5) * (cw / N);
@@ -353,6 +477,22 @@ function render() {
   $('buy').textContent = 'BUY ' + q.ask.toFixed(2);
   $('sell').textContent = 'SELL ' + q.bid.toFixed(2);
 
+  // bracket: suggested-level placeholders + working-orders list (active ticker)
+  const posActive = s ? st.posMap[st.ticker] : null;
+  if (posActive && posActive.qty !== 0) {
+    const sug = suggestedLevels(st.ticker, st.idx, posActive.qty > 0);
+    $('stop-price').placeholder = sug.stop.toFixed(2);
+    $('target-price').placeholder = sug.target.toFixed(2);
+  } else {
+    $('stop-price').placeholder = '—';
+    $('target-price').placeholder = '—';
+  }
+  const wo = st.orders.filter((o) => o.sym === st.ticker);
+  $('working').innerHTML = wo.length
+    ? '<div class="wo-head">WORKING ORDERS</div>' + wo.map((o) =>
+        `<div class="wo-row"><span class="wo-kind" style="color:${o.kind === 'STOP' ? DN : UP}">${o.kind}</span><span class="wo-level">${o.level.toFixed(2)}</span><span class="wo-qty">×${o.qty}</span><button class="wo-cancel" data-id="${o.id}" title="Cancel order">✕</button></div>`).join('')
+    : '';
+
   // tape
   const tape = [];
   if (sess) {
@@ -370,7 +510,7 @@ function render() {
   if (posRows.length === 0) { noPos.textContent = `Flat — no open positions. You start with ${fmt$(INITIAL_CASH)} in paper cash.`; noPos.classList.remove('hidden'); }
   else noPos.classList.add('hidden');
   $('fills').innerHTML = st.fills.map((f) =>
-    `<div class="fill-row"><span class="t">${f.time}</span><span class="side" style="color:${f.side === 'BUY' ? UP : DN}">${f.side}</span><span class="sym">${f.sym}</span><span class="qty">${f.qty}</span><span class="price">${f.price.toFixed(2)}</span></div>`).join('');
+    `<div class="fill-row"><span class="t">${f.time}</span><span class="side" style="color:${f.side === 'BUY' ? UP : DN}">${f.side}${f.tag ? '·' + f.tag : ''}</span><span class="sym">${f.sym}</span><span class="qty">${f.qty}</span><span class="price">${f.price.toFixed(2)}</span></div>`).join('');
 
   // playback
   const scrub = $('scrub'); if (+scrub.value !== st.idx) scrub.value = st.idx;
@@ -390,6 +530,7 @@ async function loadDate(date) {
     state.sessions = sessions;
     state.date = date;
     state.idx = 0; state.playing = false; acc = 0;
+    state.orders = [];   // working orders are session-specific (levels tied to the day's price path)
     if (state.cash === null) state.cash = INITIAL_CASH;
     if (!sessions[state.ticker]) state.ticker = Object.keys(sessions)[0];
     state.loading = false;
@@ -413,7 +554,7 @@ function loop() {
   if (step < 1) return;
   acc -= step;
   const next = Math.min(state.idx + step, TICKS - 1);
-  state.idx = next;
+  advanceTo(next, true);
   state.playing = next < TICKS - 1 && state.playing;
   render();
 }
@@ -476,12 +617,23 @@ function bindEvents() {
   canvas.addEventListener('mouseup', finishLine);
   canvas.addEventListener('mouseleave', finishLine);
 
-  $('jump-open').addEventListener('click', () => { state.idx = 0; state.playing = false; render(); });
-  $('step-back').addEventListener('click', () => { state.idx = Math.max(0, state.idx - 1); state.playing = false; render(); });
-  $('play').addEventListener('click', () => { state.playing = !state.playing; if (state.idx >= TICKS - 1) state.idx = 0; acc = 0; render(); });
-  $('step-fwd').addEventListener('click', () => { state.idx = Math.min(TICKS - 1, state.idx + 1); state.playing = false; render(); });
-  $('jump-close').addEventListener('click', () => { state.idx = TICKS - 1; state.playing = false; render(); });
-  $('scrub').addEventListener('input', (e) => { state.idx = Math.max(0, Math.min(TICKS - 1, +e.target.value)); render(); });
+  $('jump-open').addEventListener('click', () => { advanceTo(0, false); state.playing = false; render(); });
+  $('step-back').addEventListener('click', () => { advanceTo(state.idx - 1, false); state.playing = false; render(); });
+  $('play').addEventListener('click', () => { state.playing = !state.playing; if (state.idx >= TICKS - 1) advanceTo(0, false); acc = 0; render(); });
+  $('step-fwd').addEventListener('click', () => { advanceTo(state.idx + 1, true); state.playing = false; render(); });
+  $('jump-close').addEventListener('click', () => { advanceTo(TICKS - 1, true); state.playing = false; render(); });
+  $('scrub').addEventListener('input', (e) => { advanceTo(+e.target.value, false); render(); });
+
+  // bracket / stop-loss
+  $('attach-bracket').addEventListener('click', attachBracket);
+  ['stop-price', 'target-price'].forEach((id) => $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); attachBracket(); } }));
+  $('working').addEventListener('click', (e) => {
+    const btn = e.target.closest('.wo-cancel');
+    if (!btn) return;
+    const id = +btn.dataset.id;
+    state.orders = state.orders.filter((o) => o.id !== id);
+    render();
+  });
 
   window.addEventListener('resize', render);
   window.addEventListener('keydown', (e) => {
@@ -492,11 +644,11 @@ function bindEvents() {
       state.lines = state.lines.filter((_, i) => i !== state.sel); state.sel = -1; render();
     } else if (e.key === ' ') {
       e.preventDefault();
-      state.playing = !state.playing; if (state.idx >= TICKS - 1) state.idx = 0; acc = 0; render();
+      state.playing = !state.playing; if (state.idx >= TICKS - 1) advanceTo(0, false); acc = 0; render();
     } else if (e.key === 'ArrowLeft') {
-      e.preventDefault(); state.idx = Math.max(0, state.idx - 1); state.playing = false; render();
+      e.preventDefault(); advanceTo(state.idx - 1, false); state.playing = false; render();
     } else if (e.key === 'ArrowRight') {
-      e.preventDefault(); state.idx = Math.min(TICKS - 1, state.idx + 1); state.playing = false; render();
+      e.preventDefault(); advanceTo(state.idx + 1, true); state.playing = false; render();
     }
   });
 }

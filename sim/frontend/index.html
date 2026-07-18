@@ -77,6 +77,17 @@
           <button id="buy" class="buy-btn">BUY —</button>
           <button id="sell" class="sell-btn">SELL —</button>
         </div>
+        <div class="bracket">
+          <div class="bracket-row">
+            <label class="mini-label" for="stop-price">STOP</label>
+            <input type="number" id="stop-price" class="mini-input" step="0.01" placeholder="—">
+            <label class="mini-label" for="target-price">TGT</label>
+            <input type="number" id="target-price" class="mini-input" step="0.01" placeholder="—">
+            <button id="attach-bracket" class="bracket-btn" title="Attach an OCO stop/target bracket to the current position (blank = suggested levels)">BRACKET</button>
+          </div>
+          <div id="bracket-hint" class="bracket-hint"></div>
+          <div id="working" class="working"></div>
+        </div>
       </div>
 
       <!-- Tape -->
