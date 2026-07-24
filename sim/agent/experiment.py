@@ -70,8 +70,9 @@ def _write_report(run_dir, cfg, results, agg, tape):
     return report_path
 
 
-def run(name, indicators=None, arch="mlp", window=1, d_model=128, seq_layers=2,
-        episodes=2000, batch_size=128, dataset_path=DATASET_PATH, ticker=None, val_every=100):
+def run(name, indicators=None, arch="mlp", window=1, d_model=None, seq_layers=None,
+        episodes=2000, batch_size=None, dataset_path=DATASET_PATH, ticker=None, val_every=100,
+        size="medium", nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None):
     # Lazy torch imports (only needed to actually run an experiment).
     from sim.agent.train_daily import train
     from sim.agent.checkpoint import load_agent
@@ -86,7 +87,9 @@ def run(name, indicators=None, arch="mlp", window=1, d_model=128, seq_layers=2,
     # 1) TRAIN (live visualization happens inside train)
     results = train(episodes=episodes, batch_size=batch_size, dataset_path=dataset_path,
                     val_every=val_every, arch=arch, window=window, d_model=d_model,
-                    seq_layers=seq_layers, indicators=indicators, out_dir=run_dir)
+                    seq_layers=seq_layers, nhead=nhead, ff_mult=ff_mult, hidden=hidden,
+                    buffer_size=buffer_size, lr=lr, size=size,
+                    indicators=indicators, out_dir=run_dir)
 
     # 2) VALIDATE the best model on the same indicator subset
     print(viz.color("\nValidating best model...", viz.BOLD))
@@ -136,17 +139,26 @@ def main(argv=None):
                    help=f"Indicator groups (default all: {ALL_GROUPS}).")
     p.add_argument("--arch", choices=["mlp", "gru", "transformer"], default="mlp")
     p.add_argument("--window", type=int, default=1)
-    p.add_argument("--d-model", type=int, default=128)
-    p.add_argument("--seq-layers", type=int, default=2)
+    p.add_argument("--size", choices=["small", "medium", "large", "xl"], default="medium",
+                   help="Model-capacity preset; individual flags below override it.")
+    p.add_argument("--d-model", type=int, default=None)
+    p.add_argument("--seq-layers", type=int, default=None)
+    p.add_argument("--nhead", type=int, default=None)
+    p.add_argument("--ff-mult", type=int, default=None)
+    p.add_argument("--hidden", type=int, nargs="+", default=None)
+    p.add_argument("--buffer-size", type=int, default=None)
+    p.add_argument("--lr", type=float, default=None)
     p.add_argument("--episodes", type=int, default=2000)
-    p.add_argument("--batch-size", type=int, default=128)
+    p.add_argument("--batch-size", type=int, default=None)
     p.add_argument("--val-every", type=int, default=100)
     p.add_argument("--dataset", default=DATASET_PATH)
     p.add_argument("--ticker", default=None, help="Ticker for the day-by-day sample (default: first val ticker).")
     args = p.parse_args(argv)
     run(name=args.name, indicators=args.indicators, arch=args.arch, window=args.window,
         d_model=args.d_model, seq_layers=args.seq_layers, episodes=args.episodes,
-        batch_size=args.batch_size, dataset_path=args.dataset, ticker=args.ticker, val_every=args.val_every)
+        batch_size=args.batch_size, dataset_path=args.dataset, ticker=args.ticker,
+        val_every=args.val_every, size=args.size, nhead=args.nhead, ff_mult=args.ff_mult,
+        hidden=args.hidden, buffer_size=args.buffer_size, lr=args.lr)
     return 0
 
 

@@ -11,7 +11,7 @@ class DQNAgent:
                  epsilon_start: float = 1.0, epsilon_min: float = 0.05, epsilon_decay: float = 0.997,
                  hidden=(256, 256, 128), dropout: float = 0.1, buffer_size: int = 50000,
                  noisy: bool = True, arch: str = "mlp", feature_dim: int = None, window: int = 1,
-                 d_model: int = 128, seq_layers: int = 2, nhead: int = 4):
+                 d_model: int = 128, seq_layers: int = 2, nhead: int = 4, ff_mult: int = 2):
         assert state_dim > 0 and action_dim > 0, "Invalid dimensions"
         assert arch in ("mlp", "gru", "transformer"), f"unknown arch {arch!r}"
 
@@ -26,6 +26,7 @@ class DQNAgent:
         self.d_model = d_model
         self.seq_layers = seq_layers
         self.nhead = nhead
+        self.ff_mult = ff_mult
         self.gamma = gamma
         self.epsilon = epsilon_start
         self.epsilon_min = epsilon_min
@@ -53,7 +54,7 @@ class DQNAgent:
         return SequenceDuelingDQN(
             self.feature_dim, self.window, self.action_dim, context_dim=context_dim,
             encoder=self.arch, d_model=self.d_model, num_layers=self.seq_layers,
-            nhead=self.nhead, dropout=self.dropout, noisy=self.noisy)
+            nhead=self.nhead, dropout=self.dropout, noisy=self.noisy, ff_mult=self.ff_mult)
 
     def select_action(self, state: np.ndarray) -> int:
         assert state.ndim == 1, "State must be 1D"

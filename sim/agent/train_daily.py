@@ -34,10 +34,31 @@ FINAL_NAME = "dqn_daily.pth"
 BEST_NAME = "dqn_daily_best.pth"
 LOG_NAME = "train_log.csv"
 
+# Model-capacity presets. `--size` sets them all at once; any explicit flag wins.
+# Scale up when you have GPU headroom — bigger d_model/layers/heads for the sequence
+# encoders, wider trunk + bigger replay buffer for all archs.
+SIZE_PRESETS = {
+    "small":  {"hidden": (128, 128),           "d_model": 96,  "seq_layers": 2, "nhead": 4, "ff_mult": 2, "buffer": 50_000,  "batch": 128},
+    "medium": {"hidden": (256, 256, 128),      "d_model": 128, "seq_layers": 2, "nhead": 4, "ff_mult": 2, "buffer": 50_000,  "batch": 128},
+    "large":  {"hidden": (512, 512, 256),      "d_model": 256, "seq_layers": 4, "nhead": 8, "ff_mult": 4, "buffer": 150_000, "batch": 256},
+    "xl":     {"hidden": (1024, 1024, 512, 256), "d_model": 384, "seq_layers": 6, "nhead": 8, "ff_mult": 4, "buffer": 300_000, "batch": 512},
+}
 
-def train(episodes=2000, batch_size=128, dataset_path=DATASET_PATH, val_every=100,
-          target_update_every=10, arch="mlp", window=1, d_model=128, seq_layers=2,
-          indicators=None, out_dir="models", log_csv=True, resume=None):
+
+def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=100,
+          target_update_every=10, arch="mlp", window=1, d_model=None, seq_layers=None,
+          nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None,
+          size="medium", indicators=None, out_dir="models", log_csv=True, resume=None):
+    preset = SIZE_PRESETS[size]
+    # explicit args win over the preset
+    d_model = d_model if d_model is not None else preset["d_model"]
+    seq_layers = seq_layers if seq_layers is not None else preset["seq_layers"]
+    nhead = nhead if nhead is not None else preset["nhead"]
+    ff_mult = ff_mult if ff_mult is not None else preset["ff_mult"]
+    hidden = tuple(hidden) if hidden else preset["hidden"]
+    buffer_size = buffer_size if buffer_size is not None else preset["buffer"]
+    batch_size = batch_size if batch_size is not None else preset["batch"]
+
     data = load_dataset(dataset_path)
 
     if resume:
@@ -58,8 +79,11 @@ def train(episodes=2000, batch_size=128, dataset_path=DATASET_PATH, val_every=10
         feature_dim = len(feature_names)
         if arch != "mlp" and window < 2:
             window = 30   # sequence encoders need a real look-back window
+        kwargs = {"lr": lr} if lr is not None else {}
         agent = DQNAgent(state_dim=window * feature_dim + 2, action_dim=3, arch=arch,
-                         feature_dim=feature_dim, window=window, d_model=d_model, seq_layers=seq_layers)
+                         feature_dim=feature_dim, window=window, d_model=d_model,
+                         seq_layers=seq_layers, nhead=nhead, ff_mult=ff_mult,
+                         hidden=hidden, buffer_size=buffer_size, **kwargs)
 
     train_set, val_set = data["train"], data["val"]
     assert train_set, "Empty training set — rebuild the dataset."
@@ -81,8 +105,13 @@ def train(episodes=2000, batch_size=128, dataset_path=DATASET_PATH, val_every=10
 
     print(f"Training daily DQN | arch={arch} window={window} | {episodes} episodes | "
           f"{len(train_set)} train / {len(val_set)} val tickers")
+    n_params = sum(p.numel() for p in agent.policy_net.parameters())
     print(f"  features={len(feature_names)} | state_dim={state_dim} | noisy={agent.noisy}"
-          + ("  (resumed)" if resume else "") + "\n")
+          + ("  (resumed)" if resume else "") )
+    print(f"  size={size} | params={n_params:,} | batch={batch_size} | buffer={agent.memory.buffer.maxlen:,}"
+          + (f" | d_model={agent.d_model} layers={agent.seq_layers} heads={agent.nhead}" if arch != "mlp"
+             else f" | hidden={agent.hidden}")
+          + f" | device={agent.device}\n")
 
     best_metric = float("-inf")
     train_hist = deque(maxlen=50)
@@ -163,10 +192,18 @@ def main(argv=None):
     p.add_argument("--window", type=int, default=1, help="Look-back days (sequence archs; default 30 if unset).")
     p.add_argument("--indicators", nargs="+", choices=ALL_GROUPS, default=None,
                    help=f"Subset of indicator groups to train on (default all: {ALL_GROUPS}).")
-    p.add_argument("--d-model", type=int, default=128, help="Sequence encoder hidden width.")
-    p.add_argument("--seq-layers", type=int, default=2, help="GRU/Transformer layers.")
+    p.add_argument("--size", choices=list(SIZE_PRESETS), default="medium",
+                   help="Model-capacity preset (sets d_model/layers/heads/hidden/buffer/batch). "
+                        "Use 'large' or 'xl' on a strong GPU. Individual flags override it.")
+    p.add_argument("--d-model", type=int, default=None, help="Sequence encoder hidden width.")
+    p.add_argument("--seq-layers", type=int, default=None, help="GRU/Transformer layers.")
+    p.add_argument("--nhead", type=int, default=None, help="Transformer attention heads (must divide d_model).")
+    p.add_argument("--ff-mult", type=int, default=None, help="Transformer feed-forward width = d_model * ff_mult.")
+    p.add_argument("--hidden", type=int, nargs="+", default=None, help="MLP trunk widths, e.g. --hidden 512 512 256.")
+    p.add_argument("--buffer-size", type=int, default=None, help="Replay buffer capacity.")
+    p.add_argument("--lr", type=float, default=None, help="Adam learning rate (default 5e-4).")
     p.add_argument("--episodes", type=int, default=2000)
-    p.add_argument("--batch-size", type=int, default=128)
+    p.add_argument("--batch-size", type=int, default=None)
     p.add_argument("--dataset", default=DATASET_PATH)
     p.add_argument("--val-every", type=int, default=100)
     p.add_argument("--target-update-every", type=int, default=10)
@@ -179,7 +216,9 @@ def main(argv=None):
     train(episodes=args.episodes, batch_size=args.batch_size, dataset_path=args.dataset,
           val_every=args.val_every, target_update_every=args.target_update_every,
           arch=args.arch, window=args.window, d_model=args.d_model, seq_layers=args.seq_layers,
-          indicators=args.indicators, out_dir=args.out_dir, log_csv=not args.no_log, resume=args.resume)
+          nhead=args.nhead, ff_mult=args.ff_mult, hidden=args.hidden, buffer_size=args.buffer_size,
+          lr=args.lr, size=args.size, indicators=args.indicators, out_dir=args.out_dir,
+          log_csv=not args.no_log, resume=args.resume)
     return 0
 
 

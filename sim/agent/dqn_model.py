@@ -157,7 +157,7 @@ class SequenceDuelingDQN(nn.Module):
     """
 
     def __init__(self, feature_dim, window, output_dim, context_dim=2, encoder="gru",
-                 d_model=128, num_layers=2, nhead=4, dropout=0.1, noisy=True):
+                 d_model=128, num_layers=2, nhead=4, dropout=0.1, noisy=True, ff_mult=2):
         super().__init__()
         assert feature_dim > 0 and window > 1, "sequence model needs window > 1"
         assert encoder in ("gru", "transformer"), f"unknown encoder {encoder!r}"
@@ -174,7 +174,7 @@ class SequenceDuelingDQN(nn.Module):
             self.input_proj = nn.Linear(feature_dim, d_model)
             self.pos = nn.Parameter(torch.zeros(1, window, d_model))   # learned positional encoding
             enc_layer = nn.TransformerEncoderLayer(
-                d_model=d_model, nhead=nhead, dim_feedforward=d_model * 2,
+                d_model=d_model, nhead=nhead, dim_feedforward=d_model * ff_mult,
                 dropout=dropout, batch_first=True, activation="gelu")
             self.transformer = nn.TransformerEncoder(enc_layer, num_layers=num_layers)
 

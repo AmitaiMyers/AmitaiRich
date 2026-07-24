@@ -27,6 +27,7 @@ def save_checkpoint(agent, path, feature_names, extra=None):
         "d_model": agent.d_model,
         "seq_layers": agent.seq_layers,
         "nhead": agent.nhead,
+        "ff_mult": agent.ff_mult,
         "feature_names": list(feature_names),
     }
     if extra:
@@ -45,6 +46,7 @@ def load_agent(path):
         hidden=tuple(ckpt["hidden"]), dropout=ckpt["dropout"], noisy=ckpt["noisy"],
         arch=ckpt["arch"], feature_dim=ckpt["feature_dim"], window=ckpt["window"],
         d_model=ckpt["d_model"], seq_layers=ckpt["seq_layers"], nhead=ckpt["nhead"],
+        ff_mult=ckpt.get("ff_mult", 2),   # older checkpoints predate ff_mult
         epsilon_start=0.0, epsilon_min=0.0,
     )
     agent.policy_net.load_state_dict(ckpt["model_state"])

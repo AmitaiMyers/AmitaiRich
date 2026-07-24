@@ -81,6 +81,35 @@ session drops** mid-run. Bigger `--batch-size` uses the GPU better.
     --out-dir /content/drive/MyDrive/roofsim/runs/colab_gru
 ```
 
+### 6b. Scaling the model up (paid GPU / more VRAM)
+
+`--size` sets model capacity in one flag (`small` · `medium` (default) · `large` · `xl`);
+any individual flag (`--d-model`, `--seq-layers`, `--nhead`, `--ff-mult`, `--hidden`,
+`--buffer-size`, `--batch-size`, `--lr`) overrides the preset.
+
+| `--size` | trunk / d_model · layers · heads | params (transformer, W=30) | batch | buffer |
+|---|---|---|---|---|
+| small | 128,128 / 96 · 2 · 4 | ~0.18 M | 128 | 50k |
+| medium | 256,256,128 / 128 · 2 · 4 | ~0.30 M | 128 | 50k |
+| **large** | 512,512,256 / **256 · 4 · 8** | **~3.3 M** | 256 | 150k |
+| **xl** | 1024,1024,512,256 / **384 · 6 · 8** | **~11 M** | 512 | 300k |
+
+Recommended on a strong GPU (A100/L4/V100), a bigger window and more episodes:
+```python
+!python -m sim.agent.train_daily \
+    --arch transformer --window 60 --size large \
+    --episodes 8000 --val-every 250 \
+    --indicators prices volume bollinger adx obv \
+    --out-dir /content/drive/MyDrive/roofsim/runs/xf_large
+```
+Push further with `--size xl` (and optionally `--window 90 --lr 3e-4`). Notes:
+- `--nhead` must divide `--d-model` evenly.
+- A **larger `--batch-size` is what actually keeps the GPU busy** — the environment
+  steps in Python, so small batches leave the GPU idle.
+- More capacity needs more data/episodes to pay off; watch the validation line and
+  keep `dropout` (default 0.1) as your overfitting guard.
+- On T4 (free tier) `large` is comfortable; `xl` wants an A100/L4.
+
 ### 7. Validate + write the report
 ```python
 !python -m sim.agent.validate \
