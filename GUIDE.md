@@ -160,6 +160,9 @@ python -m sim.agent.experiment --name run1 --indicators bollinger adx --arch gru
 # or the GUI:  python -m sim.server   then open http://127.0.0.1:8000/agent.html
 ```
 
+> **Train on a free GPU / keep it running when your laptop is off** → see
+> **[COLAB.md](COLAB.md)** for a step-by-step Google Colab recipe.
+
 Not carried by git (regenerate on the new machine): the dataset
 (`python -m sim.agent.dataset`), stock sessions (`python -m sim.ingest`), crypto
 recordings (`python -m sim.crypto_record`), and trained models (retrain, or copy the
