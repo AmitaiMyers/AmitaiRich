@@ -18,6 +18,7 @@ import argparse
 import csv
 import os
 import random
+import shutil
 import sys
 import time
 from collections import deque
@@ -45,10 +46,30 @@ SIZE_PRESETS = {
 }
 
 
+def _mirror(mirror_dir, paths):
+    """Copy artifacts to a second location (e.g. Google Drive), never fatally.
+
+    Train to LOCAL disk and mirror out: a FUSE mount that stalls or drops must not
+    be able to abort a long GPU run, so failures warn and training carries on.
+    """
+    if not mirror_dir:
+        return
+    try:
+        os.makedirs(mirror_dir, exist_ok=True)
+        for p in paths:
+            if p and os.path.exists(p):
+                shutil.copy2(p, os.path.join(mirror_dir, os.path.basename(p)))
+    except OSError as exc:
+        viz.clear_line()
+        print(viz.color(f"WARNING: mirror to {mirror_dir} failed ({exc}); "
+                        f"artifacts remain in the local out-dir.", viz.YELLOW))
+
+
 def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=100,
           target_update_every=10, arch="mlp", window=1, d_model=None, seq_layers=None,
           nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None,
-          size="medium", indicators=None, out_dir="models", log_csv=True, resume=None):
+          size="medium", indicators=None, out_dir="models", log_csv=True, resume=None,
+          train_every=1, mirror_dir=None):
     preset = SIZE_PRESETS[size]
     # explicit args win over the preset
     d_model = d_model if d_model is not None else preset["d_model"]
@@ -124,14 +145,20 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
         env = DailyTradingEnv(ticker, feats, closes, window=window)
         state, done, equity = env.reset(), False, START_CASH
         losses = []
+        step_i = 0
         while not done:
             action = agent.select_action(state)
             next_state, reward, done, equity = env.step(action)
             if next_state is not None:
                 agent.memory.push(state, action, reward, next_state, done)
-            loss = agent.train_step(batch_size)
-            if loss is not None:
-                losses.append(loss)
+            # Gradient step every `train_every` env steps (DQN's standard
+            # train-frequency; >1 trades a little sample-efficiency for a big
+            # speedup, since the env steps serially on CPU).
+            step_i += 1
+            if step_i % train_every == 0:
+                loss = agent.train_step(batch_size)
+                if loss is not None:
+                    losses.append(loss)
             state = next_state
         ep_return = equity / START_CASH - 1.0
         avg_loss = sum(losses) / len(losses) if losses else None
@@ -160,6 +187,8 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
             if improved:
                 best_metric = m["mean_return"]
                 save_checkpoint(agent, best_path, feature_names, extra={"val_mean_return": best_metric})
+                # copy the new best out to durable storage (e.g. Drive), if asked
+                _mirror(mirror_dir, [best_path, log_path if log_csv else None])
             viz.clear_line()
             star = viz.color(" ★ best", viz.YELLOW) if improved else ""
             print(f"Ep {ep:>{width}}/{episodes} | val {viz.pct_color(m['mean_return'])} "
@@ -168,14 +197,26 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
             val_row = [round(m["mean_return"], 6), round(m["pct_profitable"], 4), round(m["excess_vs_buyhold"], 6)]
 
         if writer:
-            writer.writerow([ep, round(agent.epsilon, 4), round(ep_return, 6),
-                             (round(avg_loss, 6) if avg_loss is not None else ""), *val_row])
-            log_file.flush()
+            # Logging must NEVER kill a training run. A flaky filesystem (e.g. a
+            # Google Drive FUSE mount dropping with Errno 107) would otherwise
+            # abort hours of GPU work, so an I/O failure disables the log loudly
+            # and training continues.
+            try:
+                writer.writerow([ep, round(agent.epsilon, 4), round(ep_return, 6),
+                                 (round(avg_loss, 6) if avg_loss is not None else ""), *val_row])
+                log_file.flush()
+            except OSError as exc:
+                viz.clear_line()
+                print(viz.color(f"WARNING: episode log disabled (write failed: {exc}). "
+                                f"Training continues.", viz.YELLOW))
+                writer = None
+                log_file = None
 
     viz.clear_line()
     save_checkpoint(agent, final_path, feature_names)
     if log_file:
         log_file.close()
+    _mirror(mirror_dir, [best_path, final_path, log_path if log_csv else None])
     print(f"Done. Best -> {best_path} | Final -> {final_path}" + (f" | Log -> {log_path}" if log_csv else ""))
     return {
         "best_path": best_path, "final_path": final_path, "log_path": log_path if log_csv else None,
@@ -208,6 +249,12 @@ def main(argv=None):
     p.add_argument("--val-every", type=int, default=100)
     p.add_argument("--target-update-every", type=int, default=10)
     p.add_argument("--out-dir", default="models")
+    p.add_argument("--mirror-dir", default=None,
+                   help="Also copy the best/final model + log here after each improvement "
+                        "(e.g. a Google Drive path). Train to LOCAL --out-dir and mirror out: "
+                        "a Drive hiccup then warns instead of killing the run.")
+    p.add_argument("--train-every", type=int, default=1,
+                   help="Gradient step every N env steps (default 1). Try 4 for a ~3-4x speedup.")
     p.add_argument("--no-log", action="store_true", help="Disable the per-episode CSV log.")
     p.add_argument("--resume", default=None,
                    help="Continue training from a saved .pth checkpoint (arch/window/indicators "
@@ -218,7 +265,8 @@ def main(argv=None):
           arch=args.arch, window=args.window, d_model=args.d_model, seq_layers=args.seq_layers,
           nhead=args.nhead, ff_mult=args.ff_mult, hidden=args.hidden, buffer_size=args.buffer_size,
           lr=args.lr, size=args.size, indicators=args.indicators, out_dir=args.out_dir,
-          log_csv=not args.no_log, resume=args.resume)
+          log_csv=not args.no_log, resume=args.resume,
+          train_every=args.train_every, mirror_dir=args.mirror_dir)
     return 0
 
 
