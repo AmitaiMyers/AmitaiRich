@@ -42,10 +42,53 @@ def available_dates():
         return []
     per_date = {}
     for name in os.listdir(CACHE_DIR):
-        if not name.endswith(".json"):
+        if not name.endswith(".json") or name.startswith("crypto_"):
             continue
         ticker, _, rest = name[:-5].partition("_")
         if ticker in TICKERS and rest:
             per_date.setdefault(rest, set()).add(ticker)
     complete = [d for d, tk in per_date.items() if tk >= set(TICKERS)]
     return sorted(complete)
+
+
+# ── crypto recordings: files named crypto_{SYMBOL}_{recid}.json ────────────────
+
+def crypto_cache_path(symbol, recid):
+    return os.path.join(CACHE_DIR, f"crypto_{symbol}_{recid}.json")
+
+
+def save_crypto_session(session, recid):
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    path = crypto_cache_path(session["symbol"], recid)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(session, fh, separators=(",", ":"))
+    return path
+
+
+def load_crypto_session(symbol, recid):
+    with open(crypto_cache_path(symbol, recid), "r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def crypto_recordings():
+    """List recorded crypto sessions grouped by recording id, newest first.
+
+    Returns [{recid, symbols:[...], length, start}] — one entry per recording run.
+    """
+    if not os.path.isdir(CACHE_DIR):
+        return []
+    per_rec = {}
+    for name in os.listdir(CACHE_DIR):
+        if not name.startswith("crypto_") or not name.endswith(".json"):
+            continue
+        # crypto_{SYMBOL}_{recid}.json  (recid itself may contain no underscores)
+        core = name[len("crypto_"):-len(".json")]
+        symbol, _, recid = core.partition("_")
+        if not recid:
+            continue
+        entry = per_rec.setdefault(recid, {"recid": recid, "symbols": []})
+        entry["symbols"].append(symbol)
+    out = sorted(per_rec.values(), key=lambda e: e["recid"], reverse=True)
+    for entry in out:
+        entry["symbols"].sort()
+    return out

@@ -9,6 +9,7 @@ responsible for requiring enough history (see `warmup_bars`) before trusting the
 latest value.
 """
 
+import numpy as np
 import pandas as pd
 
 
@@ -93,3 +94,36 @@ def rsi(close, period=14):
     avg_loss = loss.rolling(window=period).mean()
     relative_strength = avg_gain / avg_loss
     return 100.0 - (100.0 / (1.0 + relative_strength))
+
+
+def on_balance_volume(close, volume):
+    """On-Balance Volume: running total of volume signed by close-to-close direction.
+
+    The first bar has no prior close, so its direction (and contribution) is 0 —
+    a definitional edge, not gap-filling, so no `.fillna` is used.
+    """
+    delta = close.diff()
+    direction = pd.Series(np.where(delta > 0, 1.0, np.where(delta < 0, -1.0, 0.0)), index=close.index)
+    return (direction * volume).cumsum()
+
+
+def adx(high, low, close, period=14):
+    """Wilder's Average Directional Index. Returns (adx, plus_di, minus_di) Series.
+
+    Uses Wilder smoothing approximated by an EWM with alpha = 1/period (the standard
+    equivalence). Warmup values are NaN until enough bars exist. On a tick series
+    (no separate highs/lows) pass close for all three: directional movement then
+    derives from close-to-close moves.
+    """
+    up_move = high.diff()
+    down_move = -low.diff()
+    plus_dm = pd.Series(np.where((up_move > down_move) & (up_move > 0), up_move, 0.0), index=high.index)
+    minus_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0), index=high.index)
+    tr = true_range(high, low, close)
+    atr_ = tr.ewm(alpha=1.0 / period, adjust=False).mean()
+    plus_di = 100.0 * plus_dm.ewm(alpha=1.0 / period, adjust=False).mean() / atr_
+    minus_di = 100.0 * minus_dm.ewm(alpha=1.0 / period, adjust=False).mean() / atr_
+    di_sum = plus_di + minus_di
+    dx = 100.0 * (plus_di - minus_di).abs() / di_sum
+    adx_ = dx.ewm(alpha=1.0 / period, adjust=False).mean()
+    return adx_, plus_di, minus_di

@@ -23,6 +23,20 @@ async function readError(res) {
   return new Error((body && body.error) || ('HTTP ' + res.status + ' ' + res.statusText));
 }
 
+// Crypto sessions carry a real order book (bid/ask + full L2 depth), so nothing
+// is synthesized. book stays as arrays of {b:[[price,qty]..], a:[[price,qty]..]}.
+function normalizeCrypto(s) {
+  return {
+    schema: s.schema, symbol: s.symbol, name: s.name, exchange: s.exchange,
+    start: s.start, length: s.length, depth: s.depth, prevClose: s.prevClose,
+    prices: Float64Array.from(s.prices),
+    vols: Float64Array.from(s.vols),
+    bid: Float64Array.from(s.bid),
+    ask: Float64Array.from(s.ask),
+    book: s.book,
+  };
+}
+
 class ApiSource {
   async tickers() {
     if (!this._tickers) {
@@ -31,6 +45,22 @@ class ApiSource {
       this._tickers = await res.json();
     }
     return this._tickers;
+  }
+
+  async cryptoRecordings() {
+    const res = await fetch('/api/crypto/recordings');
+    if (!res.ok) throw await readError(res);
+    return res.json();
+  }
+
+  // Load every symbol of one crypto recording (real order-book sessions).
+  async loadCryptoRecording(recid) {
+    const res = await fetch('/api/crypto/recording/' + encodeURIComponent(recid));
+    if (!res.ok) throw await readError(res);
+    const data = await res.json();
+    const sessions = {};
+    for (const [sym, session] of Object.entries(data.sessions)) sessions[sym] = normalizeCrypto(session);
+    return { recid: data.recid, sessions };
   }
 
   async availableDates() {

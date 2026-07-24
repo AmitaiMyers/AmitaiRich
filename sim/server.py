@@ -18,14 +18,17 @@ Run from the repo root:
 import os
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from errors import SimulatorError
 from sim.datasource import TICKERS, create_data_source
+from sim.crypto_source import CRYPTO_SYMBOLS
 from sim import store
+from sim.agent import jobs                       # torch-free job manager (spawns subprocesses)
+from sim.agent.features import ALL_GROUPS
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
 _SOURCE_KIND = os.environ.get("SIM_SOURCE", "yahoo")
@@ -73,6 +76,99 @@ def get_one(date_str, ticker):
 def get_all(date_str):
     sessions = {t: _get_or_fetch(t, date_str) for t in TICKERS}
     return {"date": date_str, "sessions": sessions}
+
+
+# ── crypto (real order-book) recordings ────────────────────────────────────────
+
+@app.get("/api/crypto/symbols")
+def crypto_symbols():
+    return CRYPTO_SYMBOLS
+
+
+@app.get("/api/crypto/recordings")
+def crypto_recordings():
+    """Recordings newest-first, enriched with length/start/names from one file each."""
+    out = []
+    for rec in store.crypto_recordings():
+        meta = {"recid": rec["recid"], "symbols": rec["symbols"],
+                "names": {s: CRYPTO_SYMBOLS.get(s, s) for s in rec["symbols"]}}
+        if rec["symbols"]:
+            head = store.load_crypto_session(rec["symbols"][0], rec["recid"])
+            meta["length"] = head["length"]
+            meta["start"] = head["start"]
+        out.append(meta)
+    return out
+
+
+@app.get("/api/crypto/recording/{recid}")
+def crypto_recording(recid):
+    recs = {r["recid"]: r for r in store.crypto_recordings()}
+    if recid not in recs:
+        raise HTTPException(status_code=404, detail=f"Unknown recording {recid!r}")
+    sessions = {s: store.load_crypto_session(s, recid) for s in recs[recid]["symbols"]}
+    return {"recid": recid, "sessions": sessions}
+
+
+# ── Agent Lab: train / validate DQN models from the GUI ────────────────────────
+
+@app.get("/api/agent/options")
+def agent_options():
+    return {"indicator_groups": ALL_GROUPS, "archs": ["mlp", "gru", "transformer"],
+            "dataset": jobs.dataset_status()}
+
+
+@app.get("/api/agent/dataset")
+def agent_dataset():
+    return jobs.dataset_status()
+
+
+@app.post("/api/agent/dataset")
+def agent_build_dataset(payload: dict = Body(default={})):
+    try:
+        jobs.launch_dataset(scope=payload.get("scope", "nasdaq100"),
+                            start=payload.get("start", "2015-01-01"),
+                            limit=payload.get("limit"))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"building": True}
+
+
+@app.get("/api/agent/runs")
+def agent_runs():
+    return jobs.list_runs()
+
+
+@app.post("/api/agent/train")
+def agent_train(payload: dict = Body(...)):
+    params = {
+        "name": payload["name"],
+        "indicators": payload.get("indicators") or None,
+        "arch": payload.get("arch", "mlp"),
+        "window": int(payload.get("window", 1)),
+        "episodes": int(payload.get("episodes", 2000)),
+        "batch_size": int(payload.get("batch_size", 128)),
+        "d_model": int(payload.get("d_model", 128)),
+        "seq_layers": int(payload.get("seq_layers", 2)),
+        "val_every": int(payload.get("val_every", 100)),
+    }
+    try:
+        name = jobs.launch_experiment(params)
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"name": name}
+
+
+@app.get("/api/agent/run/{name}")
+def agent_run(name):
+    run = jobs.read_run(name)
+    if run is None:
+        raise HTTPException(status_code=404, detail=f"Run {name!r} not found")
+    return run
+
+
+@app.post("/api/agent/run/{name}/stop")
+def agent_stop(name):
+    return {"stopped": jobs.stop(name)}
 
 
 # Static front-end last, so the API routes above take precedence.

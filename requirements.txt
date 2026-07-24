@@ -9,3 +9,7 @@ numpy>=1.24
 # Day-trading simulator (sim/) — FastAPI server for the canvas front-end.
 fastapi>=0.110
 uvicorn>=0.29
+
+# DQN trading agent (sim/agent/). CPU build by default; for GPU install the CUDA
+# build instead, e.g.:  pip install torch --index-url https://download.pytorch.org/whl/cu121
+torch>=2.0

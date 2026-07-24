@@ -8,31 +8,49 @@ from sim.agent.env import TradingEnv
 from sim.agent.dqn_agent import DQNAgent
 
 
-def train_dqn(episodes: int = 500, lookback: int = 60, batch_size: int = 64):
-    # Retrieve available dates from the JSON cache explicitly
+def _make_session_sampler(source: str):
+    """Return (sampler, description). sampler() -> (session_data, label).
+
+    'stock'  : real Yahoo day-sessions (synthetic book, real OHLCV).
+    'crypto' : real Binance recordings (fully real data). Both feed the same
+               TradingEnv, which appends indicator features to the state.
+    """
+    if source == "crypto":
+        recs = store.crypto_recordings()
+        assert recs, "No crypto recordings. Run 'python -m sim.crypto_record' first."
+        pool = [(sym, r["recid"]) for r in recs for sym in r["symbols"]]
+
+        def sample():
+            sym, recid = random.choice(pool)
+            return store.load_crypto_session(sym, recid), f"{sym} ({recid})"
+        return sample, f"{len(pool)} crypto symbol-sessions across {len(recs)} recording(s)"
+
     dates = store.available_dates()
-
-    # Fail Fast: Stop execution if no data has been ingested yet
     assert len(dates) > 0, "No cached data found. Run 'python -m sim.ingest' to fetch market data first."
-
     tickers = list(TICKERS.keys())
 
-    # The state array contains the lookback window of normalized prices PLUS current cash and position
-    state_dim = lookback + 2
+    def sample():
+        ticker, date_str = random.choice(tickers), random.choice(dates)
+        assert store.is_cached(ticker, date_str), f"Session cache missing for {ticker} on {date_str}."
+        return store.load_session(ticker, date_str), f"{ticker} ({date_str})"
+    return sample, f"{len(dates)} trading days x {len(tickers)} tickers"
+
+
+def train_dqn(episodes: int = 500, lookback: int = 60, batch_size: int = 64, source: str = "stock"):
+    sample_session, pool_desc = _make_session_sampler(source)
+
+    # State = lookback window of normalized prices + cash + position + indicator features
+    # (Bollinger %B/bandwidth, ADX, OBV, relative volume — see TradingEnv).
+    state_dim = lookback + 2 + TradingEnv.N_INDICATOR_FEATURES
     action_dim = 3  # 0: Hold, 1: Buy Max, 2: Sell Max
 
     agent = DQNAgent(state_dim=state_dim, action_dim=action_dim)
 
-    print(f"Starting Training: {episodes} episodes over {len(dates)} available trading days.")
+    print(f"Starting Training: {episodes} episodes | source='{source}' | {pool_desc}.")
 
     for episode in range(1, episodes + 1):
-        # Sample a random ticker and date to prevent overfitting to a single asset's price curve
-        ticker = random.choice(tickers)
-        date_str = random.choice(dates)
-
-        # Fail Fast: Ensure the exact session exists before loading
-        assert store.is_cached(ticker, date_str), f"Session cache missing for {ticker} on {date_str}."
-        session_data = store.load_session(ticker, date_str)
+        # Sample a random session to prevent overfitting to one asset's price curve
+        session_data, label = sample_session()
 
         env = TradingEnv(session_data, lookback=lookback)
         state = env.reset()
@@ -60,7 +78,7 @@ def train_dqn(episodes: int = 500, lookback: int = 60, batch_size: int = 64):
 
         # Progress reporting
         pnl = final_equity - 100000.0
-        print(f"Episode {episode:03d}/{episodes} | {ticker} ({date_str}) | "
+        print(f"Episode {episode:03d}/{episodes} | {label} | "
               f"P&L: ${pnl:+8.2f} | Eq: ${final_equity:.2f} | EPS: {agent.epsilon:.3f}")
 
     # ==========================================
@@ -72,5 +90,17 @@ def train_dqn(episodes: int = 500, lookback: int = 60, batch_size: int = 64):
     print(f"\nTraining complete. Model weights saved to: {save_path}")
 
 
+def main(argv=None):
+    import argparse
+    p = argparse.ArgumentParser(description="Train the DQN trading agent.")
+    p.add_argument("--source", choices=["stock", "crypto"], default="stock",
+                   help="Train on real Yahoo stock sessions or real Binance crypto recordings.")
+    p.add_argument("--episodes", type=int, default=500)
+    p.add_argument("--lookback", type=int, default=60)
+    p.add_argument("--batch-size", type=int, default=64)
+    args = p.parse_args(argv)
+    train_dqn(episodes=args.episodes, lookback=args.lookback, batch_size=args.batch_size, source=args.source)
+
+
 if __name__ == "__main__":
-    train_dqn()
+    main()

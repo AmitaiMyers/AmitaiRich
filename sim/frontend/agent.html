@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROOF·SIM — Agent Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a0e14'/%3E%3Cpath d='M3 9h2v4H3zM7 4h2v9H7zM11 6h2v7h-2z' fill='%234f8cff'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <span class="brand-mark">ROOF·SIM</span>
+    <span class="lab-tag">AGENT LAB</span>
+    <a class="lab-link" href="/">◀ back to simulator</a>
+  </header>
+
+  <div class="lab-main">
+    <!-- ══ Sidebar ══ -->
+    <aside class="lab-side">
+      <div class="lab-card" id="dataset-card">
+        <div class="lab-h">DATASET</div>
+        <div id="dataset-status" class="lab-muted">checking…</div>
+        <button id="build-dataset" class="lab-btn ghost hidden">Build dataset</button>
+      </div>
+
+      <div class="lab-card">
+        <div class="lab-h">NEW TRAINING RUN</div>
+        <form id="run-form" class="lab-form">
+          <label class="lab-field"><span>Run name</span>
+            <input id="f-name" class="lab-input" placeholder="e.g. bb_adx_gru" required></label>
+
+          <div class="lab-field"><span>Indicators</span>
+            <div id="f-indicators" class="lab-checks"></div></div>
+
+          <label class="lab-field"><span>Architecture</span>
+            <select id="f-arch" class="lab-input">
+              <option value="mlp">MLP (per-day)</option>
+              <option value="gru">GRU (sequence)</option>
+              <option value="transformer">Transformer (sequence)</option>
+            </select></label>
+
+          <div class="lab-row">
+            <label class="lab-field"><span>Window</span><input id="f-window" class="lab-input" type="number" value="1" min="1"></label>
+            <label class="lab-field"><span>Episodes</span><input id="f-episodes" class="lab-input" type="number" value="2000" min="1"></label>
+          </div>
+          <div class="lab-row">
+            <label class="lab-field"><span>Batch</span><input id="f-batch" class="lab-input" type="number" value="128" min="1"></label>
+            <label class="lab-field"><span>d_model</span><input id="f-dmodel" class="lab-input" type="number" value="128" min="8"></label>
+            <label class="lab-field"><span>Layers</span><input id="f-layers" class="lab-input" type="number" value="2" min="1"></label>
+          </div>
+          <button type="submit" id="start-btn" class="lab-btn primary">▶ START TRAINING</button>
+          <div id="form-msg" class="lab-msg"></div>
+        </form>
+      </div>
+
+      <div class="lab-card">
+        <div class="lab-h">RUNS <span id="runs-count" class="lab-muted"></span></div>
+        <div id="runs-list" class="runs-list"></div>
+      </div>
+    </aside>
+
+    <!-- ══ Report view ══ -->
+    <main class="lab-content" id="run-view">
+      <div class="lab-empty">Configure a run on the left and press <b>Start Training</b>,<br>or select an existing run to see its report.</div>
+    </main>
+  </div>
+</div>
+<script type="module" src="agent.js"></script>
+</body>
+</html>

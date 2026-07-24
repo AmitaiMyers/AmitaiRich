@@ -16,8 +16,14 @@
     <div class="brand"><span class="brand-mark">ROOF·SIM</span></div>
     <div id="tabs" class="tabs"></div>
     <div class="header-right">
+      <a class="mode-btn" href="/agent.html" title="Train &amp; validate DQN models" style="text-decoration:none">🧪 AGENT LAB</a>
+      <div class="mode-toggle">
+        <button id="mode-stock" class="mode-btn" title="Real Yahoo stock data (order book synthesized)">STOCKS</button>
+        <button id="mode-crypto" class="mode-btn" title="Real Binance crypto recordings (100% real order book)">CRYPTO</button>
+      </div>
       <label class="mini-label">SESSION</label>
       <input type="date" id="date" class="date-input">
+      <select id="recording" class="date-input hidden" title="Recorded crypto session"></select>
       <div class="divider"></div>
       <div class="readouts">
         <div class="readout"><span class="readout-label">CASH</span><span id="cash" class="readout-val">—</span></div>
@@ -37,6 +43,8 @@
         <span id="last" class="last-price">—</span>
         <span id="last-chg" class="last-chg"></span>
         <div class="chart-tools">
+          <div id="ind-toggles" class="ind-toggles"></div>
+          <div class="divider"></div>
           <div id="intervals" class="intervals"></div>
           <div class="divider"></div>
           <button id="draw-btn" class="tool-btn" title="Draw trend line (click-drag on chart)">╱ LINE</button>
@@ -126,9 +134,9 @@
       <button id="step-fwd" class="pb-btn" title="Step forward 1s">+1</button>
       <button id="jump-close" class="pb-btn" title="Jump to close">▶|</button>
     </div>
-    <span class="mono time-edge">09:30</span>
+    <span id="time-start" class="mono time-edge">09:30</span>
     <input type="range" id="scrub" class="scrub" min="0" max="23399" value="0">
-    <span class="mono time-edge">16:00</span>
+    <span id="time-end" class="mono time-edge">16:00</span>
     <div id="speeds" class="speeds"></div>
     <div class="clock-box">
       <span id="clock" class="clock">09:30:00</span>
