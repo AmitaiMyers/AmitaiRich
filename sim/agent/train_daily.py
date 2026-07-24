@@ -22,10 +22,10 @@ import sys
 import time
 from collections import deque
 
-from sim.agent.dataset import load_dataset, select_indicators, DATASET_PATH
+from sim.agent.dataset import load_dataset, select_indicators, select_features_by_name, DATASET_PATH
 from sim.agent.daily_env import DailyTradingEnv, START_CASH
 from sim.agent.dqn_agent import DQNAgent
-from sim.agent.checkpoint import save_checkpoint
+from sim.agent.checkpoint import save_checkpoint, load_agent
 from sim.agent.validate import evaluate
 from sim.agent.features import ALL_GROUPS
 from sim.agent import viz
@@ -37,23 +37,36 @@ LOG_NAME = "train_log.csv"
 
 def train(episodes=2000, batch_size=128, dataset_path=DATASET_PATH, val_every=100,
           target_update_every=10, arch="mlp", window=1, d_model=128, seq_layers=2,
-          indicators=None, out_dir="models", log_csv=True):
+          indicators=None, out_dir="models", log_csv=True, resume=None):
     data = load_dataset(dataset_path)
-    if indicators:
-        data = select_indicators(data, indicators)
-    train_set, val_set, feature_names = data["train"], data["val"], data["feature_names"]
-    assert train_set, "Empty training set — rebuild the dataset."
 
-    feature_dim = len(feature_names)
-    if arch != "mlp" and window < 2:
-        window = 30   # sequence encoders need a real look-back window
+    if resume:
+        # Warm-start from an existing checkpoint: architecture, window and feature
+        # set are read FROM the checkpoint (so the weights fit), not from CLI flags.
+        agent, ckpt = load_agent(resume)
+        feature_names = ckpt["feature_names"]
+        window, arch = ckpt["window"], ckpt["arch"]
+        data = select_features_by_name(data, feature_names)
+        agent.update_target_network()   # load_agent leaves target un-synced; fix for training
+        agent.policy_net.train()         # load_agent left it in eval()
+        print(f"Resuming from {resume} | arch={arch} window={window} "
+              f"features={len(feature_names)} ({', '.join(feature_names)})")
+    else:
+        if indicators:
+            data = select_indicators(data, indicators)
+        feature_names = data["feature_names"]
+        feature_dim = len(feature_names)
+        if arch != "mlp" and window < 2:
+            window = 30   # sequence encoders need a real look-back window
+        agent = DQNAgent(state_dim=window * feature_dim + 2, action_dim=3, arch=arch,
+                         feature_dim=feature_dim, window=window, d_model=d_model, seq_layers=seq_layers)
+
+    train_set, val_set = data["train"], data["val"]
+    assert train_set, "Empty training set — rebuild the dataset."
     train_set = [s for s in train_set if len(s[2]) > window + 1]
     val_set = [s for s in val_set if len(s[2]) > window + 1]
     assert train_set, "No training series long enough for the chosen window."
-
-    state_dim = window * feature_dim + 2
-    agent = DQNAgent(state_dim=state_dim, action_dim=3, arch=arch, feature_dim=feature_dim,
-                     window=window, d_model=d_model, seq_layers=seq_layers)
+    state_dim = agent.state_dim
 
     os.makedirs(out_dir, exist_ok=True)
     final_path = os.path.join(out_dir, FINAL_NAME)
@@ -68,8 +81,8 @@ def train(episodes=2000, batch_size=128, dataset_path=DATASET_PATH, val_every=10
 
     print(f"Training daily DQN | arch={arch} window={window} | {episodes} episodes | "
           f"{len(train_set)} train / {len(val_set)} val tickers")
-    print(f"  indicators={indicators or ALL_GROUPS} | features={feature_dim} | "
-          f"state_dim={state_dim} | noisy={agent.noisy}\n")
+    print(f"  features={len(feature_names)} | state_dim={state_dim} | noisy={agent.noisy}"
+          + ("  (resumed)" if resume else "") + "\n")
 
     best_metric = float("-inf")
     train_hist = deque(maxlen=50)
@@ -159,11 +172,14 @@ def main(argv=None):
     p.add_argument("--target-update-every", type=int, default=10)
     p.add_argument("--out-dir", default="models")
     p.add_argument("--no-log", action="store_true", help="Disable the per-episode CSV log.")
+    p.add_argument("--resume", default=None,
+                   help="Continue training from a saved .pth checkpoint (arch/window/indicators "
+                        "are taken from the checkpoint; --arch/--window/--indicators are ignored).")
     args = p.parse_args(argv)
     train(episodes=args.episodes, batch_size=args.batch_size, dataset_path=args.dataset,
           val_every=args.val_every, target_update_every=args.target_update_every,
           arch=args.arch, window=args.window, d_model=args.d_model, seq_layers=args.seq_layers,
-          indicators=args.indicators, out_dir=args.out_dir, log_csv=not args.no_log)
+          indicators=args.indicators, out_dir=args.out_dir, log_csv=not args.no_log, resume=args.resume)
     return 0
 
 

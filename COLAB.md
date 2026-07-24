@@ -26,10 +26,28 @@ import os; os.makedirs('/content/drive/MyDrive/roofsim', exist_ok=True)
 ```
 
 ### 3. Get the code
+
+**Public repo:**
 ```python
 !git clone https://github.com/AmitaiMyers/AmitaiRich.git
 %cd AmitaiRich
 ```
+
+**Private repo** (a plain clone fails with *"could not read Username for
+'https://github.com'"* — git is asking for a credential). Use a token:
+1. GitHub ▸ Settings ▸ Developer settings ▸ **Fine-grained tokens** ▸ Generate,
+   with **Contents: Read-only** on this repo.
+2. In Colab, click the **🔑** (Secrets) panel ▸ add secret `GITHUB_TOKEN`,
+   enable *Notebook access*.
+3. Clone with the token from an env var (keeps it out of the printed output):
+```python
+import os
+from google.colab import userdata
+os.environ['GH_TOKEN'] = userdata.get('GITHUB_TOKEN')          # or: getpass.getpass()
+!git clone https://$GH_TOKEN@github.com/AmitaiMyers/AmitaiRich.git
+%cd AmitaiRich
+```
+
 *(Use `%cd`, not `!cd` — the `%` magic makes the directory stick across cells.)*
 
 ### 4. Install the one missing dep

@@ -118,6 +118,24 @@ def select_indicators(data, groups):
     rebuilding to change the indicator mix.
     """
     idx, names = group_columns(data["feature_names"], groups)
+    return _select_columns(data, idx, names)
+
+
+def select_features_by_name(data, names):
+    """Slice the dataset to an explicit, ordered list of feature names.
+
+    Used when resuming a checkpoint: the model's stored feature order must match the
+    columns fed to it exactly, regardless of which groups they came from.
+    """
+    missing = [n for n in names if n not in data["feature_names"]]
+    if missing:
+        raise SimulatorError(f"Dataset is missing features required by the checkpoint: {missing}. "
+                             f"Rebuild the dataset (python -m sim.agent.dataset).")
+    idx = [data["feature_names"].index(n) for n in names]
+    return _select_columns(data, idx, list(names))
+
+
+def _select_columns(data, idx, names):
     cols = np.array(idx)
 
     def slice_rows(rows):
