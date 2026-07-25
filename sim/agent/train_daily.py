@@ -97,6 +97,7 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
         if indicators:
             data = select_indicators(data, indicators)
         feature_names = data["feature_names"]
+        print(f"feature_names: {feature_names}")
         feature_dim = len(feature_names)
         if arch != "mlp" and window < 2:
             window = 30   # sequence encoders need a real look-back window
