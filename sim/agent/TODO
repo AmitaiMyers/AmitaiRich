@@ -2,3 +2,138 @@ Zero Frictions: It assumes zero transaction fees, zero commissions, and zero exe
 All-in Sizing: Position sizing is binary—it goes 100% cash or 100% equity without risk-adjusted position scaling.
 maybe:
 Shorting: The daily agent is limited to long or flat positions.
+
+
+suggestion from gemini:
+To introduce realistic frictions and fractional position sizing while sticking to our rule of **preferring simple solutions**, we should expand the discrete action space rather than entirely rewriting the model to support continuous actions (like DDPG or PPO).
+
+We will expand the action space from 3 to 5 discrete actions to allow scaling in and out of positions, and introduce a percentage-based fee to simulate transaction costs and slippage.
+
+Here is exactly how to modify your codebase.
+
+### 1. Update `daily_env.py`
+
+We need to add a `fee_rate` to calculate the cost/proceeds per share. We also need to change the binary `pos_flag` in the state to `invested_fraction`, so the neural network actually knows what percentage of its portfolio is currently in the market.
+
+Replace your `DailyTradingEnv` class with this updated version:
+
+```python
+import numpy as np
+
+START_CASH = 100000.0
+
+class DailyTradingEnv:
+    """`window=1` -> state is the current day's features (MLP agent).
+    `window>1` -> state is the last `window` days flattened (sequence agent).
+    """
+    def __init__(self, ticker, features, closes, window: int = 1, fee_rate: float = 0.001):
+        assert features.ndim == 2, "features must be 2D [T, F]"
+        assert len(features) == len(closes), "features/closes length mismatch"
+        assert window >= 1, "window must be >= 1"
+        assert len(closes) > window + 1, "session too short for the window"
+
+        self.ticker = ticker
+        self.features = np.asarray(features, dtype=np.float32)
+        self.closes = np.asarray(closes, dtype=np.float64)
+        self.n = len(closes)
+        self.window = window
+        self.fee_rate = fee_rate # 0.001 = 0.1% friction per trade
+
+        self.reset()
+
+    @property
+    def feature_dim(self):
+        return self.features.shape[1]
+
+    @property
+    def state_dim(self):
+        return self.window * self.feature_dim + 2  # window of features + invested_fraction + unrealized
+
+    def reset(self):
+        self.t = self.window - 1
+        self.cash = START_CASH
+        self.shares = 0.0
+        self.entry = 0.0
+        return self._state()
+
+    def _equity(self, t):
+        return self.cash + self.shares * self.closes[t]
+
+    def _state(self):
+        equity = self._equity(self.t)
+        # Replaced pos_flag with continuous invested_fraction so the agent knows its size
+        invested_fraction = (self.shares * self.closes[self.t]) / equity if equity > 0 else 0.0
+        unreal = (self.closes[self.t] / self.entry - 1.0) if self.shares > 0 and self.entry > 0 else 0.0
+
+        win = self.features[self.t - self.window + 1: self.t + 1]   # [window, F]
+        return np.concatenate([win.reshape(-1), [invested_fraction, unreal]]).astype(np.float32)
+
+    def step(self, action: int):
+        # 0=Hold, 1=Buy Light (25%), 2=Buy Max (100%), 3=Sell Light (25%), 4=Sell Max (100%)
+        assert action in (0, 1, 2, 3, 4), f"Invalid action {action}."
+
+        price = self.closes[self.t]
+        equity_prev = self._equity(self.t)
+
+        # Apply frictions
+        cost_price = price * (1.0 + self.fee_rate)
+        sell_price = price * (1.0 - self.fee_rate)
+
+        # Handle Buys (1, 2)
+        if action in (1, 2) and self.cash > 0.0:
+            fraction = 0.25 if action == 1 else 1.0
+            spend = self.cash * fraction
+            shares_bought = spend / cost_price
+
+            # Weighted average entry price
+            if self.shares > 0.0:
+                total_cost = (self.shares * self.entry) + (shares_bought * cost_price)
+                self.entry = total_cost / (self.shares + shares_bought)
+            else:
+                self.entry = cost_price
+
+            self.shares += shares_bought
+            self.cash -= spend
+
+        # Handle Sells (3, 4)
+        elif action in (3, 4) and self.shares > 0.0:
+            fraction = 0.25 if action == 3 else 1.0
+            shares_sold = self.shares * fraction
+
+            self.cash += shares_sold * sell_price
+            self.shares -= shares_sold
+
+            # Float precision safeguard
+            if self.shares <= 1e-8:
+                self.shares = 0.0
+                self.entry = 0.0
+
+        self.t += 1
+        done = self.t >= self.n - 1
+        equity_now = self._equity(min(self.t, self.n - 1))
+
+        # log return keeps the reward scale stable
+        reward = float(np.log(equity_now / equity_prev)) if equity_prev > 0 and equity_now > 0 else 0.0
+
+        return (self._state() if not done else None), reward, done, equity_now
+
+```
+
+### 2. Update the Action Dimension Everywhere
+
+Because the environment now supports 5 actions instead of 3, you must update the initialization of the agent.
+
+In `train_daily.py`, update the agent initialization (around line 95) from `action_dim=3` to `action_dim=5`:
+
+```python
+        agent = DQNAgent(state_dim=window * feature_dim + 2, action_dim=5, arch=arch,
+                         feature_dim=feature_dim, window=window, d_model=d_model,
+                         # ... rest of arguments
+
+```
+
+You must also make this same update in `eval.py` and `train.py` wherever `action_dim` is hardcoded.
+
+---
+
+Are you planning to test this with a flat fee percentage as implemented above, or do you eventually want to dynamically calculate slippage based on a stock's daily volume?
