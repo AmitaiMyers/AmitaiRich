@@ -55,3 +55,7 @@ Follow these rules strictly:
      - Explicitly tell me what the bug is and why it’s a problem.
      - Immediately propose and show the corrected version of the code.
    - Never ignore or work around a bug silently.
+
+7. Clarification Over Assumptions
+-If a requirements gap, ambiguity, or unsolved issue arises, or if any instruction lacks necessary clarity, stop and ask clarifying questions.
+-Do not guess or proceed with implementation on unverified assumptions.
