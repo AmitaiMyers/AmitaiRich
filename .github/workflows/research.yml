@@ -1,0 +1,90 @@
+name: Research
+
+# Runs a research phase on GitHub's runners (they can reach Yahoo Finance), commits
+# the small JSON report to research_results/ and uploads the full scratch output as
+# an artifact. When it finishes, "Publish PWA" redeploys so the report appears on the
+# Research page. The workflow never changes the production strategy.
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Phase to run (v3 = the full automated improvement study)"
+        required: true
+        default: v3
+        type: choice
+        options: [v3, baseline, smoke, validate, train, refine, sweep, growth, refine_growth, regime, squeeze]
+      data_end:
+        description: "Last data date YYYY-MM-DD (empty = today)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      RESEARCH_OUT: research_out
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Install dependencies
+        run: pip install -r requirements-core.txt
+
+      - name: Resolve the data end date
+        env:
+          DATA_END: ${{ inputs.data_end }}
+        run: |
+          if [ -z "$DATA_END" ]; then DATA_END="$(date -u +%F)"; fi
+          if ! [[ "$DATA_END" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "data_end must be YYYY-MM-DD, got: $DATA_END"; exit 1
+          fi
+          echo "RESEARCH_END=$DATA_END" >> "$GITHUB_ENV"
+
+      # Same end date -> same cache files, so a re-run on the same day skips the download.
+      - name: Cache market data
+        uses: actions/cache@v4
+        with:
+          path: data_cache
+          key: research-data-${{ env.RESEARCH_END }}
+
+      - name: Run research phase
+        env:
+          PHASE: ${{ inputs.phase }}
+        run: |
+          set -o pipefail
+          python research_grids.py "$PHASE" | tee research_out_log.txt
+
+      - name: Upload full output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-${{ inputs.phase }}-${{ env.RESEARCH_END }}
+          path: |
+            research_out/
+            research_results/
+            research_out_log.txt
+
+      - name: Commit the report
+        env:
+          PHASE: ${{ inputs.phase }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research_results/
+          if git diff --cached --quiet; then
+            echo "No report changes to commit."
+          else
+            git commit -m "Research: $PHASE report (data to $RESEARCH_END)"
+            git push
+          fi
