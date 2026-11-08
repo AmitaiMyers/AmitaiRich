@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import { decodeBars } from '../js/data.js';
+import { decodeBars, sliceBars } from '../js/data.js';
+import { holdingVerdict } from '../js/holdings.js';
 import { buyAndHold, metrics, pyFloorDiv, runEngine } from '../js/engine/engine.js';
 import { rollingMean } from '../js/engine/indicators.js';
 import { buildStrategy, STRATEGIES } from '../js/engine/strategies.js';
@@ -76,3 +77,24 @@ test('metrics on a simple curve', () => {
 test('unknown config keys fail fast', () => {
   assert.throws(() => buildStrategy('Momentum Rider (ROC + MA exit)', { nope: 1 }), /Unknown config keys/);
 });
+
+
+for (const [n, h] of fixture.holdings.entries()) {
+  test(`holding verdict #${n}: ${h.ticker} entered ${h.entryDate}`, () => {
+    const strategy = buildStrategy(fixture.production.strategy, fixture.production.config);
+    const history = sliceBars(bars[h.ticker], null, h.asOfDay);
+    const entryDay = Math.round(Date.parse(`${h.entryDate}T00:00:00Z`) / 86400000);
+    const got = holdingVerdict(history, strategy, entryDay, h.entryPrice, h.stopMode);
+    const e = h.expected;
+    assert.equal(got.verdict, e.verdict);
+    assert.equal(got.reason, e.reason);
+    assert.equal(got.trend, e.trend);
+    assert.equal(got.barsHeld, e.bars_held);
+    const close = (a, b) => assert.ok(Math.abs(a - b) <= 0.0051 + 1e-9, `${a} vs ${b}`);
+    close(got.stopPrice, e.stop_price);
+    close(got.exitLevel, e.exit_level);
+    close(got.entryPrice, e.entry_price);
+    assert.ok(Math.abs(got.toExit - e['to_exit_%']) <= 0.051);
+    assert.ok(Math.abs(got.openPnl - e['open_pnl_%']) <= 0.051);
+  });
+}

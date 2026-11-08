@@ -35,9 +35,13 @@ export function sliceBars(bars, fromDay, toDay) {
 // ---------------------------------------------------------------------------
 
 const barCache = new Map();
+let dataBase = '';
+
+/** Prefix for data URLs ('' in the page; '../' inside js/lab-worker.js). */
+export function setDataBase(prefix) { dataBase = prefix; }
 
 async function getJson(path) {
-  const response = await fetch(path, { cache: 'no-cache' });
+  const response = await fetch(`${dataBase}${path}`);
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   return response.json();
 }

@@ -77,27 +77,41 @@ def _window(as_of, lookback_days):
 
 
 def scan_for_buys(tickers, algorithm, as_of=None, lookback_days=600,
-                  interval="1d", use_cache=True):
+                  interval="1d", use_cache=True, frames=None):
     """Return (hits, errors) DataFrames: stocks whose latest bar is a BUY, strongest first.
 
     `hits` has ticker, date, close, score (the strategy's ranking strength) plus the
     algorithm's `describe` facts. `errors` lists tickers with no usable data.
+    `frames` ({ticker: frame}, optional) supplies already-loaded histories — a ticker
+    missing from it is reported as an error; nothing is downloaded.
     """
+    if frames is not None:
+        return _rank_hits(algorithm, frames, list(dict.fromkeys(normalize_ticker(t) for t in tickers)))
     start_str, end_str = _window(as_of, lookback_days)
-    needed = algorithm.warmup_bars() + 1
-    hits, errors = [], []
+    errors = []
 
     # De-duplicate (some universe CSVs list a symbol more than once) so each name
     # is scanned and reported once, and we don't waste a fetch on repeats.
     tickers = list(dict.fromkeys(normalize_ticker(t) for t in tickers))
     if use_cache:
         prefetch(tickers, start_str, end_str, interval=interval)
+    loaded = {}
     for ticker in tickers:
         try:
-            df = fetch_data(ticker, start_str, end_str, interval=interval, use_cache=use_cache)
+            loaded[ticker] = fetch_data(ticker, start_str, end_str, interval=interval, use_cache=use_cache)
         except PER_TICKER_ERRORS as exc:
             errors.append({"ticker": ticker, "error": type(exc).__name__})
-            continue
+    hits_df, missing = _rank_hits(algorithm, loaded, list(loaded))
+    return hits_df, pd.concat([pd.DataFrame(errors), missing], ignore_index=True)
+
+
+def _rank_hits(algorithm, frames, tickers):
+    """Latest-bar BUY hits among `tickers` (histories from `frames`), strongest first."""
+    needed = algorithm.warmup_bars() + 1
+    hits = []
+    missing = [{"ticker": t, "error": "NoData"} for t in tickers if t not in frames]
+    for ticker in [t for t in tickers if t in frames]:
+        df = frames[ticker]
         if len(df) < needed:
             continue
         signals = algorithm.signals(df)
@@ -109,11 +123,10 @@ def scan_for_buys(tickers, algorithm, as_of=None, lookback_days=600,
         if hasattr(algorithm, "describe"):
             row.update(algorithm.describe(df))
         hits.append(row)
-
     hits_df = pd.DataFrame(hits)
     if not hits_df.empty:
         hits_df = hits_df.sort_values("score", ascending=False).reset_index(drop=True)
-    return hits_df, pd.DataFrame(errors)
+    return hits_df, pd.DataFrame(missing, columns=["ticker", "error"])
 
 
 def exit_ma_period(algorithm):
@@ -137,7 +150,14 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     start = (pd.Timestamp(entry_date) - pd.Timedelta(days=lookback_days)).strftime("%Y-%m-%d")
     end_str = (end + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
     df = fetch_data(ticker, start, end_str, interval=interval, use_cache=use_cache)
+    return {"ticker": ticker, **holding_verdict(df, algorithm, entry_date, entry_price, stop_mode, ticker)}
 
+
+def holding_verdict(df, algorithm, entry_date, entry_price, stop_mode, ticker="?"):
+    """The HOLD/SELL verdict for a position on `df`'s latest bar (pure; no I/O).
+
+    pwa/js/holdings.js is a port of this function (checked by the parity fixture).
+    """
     entry_index = int(df.index.searchsorted(pd.Timestamp(entry_date)))
     if entry_index >= len(df):
         raise EmptyDataError(f"{ticker}: entry date {entry_date} is after the last bar.")
@@ -181,7 +201,7 @@ def check_holding(ticker, algorithm, entry_date, entry_price=None, as_of=None,
     trend = "flat" if mom_1m is None else ("down" if mom_1m < -1 else ("up" if mom_1m > 1 else "flat"))
 
     return {
-        "ticker": ticker, "verdict": verdict, "reason": reason,
+        "verdict": verdict, "reason": reason,
         "trend": trend, "mom_1m_%": mom_1m,
         "entry_price": round(fill_price, 2), "last_close": round(last_close, 2),
         "open_pnl_%": round((last_close / fill_price - 1) * 100, 1),
@@ -286,14 +306,16 @@ def _score_change(ticker, new_score, prev):
     return round(new_score - prev[ticker][1], 4)
 
 
-def daily_report(algorithm, state, today, held=frozenset(), as_of=None, use_cache=True):
+def daily_report(algorithm, state, today, held=frozenset(), as_of=None, use_cache=True,
+                 frames=None, top_n=TOP_N, scan_universe=None):
     """Scan the combined universe and return (report dict, updated state).
 
     Rank, score and their day-over-day changes are computed on the FULL ranking
     BEFORE hiding holdings, so they reflect momentum — not which names you own.
+    `scan_universe` = (tickers, {ticker: source tag}); default: combined_universe().
     """
-    tickers, sources = combined_universe()
-    hits, errors = scan_for_buys(tickers, algorithm, as_of=as_of, use_cache=use_cache)
+    tickers, sources = combined_universe() if scan_universe is None else scan_universe
+    hits, errors = scan_for_buys(tickers, algorithm, as_of=as_of, use_cache=use_cache, frames=frames)
     prev = _previous_snapshot(state, today)
     rows = hits.to_dict("records") if not hits.empty else []
     for rank, row in enumerate(rows, start=1):
@@ -311,16 +333,16 @@ def daily_report(algorithm, state, today, held=frozenset(), as_of=None, use_cach
     report = {
         "date": today,
         "strategy": {"name": algorithm.name, "config": algorithm.config,
-                     "stop_mode": DEFAULT_STOP_MODE, "top_n": TOP_N,
+                     "stop_mode": DEFAULT_STOP_MODE, "top_n": top_n,
                      "target_positions": TARGET_POSITIONS},
         "universe_size": len(tickers),
         "n_candidates": len(rows),
-        "candidates": buyable[:TOP_N],
+        "candidates": buyable[:top_n],
         "held_hidden": [row["ticker"] for row in rows if row["ticker"] in held],
         "new_today": [row["ticker"] for row in buyable if row["ticker"] not in prev] if prev else [],
         "dropped": sorted(set(prev) - current),
         "risers": sorted(([row["ticker"], prev[row["ticker"]][0] - row["rank"]]
-                          for row in buyable[:TOP_N]
+                          for row in buyable[:top_n]
                           if row["ticker"] in prev and prev[row["ticker"]][0] > row["rank"]),
                          key=lambda pair: -pair[1])[:5],
         "skipped": errors["ticker"].tolist() if not errors.empty else [],

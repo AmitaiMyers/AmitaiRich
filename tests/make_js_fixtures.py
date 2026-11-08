@@ -16,6 +16,7 @@ import os
 from algorithms import build_algorithm
 from engine import EngineConfig, run_engine
 from pwa_format import day_number, decode_bars, encode_bars
+from scan_today import holding_verdict, production_algorithm
 from tests.synthetic import make_universe
 
 FIXTURE_PATH = os.path.join("pwa", "tests", "fixtures", "parity.json")
@@ -90,7 +91,18 @@ def build_fixture():
                     runs.append(_run_record(frames, name, config, EngineConfig(
                         max_positions=3, risk_pct=0.02, cost_bps=10.0, fill_mode=fill,
                         stop_mode="tightest", skip_unprotectable=True)))
-    return {"bars": encoded, "signals": signals, "runs": runs}
+    holdings = []
+    production = production_algorithm()
+    for ticker in ("T00", "T02", "T04"):
+        df = frames[ticker]
+        for entry_bar, as_of_bar, price in ((300, 420, None), (420, 600, 55.0), (500, len(df) - 1, None)):
+            history = df.iloc[: as_of_bar + 1]
+            entry_date = df.index[entry_bar].strftime("%Y-%m-%d")
+            holdings.append({"ticker": ticker, "entryDate": entry_date, "entryPrice": price,
+                             "asOfDay": day_number(history.index[-1]), "stopMode": "widest",
+                             "expected": holding_verdict(history, production, entry_date, price, "widest")})
+    return {"bars": encoded, "signals": signals, "runs": runs, "holdings": holdings,
+            "production": {"strategy": production.name, "config": production.config}}
 
 
 def fixture_json():

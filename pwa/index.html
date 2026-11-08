@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Roof Signals</title>
+  <meta name="description" content="Daily momentum signals, on-device position checks and an in-browser backtest lab.">
+  <meta name="theme-color" content="#0f1720" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/today" aria-label="Roof Signals home">
+      <img src="icons/icon.svg" alt="" width="26" height="26">
+      <span>Roof Signals</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#/today" data-tab="today">Today</a>
+      <a href="#/positions" data-tab="positions">Positions</a>
+      <a href="#/lab" data-tab="lab">Lab</a>
+      <a href="#/research" data-tab="research">Research</a>
+    </nav>
+    <form class="search" id="search" role="search">
+      <input id="search-input" type="search" placeholder="Ticker…" autocomplete="off"
+             autocapitalize="characters" spellcheck="false" aria-label="Look up a ticker" list="ticker-list">
+      <datalist id="ticker-list"></datalist>
+    </form>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+  <main id="view" tabindex="-1" aria-live="polite"></main>
+
+  <nav class="bottom-tabs" aria-label="Sections">
+    <a href="#/today" data-tab="today"><span class="ico">◎</span>Today</a>
+    <a href="#/positions" data-tab="positions"><span class="ico">▤</span>Positions</a>
+    <a href="#/lab" data-tab="lab"><span class="ico">⚗</span>Lab</a>
+    <a href="#/research" data-tab="research"><span class="ico">∑</span>Research</a>
+  </nav>
+
+  <footer class="foot">
+    <span id="data-stamp">Loading data…</span>
+    <span>Research tool, not investment advice. Backtests are hypothetical.</span>
+  </footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
