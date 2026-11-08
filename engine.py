@@ -238,7 +238,8 @@ class _Loop:
 
     def _fill_pending(self, day):
         book = self.book
-        for k in [k for k in self.pending_sells if book.has_bar[k, day]]:
+        # Sorted: a deterministic order (cash accumulates identically in the JS port).
+        for k in sorted(k for k in self.pending_sells if book.has_bar[k, day]):
             self.pending_sells.discard(k)
             self._close(k, day, book.open[k, day], "signal")
         for k, decision_day in list(self.pending_buys.items()):
