@@ -68,6 +68,33 @@ def recent_swing_high(high, lookback):
     return high.rolling(window=lookback).max()
 
 
+def prior_max(series, lookback):
+    """Highest value over the `lookback` bars BEFORE each bar (today excluded).
+
+    The vectorized form of `series.iloc[-(lookback + 1):-1].max()` on a slice.
+    """
+    return series.shift(1).rolling(window=lookback).max()
+
+
+def prior_min(series, lookback):
+    """Lowest value over the `lookback` bars BEFORE each bar (today excluded)."""
+    return series.shift(1).rolling(window=lookback).min()
+
+
+def held_for_prior_bars(condition, bars):
+    """True where a boolean `condition` held on EVERY one of the `bars` bars before today.
+
+    The vectorized form of `condition.iloc[-(bars + 1):-1].all()`; False until
+    `bars` prior bars exist.
+    """
+    return condition.astype(float).rolling(window=bars).min().shift(1) == 1.0
+
+
+def held_for_bars(condition, bars):
+    """True where a boolean `condition` held on each of the last `bars` bars incl. today."""
+    return condition.astype(float).rolling(window=bars).min() == 1.0
+
+
 def roc(series, period):
     """Rate of change over `period` bars = trailing return (e.g. 0.10 = +10%)."""
     return series.pct_change(periods=period)
