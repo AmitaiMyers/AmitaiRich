@@ -24,7 +24,7 @@ import time
 from collections import deque
 
 from sim.agent.dataset import load_dataset, select_indicators, select_features_by_name, DATASET_PATH
-from sim.agent.daily_env import DailyTradingEnv, START_CASH
+from sim.agent.daily_env import DEFAULT_COST_BPS, DailyTradingEnv, START_CASH
 from sim.agent.dqn_agent import DQNAgent
 from sim.agent.checkpoint import save_checkpoint, load_agent
 from sim.agent.validate import evaluate
@@ -69,7 +69,7 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
           target_update_every=10, arch="mlp", window=1, d_model=None, seq_layers=None,
           nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None,
           size="medium", indicators=None, out_dir="models", log_csv=True, resume=None,
-          train_every=1, mirror_dir=None):
+          train_every=1, mirror_dir=None, cost_bps=DEFAULT_COST_BPS):
     preset = SIZE_PRESETS[size]
     # explicit args win over the preset
     d_model = d_model if d_model is not None else preset["d_model"]
@@ -143,7 +143,7 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
 
     for ep in range(1, episodes + 1):
         ticker, feats, closes, _dates = random.choice(train_set)
-        env = DailyTradingEnv(ticker, feats, closes, window=window)
+        env = DailyTradingEnv(ticker, feats, closes, window=window, cost_bps=cost_bps)
         state, done, equity = env.reset(), False, START_CASH
         losses = []
         step_i = 0
@@ -180,7 +180,7 @@ def train(episodes=2000, batch_size=None, dataset_path=DATASET_PATH, val_every=1
         if ep % val_every == 0 or ep == episodes:
             agent.policy_net.eval()
             saved_eps, agent.epsilon = agent.epsilon, 0.0
-            m = evaluate(agent, val_set, window=window)
+            m = evaluate(agent, val_set, window=window, cost_bps=cost_bps)
             agent.epsilon = saved_eps
             agent.policy_net.train()
             val_hist.append(m["mean_return"])
@@ -257,6 +257,8 @@ def main(argv=None):
     p.add_argument("--train-every", type=int, default=1,
                    help="Gradient step every N env steps (default 1). Try 4 for a ~3-4x speedup.")
     p.add_argument("--no-log", action="store_true", help="Disable the per-episode CSV log.")
+    p.add_argument("--cost-bps", type=float, default=DEFAULT_COST_BPS,
+                   help="Transaction cost per side in basis points (default 10; 0 = frictionless).")
     p.add_argument("--resume", default=None,
                    help="Continue training from a saved .pth checkpoint (arch/window/indicators "
                         "are taken from the checkpoint; --arch/--window/--indicators are ignored).")
@@ -267,7 +269,7 @@ def main(argv=None):
           nhead=args.nhead, ff_mult=args.ff_mult, hidden=args.hidden, buffer_size=args.buffer_size,
           lr=args.lr, size=args.size, indicators=args.indicators, out_dir=args.out_dir,
           log_csv=not args.no_log, resume=args.resume,
-          train_every=args.train_every, mirror_dir=args.mirror_dir)
+          train_every=args.train_every, mirror_dir=args.mirror_dir, cost_bps=args.cost_bps)
     return 0
 
 

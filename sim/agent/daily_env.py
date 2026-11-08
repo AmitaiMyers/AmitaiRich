@@ -8,11 +8,15 @@ learns from the indicators directly.
 State  : [ <all daily indicator features>, position_flag, unrealized_return ]
 Actions: 0 = Hold, 1 = Buy (go long, all-in), 2 = Sell (go flat)
 Reward : log return of equity from this day to the next (stationary across tickers).
+Costs  : every fill pays `cost_bps` per side (default 10 bps, the same assumption as
+         the portfolio research). Without costs the agent was free to churn — a
+         high-turnover policy looked profitable here and would lose its edge live.
 """
 
 import numpy as np
 
 START_CASH = 100000.0
+DEFAULT_COST_BPS = 10.0
 
 
 class DailyTradingEnv:
@@ -20,16 +24,18 @@ class DailyTradingEnv:
     `window>1` -> state is the last `window` days flattened (sequence agent).
     """
 
-    def __init__(self, ticker, features, closes, window: int = 1):
+    def __init__(self, ticker, features, closes, window: int = 1, cost_bps: float = DEFAULT_COST_BPS):
         assert features.ndim == 2, "features must be 2D [T, F]"
         assert len(features) == len(closes), "features/closes length mismatch"
         assert window >= 1, "window must be >= 1"
         assert len(closes) > window + 1, "session too short for the window"
+        assert cost_bps >= 0, "cost_bps must be >= 0"
         self.ticker = ticker
         self.features = np.asarray(features, dtype=np.float32)
         self.closes = np.asarray(closes, dtype=np.float64)
         self.n = len(closes)
         self.window = window
+        self.cost = cost_bps / 10_000.0
         self.reset()
 
     @property
@@ -62,11 +68,11 @@ class DailyTradingEnv:
         equity_prev = self._equity(self.t)
 
         if action == 1 and self.shares == 0.0:
-            self.shares = self.cash / price   # all-in (fractional shares ok in sim)
+            self.shares = self.cash / (price * (1.0 + self.cost))   # all-in, net of the entry cost
             self.entry = price
             self.cash = 0.0
         elif action == 2 and self.shares > 0.0:
-            self.cash = self.shares * price
+            self.cash = self.shares * price * (1.0 - self.cost)
             self.shares = 0.0
             self.entry = 0.0
 

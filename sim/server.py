@@ -16,6 +16,7 @@ Run from the repo root:
 """
 
 import os
+import re
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Body
@@ -37,6 +38,16 @@ app = FastAPI(title="ROOF·SIM day-trading simulator")
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 _source = create_data_source(_SOURCE_KIND)
+
+
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _valid_date(date_str):
+    """Session dates become cache file names, so only accept a plain YYYY-MM-DD."""
+    if not _DATE_RE.match(date_str):
+        raise HTTPException(status_code=400, detail=f"Date must be YYYY-MM-DD, got {date_str!r}")
+    return date_str
 
 
 def _get_or_fetch(ticker, date_str):
@@ -66,6 +77,7 @@ def get_dates():
 
 @app.get("/api/session/{date_str}/{ticker}")
 def get_one(date_str, ticker):
+    date_str = _valid_date(date_str)
     ticker = ticker.upper()
     if ticker not in TICKERS:
         raise HTTPException(status_code=404, detail=f"Unknown ticker {ticker!r}")
@@ -74,6 +86,7 @@ def get_one(date_str, ticker):
 
 @app.get("/api/session/{date_str}")
 def get_all(date_str):
+    date_str = _valid_date(date_str)
     sessions = {t: _get_or_fetch(t, date_str) for t in TICKERS}
     return {"date": date_str, "sessions": sessions}
 
