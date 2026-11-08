@@ -1,0 +1,73 @@
+name: Publish PWA
+
+# Builds the PWA with fresh market data and deploys it to GitHub Pages:
+#   * every weekday after the US close (22:17 UTC, i.e. 5:17/6:17 pm New York),
+#   * after the Research workflow finishes (to publish its new report),
+#   * on demand (Actions tab -> Publish PWA -> Run workflow).
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Scheduled runs only happen on the default branch.
+on:
+  schedule:
+    - cron: "17 22 * * 1-5"
+  workflow_run:
+    workflows: [Research]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # After Research, only redeploy if it succeeded (a failed run has no new report).
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Install dependencies
+        run: pip install -r requirements-core.txt
+
+      # The day-over-day rank history (scan_state.json) lives in the Actions cache:
+      # restore the newest copy, then save this run's copy under a new key.
+      - name: Restore rank history
+        uses: actions/cache/restore@v4
+        with:
+          path: scan_state.json
+          key: scan-state-${{ github.run_id }}
+          restore-keys: scan-state-
+
+      - name: Build site with fresh data
+        run: python publish.py --out site --state scan_state.json
+
+      - name: Save rank history
+        uses: actions/cache/save@v4
+        with:
+          path: scan_state.json
+          key: scan-state-${{ github.run_id }}
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

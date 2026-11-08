@@ -30,11 +30,13 @@ MAX_WORKERS = 8
 
 
 def _fetch_one(ticker):
-    """Return {fiscal_end_iso: net_income_float_or_None} for one ticker ({} if none)."""
-    try:
-        stmt = yf.Ticker(ticker).income_stmt
-    except Exception:
-        return ticker, {}
+    """Return {fiscal_end_iso: net_income_float_or_None} for one ticker ({} if none).
+
+    A network/API failure is NOT swallowed (it used to be `except Exception`, which
+    cached a silent {} — "unknown" — for a ticker that simply failed to download).
+    The cache is written incrementally, so re-running resumes where it stopped.
+    """
+    stmt = yf.Ticker(ticker).income_stmt
     if stmt is None or stmt.empty or "Net Income" not in stmt.index:
         return ticker, {}
     row = stmt.loc["Net Income"]

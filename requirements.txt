@@ -1,10 +1,7 @@
-# Capital Market Roof Simulator — dependencies
-# sqlite3 is part of the Python standard library (no entry needed).
-yfinance>=0.2.40
+# Capital Market Roof Simulator — full local install (dashboard + day-trading sim + DQN agent).
+-r requirements-core.txt
 streamlit>=1.30
 plotly>=5.18
-pandas>=2.0
-numpy>=1.24
 
 # Day-trading simulator (sim/) — FastAPI server for the canvas front-end.
 fastapi>=0.110

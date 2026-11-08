@@ -1,39 +1,63 @@
 """Module 3 — Algorithm interface and strategies.
 
-Every strategy is a small class implementing the same four methods, so the
-simulation and the GUI can treat them uniformly:
+Every strategy declares its rules ONCE, vectorized over a whole price history, as a
+`Signals` bundle (see `_build_signals`):
 
-    warmup_bars()                          -> int
-    scan_and_buy(history_slice)            -> bool   (enter long today?)
-    compute_stop(entry, history, stop_mode)-> float | None   (initial stop price)
-    calculate_sell(position, history)      -> bool   (discretionary exit today?)
+    entry        bool[N]   BUY at bar i's close?
+    exit         bool[N]   path-independent discretionary SELL at bar i's close?
+    score        float[N]  ranking strength (for scans / portfolio priority)
+    stop_levels  fixed candidate stop prices per bar (e.g. lower band, swing low)
+    stop_atr     ATR per bar for the `entry - atr_mult * ATR` stop candidate
+    trail_atr / target_mult / max_hold   path-dependent exits needing the position
 
-`history_slice` always ends at the current simulation day — algorithms never see
-the future (no lookahead bias). The hard stop loss is enforced separately by the
-simulation; `calculate_sell` covers the discretionary/target exit.
+From that bundle the base class derives the classic per-bar interface used by the
+scanners and the GUI, so callers are unchanged:
+
+    warmup_bars()                           -> int
+    scan_and_buy(history_slice)             -> bool
+    compute_stop(entry, history, stop_mode) -> float | None
+    calculate_sell(position, history)       -> bool
+
+No lookahead: every indicator here is causal (rolling / shifted / EWM windows that
+only look backwards), so the value at bar i computed on the full history is
+identical to the value computed on `history.iloc[:i+1]`. The engine relies on this
+to compute signals once per stock (O(N)) instead of once per bar (O(N^2)); the test
+suite (tests/test_parity.py) enforces it by comparing both forms bar by bar and by
+replaying the pre-refactor per-slice implementation trade for trade.
 
 Strategies are registered in ALGORITHMS so the dashboard can list them.
 """
 
 import math
+from dataclasses import dataclass, replace
 
-import exits
+import numpy as np
+
 import indicators
 from errors import ConfigurationError
 
+# Default ranking signal for strategies without a natural strength measure.
+DEFAULT_SCORE_LOOKBACK = 126
 
-def _atr_swing_stop(config, entry_price, history_slice, stop_mode):
-    """Shared catastrophe stop: widest/tightest of {recent swing low, entry - k*ATR}.
 
-    Used by the hold-winner / panel-designed strategies, which all protect with the
-    same two-candidate stop (only the ATR multiple and lookback differ via config).
-    """
-    close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-    average_true_range = indicators.atr(high, low, close, config["atr_period"])
-    swing_low = indicators.recent_swing_low(low, config["swing_lookback"])
-    candidates = [float(swing_low.iloc[-1]),
-                  float(entry_price - config["atr_mult"] * average_true_range.iloc[-1])]
-    return select_stop(candidates, entry_price, stop_mode)
+@dataclass(frozen=True)
+class Signals:
+    """Per-bar decision arrays for one stock (all aligned to the price history)."""
+
+    entry: np.ndarray
+    exit: np.ndarray
+    score: np.ndarray
+    stop_levels: tuple = ()
+    stop_atr: np.ndarray = None
+    stop_atr_mult: float = 0.0
+    trail_atr: np.ndarray = None
+    trail_mult: float = 0.0
+    target_mult: float = None
+    max_hold: int = None
+
+    @property
+    def has_stop(self):
+        return bool(self.stop_levels) or self.stop_atr is not None
 
 
 def _merge_config(defaults, overrides):
@@ -69,26 +93,131 @@ def select_stop(candidates, entry_price, stop_mode):
     raise ConfigurationError(f"stop_mode must be 'tightest' or 'widest', got {stop_mode!r}")
 
 
+def stop_price_at(signals, i, entry_price, stop_mode):
+    """The initial stop for an entry filled at `entry_price`, decided on bar i (None if no stop)."""
+    if not signals.has_stop:
+        return None
+    candidates = [float(level[i]) for level in signals.stop_levels]
+    if signals.stop_atr is not None:
+        candidates.append(float(entry_price - signals.stop_atr_mult * signals.stop_atr[i]))
+    return select_stop(candidates, entry_price, stop_mode)
+
+
+def exit_hit(signals, i, close_today, highest_high, bars_held, entry_price, stop_price):
+    """Discretionary SELL at bar i's close for an open position?
+
+    `highest_high` is the highest high from the fill bar through bar i and
+    `bars_held` counts bars since the fill bar (0 on the fill bar itself).
+    """
+    if signals.exit[i]:
+        return True
+    if signals.trail_atr is not None:
+        # Chandelier: close falls trail_mult ATRs below the run-up high since entry.
+        if close_today < highest_high - signals.trail_mult * signals.trail_atr[i]:
+            return True
+    if signals.target_mult is not None and _target_hit(signals.target_mult, close_today,
+                                                       entry_price, stop_price):
+        return True
+    if signals.max_hold is not None and bars_held >= signals.max_hold:
+        return True
+    return False
+
+
+def _target_hit(target_mult, close_today, entry_price, stop_price):
+    """Profit target at `target_mult` x initial risk (entry -> stop distance)."""
+    if stop_price is None:
+        raise ConfigurationError(
+            "target exit needs an initial stop to define risk, but the position has none.")
+    initial_risk = entry_price - stop_price
+    if initial_risk <= 0:
+        raise ConfigurationError(
+            f"Non-positive initial risk ({initial_risk:.4f}); stop must be below entry.")
+    return close_today >= entry_price + target_mult * initial_risk
+
+
+def _bool(series):
+    """pandas boolean Series -> numpy bool array (comparisons against NaN are False)."""
+    return series.to_numpy(dtype=bool)
+
+
+def _float(series):
+    return series.to_numpy(dtype=float)
+
+
+def _default_score(close):
+    return _float(indicators.roc(close, DEFAULT_SCORE_LOOKBACK))
+
+
+def _atr_swing_stop(config, history):
+    """The shared catastrophe stop: {recent swing low, entry - atr_mult * ATR}."""
+    close, high, low = history["Close"], history["High"], history["Low"]
+    return {
+        "stop_levels": (_float(indicators.recent_swing_low(low, config["swing_lookback"])),),
+        "stop_atr": _float(indicators.atr(high, low, close, config["atr_period"])),
+        "stop_atr_mult": float(config["atr_mult"]),
+    }
+
+
+def _band_swing_atr_stop(config, history, lower_band):
+    """Bollinger strategies' stop: {lower band, recent swing low, entry - atr_mult * ATR}."""
+    stop = _atr_swing_stop(config, history)
+    stop["stop_levels"] = (_float(lower_band),) + stop["stop_levels"]
+    return stop
+
+
+def _ma_break(close, period):
+    """Structural exit: close below its `period` SMA."""
+    return close < indicators.sma(close, period)
+
+
 class Algorithm:
-    """Base interface. Subclasses set `name`, `DEFAULTS`, and implement the methods."""
+    """Base interface. Subclasses set `name`, `DEFAULTS`, `warmup_bars`, `_build_signals`."""
 
     name = "base"
     DEFAULTS = {}
 
     def __init__(self, **overrides):
         self.config = _merge_config(self.DEFAULTS, overrides)
+        self._validate_config()
+
+    def _validate_config(self):
+        """Hook for subclasses to fail fast on invalid parameter values."""
 
     def warmup_bars(self):
         raise NotImplementedError
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         raise NotImplementedError
+
+    def signals(self, history):
+        """All per-bar decision arrays for `history` (entries masked during warmup).
+
+        An entry needs at least `warmup_bars()` bars of history, i.e. bar index
+        i >= warmup_bars() - 1.
+        """
+        built = self._build_signals(history)
+        entry = built.entry.copy()
+        entry[: max(self.warmup_bars() - 1, 0)] = False
+        return replace(built, entry=entry)
+
+    # --- the classic per-bar interface, derived from the signals -------------
+
+    def scan_and_buy(self, history_slice):
+        return bool(self.signals(history_slice).entry[-1])
 
     def compute_stop(self, entry_price, history_slice, stop_mode):
-        raise NotImplementedError
+        return stop_price_at(self.signals(history_slice), len(history_slice) - 1,
+                             entry_price, stop_mode)
 
     def calculate_sell(self, position, history_slice):
-        raise NotImplementedError
+        since_entry = history_slice["High"].iloc[-(position.bars_held + 1):]
+        return exit_hit(self.signals(history_slice), len(history_slice) - 1,
+                        float(history_slice["Close"].iloc[-1]), float(since_entry.max()),
+                        position.bars_held, position.entry_price, position.stop_price)
+
+    def score_today(self, history_slice):
+        """The ranking strength on the latest bar (NaN when undefined)."""
+        return float(self.signals(history_slice).score[-1])
 
 
 class DummyAlgorithm(Algorithm):
@@ -100,17 +229,32 @@ class DummyAlgorithm(Algorithm):
     def warmup_bars(self):
         return 2
 
-    def scan_and_buy(self, history_slice):
-        if len(history_slice) < 2:
-            return False
-        close = history_slice["Close"]
-        return bool(close.iloc[-1] > close.iloc[-2])
+    def _build_signals(self, history):
+        close = history["Close"]
+        return Signals(entry=_bool(close > close.shift(1)),
+                       exit=np.zeros(len(close), dtype=bool),
+                       score=_default_score(close),
+                       max_hold=self.config["hold_bars"])  # the dummy carries no stop
 
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return None  # the dummy strategy carries no stop loss
 
-    def calculate_sell(self, position, history_slice):
-        return position.bars_held >= self.config["hold_bars"]
+def _squeeze_breakout(history, config, bb):
+    """The flagship squeeze-then-breakout test (setup window ends yesterday).
+
+    SETUP over the `min_squeeze_candles` bars ending YESTERDAY: bandwidth below
+    threshold, closes inside the bands, volume contracting vs its average. Today a
+    bullish candle closes above the upper band. (Volume surge is checked by callers.)
+    """
+    close, open_, volume = history["Close"], history["Open"], history["Volume"]
+    middle, upper, lower = bb
+    band_width = indicators.bandwidth(upper, lower, middle)
+    volume_avg = indicators.sma(volume, config["vol_avg_period"])
+    n = config["min_squeeze_candles"]
+
+    squeezed = indicators.held_for_prior_bars(band_width < config["bandwidth_threshold"], n)
+    inside = indicators.held_for_prior_bars((close <= upper) & (close >= lower), n)
+    contracting = volume.rolling(window=n).mean().shift(1) < volume_avg.shift(1)
+    breakout = (close > upper) & (close > open_)
+    return squeezed & inside & contracting & breakout, volume_avg
 
 
 class BollingerSqueezeBreakout(Algorithm):
@@ -151,73 +295,17 @@ class BollingerSqueezeBreakout(Algorithm):
         # +min_squeeze_candles so the full squeeze window has valid indicator values.
         return longest + c["min_squeeze_candles"] + 1
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-
-        close = history_slice["Close"]
-        high = history_slice["High"]
-        low = history_slice["Low"]
-        open_ = history_slice["Open"]
-        volume = history_slice["Volume"]
-
-        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        band_width = indicators.bandwidth(upper, lower, middle)
-        volume_avg = indicators.sma(volume, c["vol_avg_period"])
-
-        # --- SETUP: evaluate the squeeze window = N bars ending YESTERDAY ---
-        # Today's breakout candle closes above the band, so it is deliberately
-        # excluded from the "compressed inside the bands" test.
-        n = c["min_squeeze_candles"]
-        window = slice(-(n + 1), -1)
-
-        window_bandwidth = band_width.iloc[window]
-        if window_bandwidth.isna().any():
-            return False
-        is_squeezed = bool((window_bandwidth < c["bandwidth_threshold"]).all())
-
-        window_close = close.iloc[window]
-        window_upper = upper.iloc[window]
-        window_lower = lower.iloc[window]
-        stayed_inside = bool(
-            ((window_close <= window_upper) & (window_close >= window_lower)).all()
-        )
-
-        window_volume = volume.iloc[window]
-        volume_contracting = bool(window_volume.mean() < volume_avg.iloc[-2])
-
-        if not (is_squeezed and stayed_inside and volume_contracting):
-            return False
-
-        # --- ENTRY: today's breakout candle ---
-        breakout = bool(close.iloc[-1] > upper.iloc[-1])
-        volume_surge = bool(volume.iloc[-1] > c["vol_breakout_mult"] * volume_avg.iloc[-1])
-        bullish = bool(close.iloc[-1] > open_.iloc[-1])
-        return breakout and volume_surge and bullish
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close = history_slice["Close"]
-        high = history_slice["High"]
-        low = history_slice["Low"]
-
-        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-
-        candidates = [
-            float(lower.iloc[-1]),
-            float(swing_low.iloc[-1]),
-            float(entry_price - c["atr_mult"] * average_true_range.iloc[-1]),
-        ]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        middle, _upper, _lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        return bool(close.iloc[-1] < middle.iloc[-1])
+        close, volume = history["Close"], history["Volume"]
+        bb = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
+        setup_and_breakout, volume_avg = _squeeze_breakout(history, c, bb)
+        surge = volume > c["vol_breakout_mult"] * volume_avg
+        middle, _upper, lower = bb
+        return Signals(entry=_bool(setup_and_breakout & surge),
+                       exit=_bool(close < middle),
+                       score=_default_score(close),
+                       **_band_swing_atr_stop(c, history, lower))
 
 
 class SMACrossover(Algorithm):
@@ -236,36 +324,15 @@ class SMACrossover(Algorithm):
         c = self.config
         return max(c["slow_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
+        close = history["Close"]
         fast = indicators.sma(close, c["fast_period"])
         slow = indicators.sma(close, c["slow_period"])
-        crossed_up = fast.iloc[-1] > slow.iloc[-1] and fast.iloc[-2] <= slow.iloc[-2]
-        return bool(crossed_up)
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close = history_slice["Close"]
-        high = history_slice["High"]
-        low = history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [
-            float(swing_low.iloc[-1]),
-            float(entry_price - c["atr_mult"] * average_true_range.iloc[-1]),
-        ]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        fast = indicators.sma(close, c["fast_period"])
-        slow = indicators.sma(close, c["slow_period"])
-        crossed_down = fast.iloc[-1] < slow.iloc[-1] and fast.iloc[-2] >= slow.iloc[-2]
-        return bool(crossed_down)
+        crossed_up = (fast > slow) & (fast.shift(1) <= slow.shift(1))
+        crossed_down = (fast < slow) & (fast.shift(1) >= slow.shift(1))
+        return Signals(entry=_bool(crossed_up), exit=_bool(crossed_down),
+                       score=_default_score(close), **_atr_swing_stop(c, history))
 
 
 class BollingerBounce(Algorithm):
@@ -284,38 +351,15 @@ class BollingerBounce(Algorithm):
         c = self.config
         return max(c["bb_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        low = history_slice["Low"]
-        _middle, _upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
+        close, low = history["Close"], history["Low"]
+        middle, _upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
         # Dipped to/under the lower band intrabar but closed back above it.
-        dipped = bool(low.iloc[-1] <= lower.iloc[-1])
-        reclaimed = bool(close.iloc[-1] > lower.iloc[-1])
-        return dipped and reclaimed
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close = history_slice["Close"]
-        high = history_slice["High"]
-        low = history_slice["Low"]
-        _middle, _upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [
-            float(lower.iloc[-1]),
-            float(swing_low.iloc[-1]),
-            float(entry_price - c["atr_mult"] * average_true_range.iloc[-1]),
-        ]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        middle, _upper, _lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        return bool(close.iloc[-1] >= middle.iloc[-1])
+        bounced = (low <= lower) & (close > lower)
+        return Signals(entry=_bool(bounced), exit=_bool(close >= middle),
+                       score=_default_score(close),
+                       **_band_swing_atr_stop(c, history, lower))
 
 
 class TrendFollower(Algorithm):
@@ -345,42 +389,15 @@ class TrendFollower(Algorithm):
         c = self.config
         return max(c["entry_lookback"], c["trend_sma"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        high = history_slice["High"]
-
-        prior_high = high.iloc[-(c["entry_lookback"] + 1):-1].max()
-        breakout = bool(close.iloc[-1] > prior_high)
-        if not breakout:
-            return False
+        close, high, low = history["Close"], history["High"], history["Low"]
+        entry = close > indicators.prior_max(high, c["entry_lookback"])
         if c["use_trend_filter"]:
-            trend_sma = indicators.sma(close, c["trend_sma"]).iloc[-1]
-            if not (close.iloc[-1] > trend_sma):
-                return False
-        return True
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close = history_slice["Close"]
-        high = history_slice["High"]
-        low = history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [
-            float(swing_low.iloc[-1]),
-            float(entry_price - c["atr_mult"] * average_true_range.iloc[-1]),
-        ]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        low = history_slice["Low"]
-        close = history_slice["Close"]
-        prior_low = low.iloc[-(c["exit_lookback"] + 1):-1].min()
-        return bool(close.iloc[-1] < prior_low)
+            entry = entry & (close > indicators.sma(close, c["trend_sma"]))
+        exit_ = close < indicators.prior_min(low, c["exit_lookback"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_default_score(close),
+                       **_atr_swing_stop(c, history))
 
 
 class BuyAndHold(Algorithm):
@@ -392,14 +409,11 @@ class BuyAndHold(Algorithm):
     def warmup_bars(self):
         return 1
 
-    def scan_and_buy(self, history_slice):
-        return True  # only called while flat -> buys once, on the first bar
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return None
-
-    def calculate_sell(self, position, history_slice):
-        return False  # never exits; the simulation liquidates at the final bar
+    def _build_signals(self, history):
+        n = len(history)
+        # Always "buy" while flat -> buys once; never exits (liquidated at the end).
+        return Signals(entry=np.ones(n, dtype=bool), exit=np.zeros(n, dtype=bool),
+                       score=_default_score(history["Close"]))
 
 
 class TimeSeriesMomentum(Algorithm):
@@ -424,36 +438,18 @@ class TimeSeriesMomentum(Algorithm):
         c = self.config
         return max(c["mom_lookback"], c["ma_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def _trend_ok(self, close):
+    def _build_signals(self, history):
         c = self.config
-        if not c["use_ma_filter"]:
-            return True
-        return bool(close.iloc[-1] > indicators.sma(close, c["ma_period"]).iloc[-1])
-
-    def scan_and_buy(self, history_slice):
-        c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        momentum = indicators.roc(close, c["mom_lookback"]).iloc[-1]
-        return bool(momentum > 0) and self._trend_ok(close)
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [float(swing_low.iloc[-1]),
-                      float(entry_price - c["atr_mult"] * average_true_range.iloc[-1])]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        momentum = indicators.roc(close, c["mom_lookback"]).iloc[-1]
-        if momentum < 0:
-            return True
-        return c["use_ma_filter"] and bool(close.iloc[-1] < indicators.sma(close, c["ma_period"]).iloc[-1])
+        close = history["Close"]
+        momentum = indicators.roc(close, c["mom_lookback"])
+        entry = momentum > 0
+        exit_ = momentum < 0
+        if c["use_ma_filter"]:
+            above = close > indicators.sma(close, c["ma_period"])
+            entry = entry & above
+            exit_ = exit_ | _ma_break(close, c["ma_period"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_float(momentum),
+                       **_atr_swing_stop(c, history))
 
 
 class FiftyTwoWeekHighMomentum(Algorithm):
@@ -479,32 +475,15 @@ class FiftyTwoWeekHighMomentum(Algorithm):
         c = self.config
         return max(c["high_lookback"], c["ma_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high = history_slice["Close"], history_slice["High"]
-        high_52w = indicators.recent_swing_high(high, c["high_lookback"]).iloc[-1]
-        near_high = bool(close.iloc[-1] >= c["proximity"] * high_52w)
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["ma_period"]).iloc[-1])
-        return near_high and in_trend
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [float(swing_low.iloc[-1]),
-                      float(entry_price - c["atr_mult"] * average_true_range.iloc[-1])]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close, high = history_slice["Close"], history_slice["High"]
-        high_52w = indicators.recent_swing_high(high, c["high_lookback"]).iloc[-1]
-        below_high = bool(close.iloc[-1] < c["exit_drop"] * high_52w)
-        lost_trend = bool(close.iloc[-1] < indicators.sma(close, c["ma_period"]).iloc[-1])
-        return below_high or lost_trend
+        close, high = history["Close"], history["High"]
+        high_52w = indicators.recent_swing_high(high, c["high_lookback"])
+        in_trend = close > indicators.sma(close, c["ma_period"])
+        entry = (close >= c["proximity"] * high_52w) & in_trend
+        exit_ = (close < c["exit_drop"] * high_52w) | _ma_break(close, c["ma_period"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_default_score(close),
+                       **_atr_swing_stop(c, history))
 
 
 class ShortTermMomentum(Algorithm):
@@ -531,32 +510,16 @@ class ShortTermMomentum(Algorithm):
         c = self.config
         return max(c["st_lookback"], c["ma_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        short_return = indicators.roc(close, c["st_lookback"]).iloc[-1]
-        if not (short_return > c["threshold"]):
-            return False
+        close = history["Close"]
+        short_return = indicators.roc(close, c["st_lookback"])
+        entry = short_return > c["threshold"]
         if c["use_ma_filter"]:
-            return bool(close.iloc[-1] > indicators.sma(close, c["ma_period"]).iloc[-1])
-        return True
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [float(swing_low.iloc[-1]),
-                      float(entry_price - c["atr_mult"] * average_true_range.iloc[-1])]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        short_return = indicators.roc(close, c["st_lookback"]).iloc[-1]
-        return bool(short_return < 0) or position.bars_held >= c["hold_bars"]
+            entry = entry & (close > indicators.sma(close, c["ma_period"]))
+        return Signals(entry=_bool(entry), exit=_bool(short_return < 0),
+                       score=_float(short_return), max_hold=c["hold_bars"],
+                       **_atr_swing_stop(c, history))
 
 
 class PullbackReversal(Algorithm):
@@ -582,30 +545,14 @@ class PullbackReversal(Algorithm):
         c = self.config
         return max(c["rsi_period"], c["ma_period"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["ma_period"]).iloc[-1])
-        oversold = bool(indicators.rsi(close, c["rsi_period"]).iloc[-1] < c["rsi_buy"])
-        return in_trend and oversold
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [float(swing_low.iloc[-1]),
-                      float(entry_price - c["atr_mult"] * average_true_range.iloc[-1])]
-        return select_stop(candidates, entry_price, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        recovered = bool(indicators.rsi(close, c["rsi_period"]).iloc[-1] > c["rsi_sell"])
-        lost_trend = bool(close.iloc[-1] < indicators.sma(close, c["ma_period"]).iloc[-1])
-        return recovered or lost_trend
+        close = history["Close"]
+        rsi = indicators.rsi(close, c["rsi_period"])
+        entry = (close > indicators.sma(close, c["ma_period"])) & (rsi < c["rsi_buy"])
+        exit_ = (rsi > c["rsi_sell"]) | _ma_break(close, c["ma_period"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_default_score(close),
+                       **_atr_swing_stop(c, history))
 
 
 # ---------------------------------------------------------------------------
@@ -631,7 +578,7 @@ BREAKOUT_COMMON = {
     "atr_period": 14,
     "atr_mult": 3.0,
     "swing_lookback": 10,
-    # Discretionary exit (see exits.py).
+    # Discretionary exit.
     "exit_mode": "trailing",  # "trailing" | "structural" | "target"
     "trail_atr_period": 22,
     "trail_atr_mult": 3.0,
@@ -642,13 +589,38 @@ BREAKOUT_COMMON = {
 VALID_EXIT_MODES = ("trailing", "structural", "target")
 
 
+def weekly_close_above_ma(close, weeks):
+    """Higher-timeframe confirmation per bar: weekly close above its `weeks`-week SMA.
+
+    As of each daily bar, the current (still-forming) week's close is today's close
+    and the previous weeks are their completed closes — exactly what resampling the
+    history up to that bar to weekly candles gives. Needs `weeks + 1` weeks of data.
+    """
+    week = close.index.to_period("W-SUN")
+    weekly_last = close.groupby(week).last()
+    week_pos = weekly_last.index.get_indexer(week)
+    completed = weekly_last.to_numpy(dtype=float)
+    cumulative = np.concatenate([[0.0], np.cumsum(completed)])
+    first = np.clip(week_pos - weeks + 1, 0, None)
+    prior_sum = cumulative[week_pos] - cumulative[first]   # completed weeks first..pos-1
+    today = close.to_numpy(dtype=float)
+    weekly_ma = (prior_sum + today) / weeks
+    enough_weeks = (week_pos + 1) >= weeks + 1
+    return enough_weeks & (today > weekly_ma)
+
+
 class BreakoutScanner(Algorithm):
     """Base for roof-breakout strategies. Subclasses implement the roof; the rest is shared.
 
     Subclass contract:
-        _roof_warmup()              -> int   (bars the roof definition needs)
-        _breakout_signal(history)   -> bool  (did price break its roof today?)
+        _roof_warmup()              -> int
+        _roof_breakout(history)     -> bool Series (did price break its roof that bar?)
     """
+
+    def _validate_config(self):
+        if self.config["exit_mode"] not in VALID_EXIT_MODES:
+            raise ConfigurationError(
+                f"exit_mode must be one of {VALID_EXIT_MODES}, got {self.config['exit_mode']!r}")
 
     def warmup_bars(self):
         c = self.config
@@ -661,55 +633,36 @@ class BreakoutScanner(Algorithm):
     def _roof_warmup(self):
         raise NotImplementedError
 
-    def _breakout_signal(self, history_slice):
+    def _roof_breakout(self, history):
         raise NotImplementedError
 
-    def _confirmation_ok(self, history_slice):
+    def _confirmed(self, history):
         """Volume surge (and optionally weekly-trend agreement) on the breakout bar."""
         c = self.config
+        confirmed = np.ones(len(history), dtype=bool)
         if c["vol_surge_mult"] > 0:
-            volume = history_slice["Volume"]
-            volume_avg = indicators.sma(volume, c["vol_avg_period"]).iloc[-1]
-            if not (volume.iloc[-1] > c["vol_surge_mult"] * float(volume_avg)):
-                return False
+            volume = history["Volume"]
+            volume_avg = indicators.sma(volume, c["vol_avg_period"])
+            confirmed &= _bool(volume > c["vol_surge_mult"] * volume_avg)
         if c["use_htf"]:
-            weekly_close = history_slice["Close"].resample("W").last().dropna()
-            if len(weekly_close) < c["htf_ma_weeks"] + 1:
-                return False
-            weekly_ma = weekly_close.rolling(c["htf_ma_weeks"]).mean().iloc[-1]
-            if not (weekly_close.iloc[-1] > float(weekly_ma)):
-                return False
-        return True
+            confirmed &= weekly_close_above_ma(history["Close"], c["htf_ma_weeks"])
+        return confirmed
 
-    def scan_and_buy(self, history_slice):
-        if len(history_slice) < self.warmup_bars():
-            return False
-        if not self._breakout_signal(history_slice):
-            return False
-        return self._confirmation_ok(history_slice)
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
+    def _exit_signals(self, history):
         c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        average_true_range = indicators.atr(high, low, close, c["atr_period"])
-        swing_low = indicators.recent_swing_low(low, c["swing_lookback"])
-        candidates = [float(swing_low.iloc[-1]),
-                      float(entry_price - c["atr_mult"] * average_true_range.iloc[-1])]
-        return select_stop(candidates, entry_price, stop_mode)
+        close, high, low = history["Close"], history["High"], history["Low"]
+        no_exit = np.zeros(len(history), dtype=bool)
+        if c["exit_mode"] == "trailing":
+            trail = _float(indicators.atr(high, low, close, c["trail_atr_period"]))
+            return {"exit": no_exit, "trail_atr": trail, "trail_mult": float(c["trail_atr_mult"])}
+        if c["exit_mode"] == "structural":
+            return {"exit": _bool(_ma_break(close, c["struct_ma_period"]))}
+        return {"exit": no_exit, "target_mult": float(c["target_mult"])}
 
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        mode = c["exit_mode"]
-        if mode == "trailing":
-            return exits.chandelier_hit(position, history_slice,
-                                        c["trail_atr_period"], c["trail_atr_mult"])
-        if mode == "structural":
-            return exits.ma_breakdown_hit(history_slice, c["struct_ma_period"])
-        if mode == "target":
-            return exits.target_hit(position, history_slice, c["target_mult"])
-        raise ConfigurationError(
-            f"exit_mode must be one of {VALID_EXIT_MODES}, got {mode!r}"
-        )
+    def _build_signals(self, history):
+        entry = _bool(self._roof_breakout(history)) & self._confirmed(history)
+        return Signals(entry=entry, score=_default_score(history["Close"]),
+                       **self._exit_signals(history), **_atr_swing_stop(self.config, history))
 
     def describe(self, history_slice):
         """Display facts for a fired signal: the 52-week roof and the volume surge."""
@@ -745,18 +698,15 @@ class HighBreakout(BreakoutScanner):
     def _roof_warmup(self):
         return max(self.config["roof_lookback"], self.config["min_base_bars"]) + 1
 
-    def _breakout_signal(self, history_slice):
+    def _roof_breakout(self, history):
         c = self.config
-        close, high = history_slice["Close"], history_slice["High"]
-        roof = high.iloc[-(c["roof_lookback"] + 1):-1].max()  # prior highs, excluding today
-        if not (close.iloc[-1] > float(roof)):
-            return False
+        close, high = history["Close"], history["High"]
+        breakout = close > indicators.prior_max(high, c["roof_lookback"])
         if c["min_base_bars"] > 0 and c["base_max_range"] > 0:
-            base = close.iloc[-(c["min_base_bars"] + 1):-1]
-            base_range = (base.max() - base.min()) / base.min()
-            if not (base_range <= c["base_max_range"]):
-                return False
-        return True
+            base_high = indicators.prior_max(close, c["min_base_bars"])
+            base_low = indicators.prior_min(close, c["min_base_bars"])
+            breakout = breakout & ((base_high - base_low) / base_low <= c["base_max_range"])
+        return breakout
 
 
 class SqueezeBreakout(BreakoutScanner):
@@ -765,7 +715,7 @@ class SqueezeBreakout(BreakoutScanner):
     Setup (window ending yesterday): bandwidth below threshold for
     `min_squeeze_candles` bars, price compressed inside the bands, volume
     contracting. Breakout (today): a bullish candle closes above the upper band.
-    Breakout-volume confirmation is applied by the shared `_confirmation_ok`.
+    Breakout-volume confirmation is applied by the shared `_confirmed`.
     """
 
     name = "Roof: Volatility-Squeeze Breakout"
@@ -780,34 +730,11 @@ class SqueezeBreakout(BreakoutScanner):
     def _roof_warmup(self):
         return self.config["bb_period"] + self.config["min_squeeze_candles"] + 1
 
-    def _breakout_signal(self, history_slice):
+    def _roof_breakout(self, history):
         c = self.config
-        close = history_slice["Close"]
-        open_ = history_slice["Open"]
-        volume = history_slice["Volume"]
-
-        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        band_width = indicators.bandwidth(upper, lower, middle)
-        volume_avg = indicators.sma(volume, c["vol_avg_period"])
-
-        n = c["min_squeeze_candles"]
-        window = slice(-(n + 1), -1)  # the squeeze window = N bars ending yesterday
-
-        window_bandwidth = band_width.iloc[window]
-        if window_bandwidth.isna().any():
-            return False
-        if not bool((window_bandwidth < c["bandwidth_threshold"]).all()):
-            return False
-
-        window_close = close.iloc[window]
-        if not bool(((window_close <= upper.iloc[window]) & (window_close >= lower.iloc[window])).all()):
-            return False
-        if not bool(volume.iloc[window].mean() < volume_avg.iloc[-2]):
-            return False
-
-        breakout = bool(close.iloc[-1] > upper.iloc[-1])
-        bullish = bool(close.iloc[-1] > open_.iloc[-1])
-        return breakout and bullish
+        bb = indicators.bollinger_bands(history["Close"], c["bb_period"], c["bb_std"])
+        setup_and_breakout, _volume_avg = _squeeze_breakout(history, c, bb)
+        return setup_and_breakout
 
 
 class PivotBreakout(BreakoutScanner):
@@ -829,28 +756,26 @@ class PivotBreakout(BreakoutScanner):
     def _roof_warmup(self):
         return self.config["roof_lookback"] + 1
 
-    def _breakout_signal(self, history_slice):
+    def _roof_breakout(self, history):
         c = self.config
-        close, high = history_slice["Close"], history_slice["High"]
-        roof_window = high.iloc[-(c["roof_lookback"] + 1):-(c["base_bars"] + 1)]
-        if len(roof_window) == 0:
-            return False
-        roof = float(roof_window.max())
-        base = close.iloc[-(c["base_bars"] + 1):-1]
-        based_below = bool((base < roof).all())
-        fresh_cross = bool(close.iloc[-1] > roof and close.iloc[-2] <= roof)
-        return based_below and fresh_cross
+        close, high = history["Close"], history["High"]
+        roof_bars = c["roof_lookback"] - c["base_bars"]
+        if roof_bars <= 0:
+            return close != close  # an empty roof window never breaks (all False)
+        # Highest high over bars [i - roof_lookback, i - base_bars - 1].
+        roof = high.shift(c["base_bars"] + 1).rolling(window=roof_bars).max()
+        based_below = indicators.prior_max(close, c["base_bars"]) < roof
+        fresh_cross = (close > roof) & (close.shift(1) <= roof)
+        return based_below & fresh_cross
 
 
 # ---------------------------------------------------------------------------
 # Hold-winner riders
 #
-# Two low-turnover trend strategies built for the explicit goal of riding winners
+# Low-turnover trend strategies built for the explicit goal of riding winners
 # for long stretches with the FEWEST possible buy/sell actions: each has a SINGLE
 # structural exit (a slow moving-average breakdown) so ordinary pullbacks are
 # tolerated, plus a WIDE ATR catastrophe stop that only fires on a real collapse.
-# They differ solely in the entry signal (breakout vs. absolute momentum), so a
-# head-to-head isolates which entry best captures durable trends.
 # ---------------------------------------------------------------------------
 
 class TrendRider(Algorithm):
@@ -860,8 +785,6 @@ class TrendRider(Algorithm):
            `trend_ma` SMA (buy strength that is already trending up).
     STOP:  widest/tightest of {recent swing low, entry - atr_mult*ATR} (wide by default).
     EXIT:  close falls back below the `exit_ma` SMA — the trend is treated as over.
-
-    One slow exit + a wide stop => few trades and long holds, by construction.
     """
 
     name = "Trend Rider (breakout + MA exit)"
@@ -879,23 +802,21 @@ class TrendRider(Algorithm):
         return max(c["breakout_lookback"], c["trend_ma"], c["exit_ma"],
                    c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high = history_slice["Close"], history_slice["High"]
-        prior_high = high.iloc[-(c["breakout_lookback"] + 1):-1].max()
-        breakout = bool(close.iloc[-1] > float(prior_high))
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return breakout and in_trend
+        close, high = history["Close"], history["High"]
+        breakout = close > indicators.prior_max(high, c["breakout_lookback"])
+        in_trend = close > indicators.sma(close, c["trend_ma"])
+        return Signals(entry=_bool(breakout & in_trend), exit=_bool(_ma_break(close, c["exit_ma"])),
+                       score=_default_score(close), **_atr_swing_stop(c, history))
 
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
 
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        return bool(close.iloc[-1] < indicators.sma(close, c["exit_ma"]).iloc[-1])
+def _trend_facts(close, momentum, trend_ma):
+    """Shared display facts: momentum % and distance above the long MA."""
+    last = float(close.iloc[-1])
+    sma_long = float(indicators.sma(close, trend_ma).iloc[-1])
+    return {"mom_%": round(float(momentum) * 100, 1),
+            "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
 
 
 class MomentumRider(Algorithm):
@@ -906,9 +827,11 @@ class MomentumRider(Algorithm):
     below the long `trend_ma`, so a winner is ridden as long as its primary uptrend
     holds.
 
-    ENTRY: trailing `mom_lookback` return > `mom_threshold` AND close > `trend_ma` SMA.
+    ENTRY: trailing `mom_lookback` return > `mom_threshold` AND close > `trend_ma` SMA
+           (AND not more than `max_ext` above it; 9.99 = cap off).
     STOP:  widest/tightest of {recent swing low, entry - atr_mult*ATR}.
-    EXIT:  close < `trend_ma` SMA.
+    EXIT:  close < `trend_ma` SMA on `exit_confirm` consecutive closes (1 = the
+           classic single-close exit; 2-3 filters one-day whipsaws).
     """
 
     name = "Momentum Rider (ROC + MA exit)"
@@ -917,62 +840,52 @@ class MomentumRider(Algorithm):
         "mom_threshold": 0.0,
         "trend_ma": 200,
         "max_ext": 9.99,   # skip buys more than this fraction above trend_ma; 9.99 = off
+        "exit_confirm": 1,
         "atr_period": 14,
         "atr_mult": 4.0,
         "swing_lookback": 20,
     }
 
+    def _validate_config(self):
+        if self.config["exit_confirm"] < 1:
+            raise ConfigurationError(
+                f"exit_confirm must be >= 1, got {self.config['exit_confirm']!r}")
+
     def warmup_bars(self):
         c = self.config
         return max(c["mom_lookback"], c["trend_ma"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        momentum = indicators.roc(close, c["mom_lookback"]).iloc[-1]
-        strong = bool(momentum > c["mom_threshold"])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        last = float(close.iloc[-1])
-        in_trend = bool(last > sma_long)
+        close = history["Close"]
+        momentum = indicators.roc(close, c["mom_lookback"])
+        sma_long = indicators.sma(close, c["trend_ma"])
         # The danger-zone cap: skip names already stretched far above their trend.
-        not_extended = bool(last <= (1.0 + c["max_ext"]) * sma_long)
-        return strong and in_trend and not_extended
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close = history_slice["Close"]
-        return bool(close.iloc[-1] < indicators.sma(close, c["trend_ma"]).iloc[-1])
+        entry = (momentum > c["mom_threshold"]) & (close > sma_long) \
+            & (close <= (1.0 + c["max_ext"]) * sma_long)
+        exit_ = indicators.held_for_bars(close < sma_long, c["exit_confirm"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_float(momentum),
+                       **_atr_swing_stop(c, history))
 
     def describe(self, history_slice):
         """Display facts for a fired BUY: raw 6-month momentum + distance above the 200-MA."""
         c = self.config
         close = history_slice["Close"]
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        last = float(close.iloc[-1])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return {"mom_%": round(momentum * 100, 1),
-                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+        return _trend_facts(close, indicators.roc(close, c["mom_lookback"]).iloc[-1], c["trend_ma"])
 
 
-# ---------------------------------------------------------------------------
-# Panel-designed candidates (from an adversarial strategy-design study)
-#
-# Four research-driven trend/momentum riders that each add ONE idea the existing
-# book lacks, all keeping the hold-winner / low-turnover discipline:
-#   - Vol-Adjusted Momentum Rider : rank trend strength as return-per-unit-risk
-#     (ATR-normalised momentum) -> targets Sharpe, not raw CAGR-with-ugly-vol.
-#   - Dual-Confirm Trend Hold     : exit only when a slow Donchian low AND the
-#     200-day MA both break -> the lowest-churn, longest-hold exit available.
-#   - Efficiency-Ratio Trend Rider: gate entries on Kaufman path-efficiency so
-#     only clean (non-choppy) trends are bought -> fewer whipsaws.
-#   - Two-Speed Donchian          : asymmetric channel (fast entry, slow self-
-#     trailing exit) + 200-MA filter -> a parameter-light structural baseline.
-# ---------------------------------------------------------------------------
+def vol_adjusted_momentum(history, mom_lookback, atr_period):
+    """ROC(mom_lookback) / (ATR(atr_period) / close): return per unit of volatility.
+
+    NaN where undefined (warmup, or a non-positive ATR/price) so it never ranks or fires.
+    """
+    close, high, low = history["Close"], history["High"], history["Low"]
+    momentum = indicators.roc(close, mom_lookback)
+    average_true_range = indicators.atr(high, low, close, atr_period)
+    score = momentum / (average_true_range / close)
+    defined = (average_true_range > 0) & (close > 0)
+    return score.where(defined)
+
 
 class VolAdjustedMomentumRider(Algorithm):
     """Buy risk-adjusted momentum in an uptrend; hold until the long MA breaks.
@@ -1003,49 +916,26 @@ class VolAdjustedMomentumRider(Algorithm):
         return max(c["mom_lookback"], c["trend_ma"], c["exit_ma"],
                    c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
-            return False
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        average_true_range = float(indicators.atr(high, low, close, c["atr_period"]).iloc[-1])
-        last = float(close.iloc[-1])
-        if math.isnan(momentum) or math.isnan(average_true_range) or average_true_range <= 0 or last <= 0:
-            return False
-        score = momentum / (average_true_range / last)
-        return bool(score >= c["score_threshold"])
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        return exits.ma_breakdown_hit(history_slice, self.config["exit_ma"])
+        close = history["Close"]
+        score = vol_adjusted_momentum(history, c["mom_lookback"], c["atr_period"])
+        entry = (close > indicators.sma(close, c["trend_ma"])) & (score >= c["score_threshold"])
+        return Signals(entry=_bool(entry), exit=_bool(_ma_break(close, c["exit_ma"])),
+                       score=_float(score), **_atr_swing_stop(c, history))
 
     def describe(self, history_slice):
         """Display facts for a fired BUY: the volatility-adjusted momentum score + trend."""
         c = self.config
-        close, high, low = history_slice["Close"], history_slice["High"], history_slice["Low"]
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        average_true_range = float(indicators.atr(high, low, close, c["atr_period"]).iloc[-1])
-        last = float(close.iloc[-1])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        score = momentum / (average_true_range / last) if average_true_range > 0 else float("nan")
-        return {
-            "mom_%": round(momentum * 100, 1),
-            "vol_adj_score": round(score, 1),
-            "pct_vs_200ma": round((last / sma_long - 1) * 100, 1),
-        }
+        close = history_slice["Close"]
+        facts = _trend_facts(close, indicators.roc(close, c["mom_lookback"]).iloc[-1], c["trend_ma"])
+        score = float(vol_adjusted_momentum(history_slice, c["mom_lookback"], c["atr_period"]).iloc[-1])
+        facts["vol_adj_score"] = round(score, 1)
+        return facts
 
 
 class DualConfirmTrendHold(Algorithm):
     """52-week-high breakout in an uptrend; exit only when TWO slow signals agree.
-
-    The lowest-churn exit in the set: a dip under the slow Donchian low that still
-    holds the 200-day MA does NOT sell — both must break together, so ordinary
-    pullbacks are tolerated and winners are held until a real regime change.
 
     ENTRY: close is a fresh `entry_lookback`-bar high AND close > `trend_ma` SMA.
     STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
@@ -1068,34 +958,19 @@ class DualConfirmTrendHold(Algorithm):
         return max(c["entry_lookback"], c["trend_ma"], c["exit_lookback"],
                    c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high = history_slice["Close"], history_slice["High"]
-        roof = high.iloc[-(c["entry_lookback"] + 1):-1].max()
-        breakout = bool(close.iloc[-1] > float(roof))
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return breakout and in_trend
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close, low = history_slice["Close"], history_slice["Low"]
-        prior_low = low.iloc[-(c["exit_lookback"] + 1):-1].min()
-        donchian_break = bool(close.iloc[-1] < float(prior_low))
-        ma_break = exits.ma_breakdown_hit(history_slice, c["exit_ma"])
-        return donchian_break and ma_break
+        close, high, low = history["Close"], history["High"], history["Low"]
+        entry = (close > indicators.prior_max(high, c["entry_lookback"])) \
+            & (close > indicators.sma(close, c["trend_ma"]))
+        exit_ = (close < indicators.prior_min(low, c["exit_lookback"])) \
+            & _ma_break(close, c["exit_ma"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_default_score(close),
+                       **_atr_swing_stop(c, history))
 
 
 class EfficiencyTrendRider(Algorithm):
     """Buy near-52-week-high uptrends ONLY when the path is efficient (not choppy).
-
-    A Kaufman Efficiency-Ratio gate screens out noisy run-ups that whipsaw ordinary
-    trend strategies; a wide chandelier trailing exit then rides clean trends for
-    multiple quarters.
 
     ENTRY: close > `trend_ma` SMA AND close >= `proximity` x 52-week high AND
            EfficiencyRatio(`er_period`) >= `er_threshold`.
@@ -1122,36 +997,22 @@ class EfficiencyTrendRider(Algorithm):
         return max(c["high_lookback"], c["trend_ma"], c["er_period"], c["atr_period"],
                    c["swing_lookback"], c["trail_atr_period"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high = history_slice["Close"], history_slice["High"]
-        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
-            return False
-        high_52w = float(indicators.recent_swing_high(high, c["high_lookback"]).iloc[-1])
-        if not bool(close.iloc[-1] >= c["proximity"] * high_52w):
-            return False
-        er = float(indicators.efficiency_ratio(close, c["er_period"]).iloc[-1])
-        if math.isnan(er):
-            return False
-        return bool(er >= c["er_threshold"])
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        return exits.chandelier_hit(position, history_slice, c["trail_atr_period"], c["trail_atr_mult"])
+        close, high, low = history["Close"], history["High"], history["Low"]
+        high_52w = indicators.recent_swing_high(high, c["high_lookback"])
+        entry = (close > indicators.sma(close, c["trend_ma"])) \
+            & (close >= c["proximity"] * high_52w) \
+            & (indicators.efficiency_ratio(close, c["er_period"]) >= c["er_threshold"])
+        return Signals(entry=_bool(entry), exit=np.zeros(len(close), dtype=bool),
+                       score=_default_score(close),
+                       trail_atr=_float(indicators.atr(high, low, close, c["trail_atr_period"])),
+                       trail_mult=float(c["trail_atr_mult"]),
+                       **_atr_swing_stop(c, history))
 
 
 class TwoSpeedDonchian(Algorithm):
     """Asymmetric Donchian: fast breakout entry, slow self-trailing channel exit.
-
-    The exit channel is deliberately much longer than the entry channel, so the
-    trailing low ratchets up with price and almost never sells inside a healthy
-    uptrend. A 200-day MA filter keeps entries with the primary trend. The most
-    parameter-light rider here — a structural baseline the others must beat.
 
     ENTRY: close > prior `entry_lookback`-bar high AND close > `trend_ma` SMA.
     STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
@@ -1173,35 +1034,18 @@ class TwoSpeedDonchian(Algorithm):
         return max(c["entry_lookback"], c["exit_lookback"], c["trend_ma"],
                    c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close, high = history_slice["Close"], history_slice["High"]
-        prior_high = high.iloc[-(c["entry_lookback"] + 1):-1].max()
-        breakout = bool(close.iloc[-1] > float(prior_high))
-        in_trend = bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return breakout and in_trend
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        close, low = history_slice["Close"], history_slice["Low"]
-        prior_low = low.iloc[-(c["exit_lookback"] + 1):-1].min()
-        return bool(close.iloc[-1] < float(prior_low))
+        close, high, low = history["Close"], history["High"], history["Low"]
+        entry = (close > indicators.prior_max(high, c["entry_lookback"])) \
+            & (close > indicators.sma(close, c["trend_ma"]))
+        exit_ = close < indicators.prior_min(low, c["exit_lookback"])
+        return Signals(entry=_bool(entry), exit=_bool(exit_), score=_default_score(close),
+                       **_atr_swing_stop(c, history))
 
 
 # ---------------------------------------------------------------------------
 # Growth-maximizing riders
-#
-# Tuned for the "grow as high as possible" objective (maximize CAGR, drawdown
-# capped) rather than smoothness: buy the biggest healthy movers (raw momentum,
-# not volatility-normalized), and ride them with a chandelier trailing stop that
-# ratchets off the run-up high — capturing more of a big move and exiting on a
-# defined pullback from the peak (faster than a lagging MA), which lets them chase
-# larger winners while bounding the giveback.
 # ---------------------------------------------------------------------------
 
 class GrowthRider(Algorithm):
@@ -1229,42 +1073,25 @@ class GrowthRider(Algorithm):
         return max(c["mom_lookback"], c["trend_ma"], c["atr_period"],
                    c["swing_lookback"], c["trail_atr_period"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
-            return False
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        if math.isnan(momentum):
-            return False
-        return bool(momentum >= c["mom_threshold"])
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        c = self.config
-        return exits.chandelier_hit(position, history_slice,
-                                    c["trail_atr_period"], c["trail_atr_mult"])
+        close, high, low = history["Close"], history["High"], history["Low"]
+        momentum = indicators.roc(close, c["mom_lookback"])
+        entry = (close > indicators.sma(close, c["trend_ma"])) & (momentum >= c["mom_threshold"])
+        return Signals(entry=_bool(entry), exit=np.zeros(len(close), dtype=bool),
+                       score=_float(momentum),
+                       trail_atr=_float(indicators.atr(high, low, close, c["trail_atr_period"])),
+                       trail_mult=float(c["trail_atr_mult"]),
+                       **_atr_swing_stop(c, history))
 
     def describe(self, history_slice):
         c = self.config
         close = history_slice["Close"]
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        last = float(close.iloc[-1])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return {"mom_%": round(momentum * 100, 1),
-                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+        return _trend_facts(close, indicators.roc(close, c["mom_lookback"]).iloc[-1], c["trend_ma"])
 
 
 class AcceleratingMomentumRider(Algorithm):
     """Buy momentum that is ACCELERATING (recent faster than older), in an uptrend.
-
-    Targets names entering their fastest growth phase: the short-window return
-    exceeds the long-window return and is positive, with price above the long MA.
-    Rides via a moving-average exit.
 
     ENTRY: close > SMA(trend_ma) AND ROC(fast) > ROC(slow) AND ROC(fast) > 0.
     STOP:  widest/tightest of {swing low, entry - atr_mult*ATR}.
@@ -1287,51 +1114,27 @@ class AcceleratingMomentumRider(Algorithm):
         return max(c["fast"], c["slow"], c["trend_ma"], c["exit_ma"],
                    c["atr_period"], c["swing_lookback"]) + 2
 
-    def scan_and_buy(self, history_slice):
+    def _build_signals(self, history):
         c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-        if not bool(close.iloc[-1] > indicators.sma(close, c["trend_ma"]).iloc[-1]):
-            return False
-        fast = float(indicators.roc(close, c["fast"]).iloc[-1])
-        slow = float(indicators.roc(close, c["slow"]).iloc[-1])
-        if math.isnan(fast) or math.isnan(slow):
-            return False
-        return bool(fast > slow and fast > 0.0)
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        return exits.ma_breakdown_hit(history_slice, self.config["exit_ma"])
+        close = history["Close"]
+        fast = indicators.roc(close, c["fast"])
+        slow = indicators.roc(close, c["slow"])
+        entry = (close > indicators.sma(close, c["trend_ma"])) & (fast > slow) & (fast > 0.0)
+        return Signals(entry=_bool(entry), exit=_bool(_ma_break(close, c["exit_ma"])),
+                       score=_float(fast), **_atr_swing_stop(c, history))
 
     def describe(self, history_slice):
         c = self.config
         close = history_slice["Close"]
-        fast = float(indicators.roc(close, c["fast"]).iloc[-1])
-        last = float(close.iloc[-1])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        return {"mom_%": round(fast * 100, 1),
-                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1)}
+        return _trend_facts(close, indicators.roc(close, c["fast"]).iloc[-1], c["trend_ma"])
 
 
 class SqueezeMomentumBuy(Algorithm):
     """Squeeze breakout + momentum confirmation + anti-overextension (owner's combo).
 
-    The thesis: buy momentum stocks at a CALM re-entry point, not after a spike.
-    Three gates must all pass on today's bar:
-
-    1. SQUEEZE BREAKOUT (the flagship setup): bandwidth < `bandwidth_threshold` for
-       `min_squeeze_candles` bars ending yesterday, closes inside the bands, volume
-       contracting; today a bullish candle closes above the upper band on
-       > `vol_breakout_mult` x average volume.
-    2. UP MOMENTUM (Momentum Rider's gate): ROC(`mom_lookback`) >= `mom_threshold`
-       AND close > `trend_ma` SMA.
-    3. NOT OVEREXTENDED (the danger-zone filter): close no more than `max_ext`
-       above the `trend_ma` SMA (e.g. 0.60 = skip stocks >60% above their 200-day
-       MA). The squeeze itself already excludes parabolic names — this cap makes
-       the exclusion explicit and tunable.
+    1. SQUEEZE BREAKOUT on > `vol_breakout_mult` x average volume.
+    2. UP MOMENTUM: ROC(`mom_lookback`) >= `mom_threshold` AND close > `trend_ma` SMA.
+    3. NOT OVEREXTENDED: close no more than `max_ext` above the `trend_ma` SMA.
 
     STOP: widest/tightest of {swing low, entry - atr_mult*ATR}.
     EXIT: close < `trend_ma` SMA (the proven ride-the-trend exit).
@@ -1359,102 +1162,39 @@ class SqueezeMomentumBuy(Algorithm):
         return max(c["bb_period"] + c["min_squeeze_candles"], c["vol_avg_period"],
                    c["mom_lookback"], c["trend_ma"], c["atr_period"], c["swing_lookback"]) + 2
 
-    def _squeeze_breakout_today(self, history_slice):
-        """The flagship squeeze-then-breakout test (window ends yesterday; breakout today)."""
+    def _build_signals(self, history):
         c = self.config
-        close = history_slice["Close"]
-        open_ = history_slice["Open"]
-        volume = history_slice["Volume"]
-
-        middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        band_width = indicators.bandwidth(upper, lower, middle)
-        volume_avg = indicators.sma(volume, c["vol_avg_period"])
-
-        n = c["min_squeeze_candles"]
-        window = slice(-(n + 1), -1)
-
-        window_bandwidth = band_width.iloc[window]
-        if window_bandwidth.isna().any():
-            return False
-        if not bool((window_bandwidth < c["bandwidth_threshold"]).all()):
-            return False
-        window_close = close.iloc[window]
-        inside = (window_close <= upper.iloc[window]) & (window_close >= lower.iloc[window])
-        if not bool(inside.all()):
-            return False
-        if not bool(volume.iloc[window].mean() < volume_avg.iloc[-2]):
-            return False
-
-        breakout = bool(close.iloc[-1] > upper.iloc[-1])
-        bullish = bool(close.iloc[-1] > open_.iloc[-1])
-        volume_surge = bool(volume.iloc[-1] > c["vol_breakout_mult"] * float(volume_avg.iloc[-1]))
-        return breakout and bullish and volume_surge
-
-    def scan_and_buy(self, history_slice):
-        c = self.config
-        if len(history_slice) < self.warmup_bars():
-            return False
-        close = history_slice["Close"]
-
-        # Gate 2: up momentum in an established trend.
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        if math.isnan(momentum) or momentum < c["mom_threshold"]:
-            return False
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
-        last = float(close.iloc[-1])
-        if not last > sma_long:
-            return False
-
-        # Gate 3: not overextended (the danger-zone cap).
-        if last > (1.0 + c["max_ext"]) * sma_long:
-            return False
-
-        # Gate 1 (most expensive, checked last): squeeze breakout today.
-        return self._squeeze_breakout_today(history_slice)
-
-    def compute_stop(self, entry_price, history_slice, stop_mode):
-        return _atr_swing_stop(self.config, entry_price, history_slice, stop_mode)
-
-    def calculate_sell(self, position, history_slice):
-        return exits.ma_breakdown_hit(history_slice, self.config["trend_ma"])
+        close, volume = history["Close"], history["Volume"]
+        momentum = indicators.roc(close, c["mom_lookback"])
+        sma_long = indicators.sma(close, c["trend_ma"])
+        bb = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
+        setup_and_breakout, volume_avg = _squeeze_breakout(history, c, bb)
+        surge = volume > c["vol_breakout_mult"] * volume_avg
+        entry = (momentum >= c["mom_threshold"]) & (close > sma_long) \
+            & ~(close > (1.0 + c["max_ext"]) * sma_long) & setup_and_breakout & surge
+        return Signals(entry=_bool(entry), exit=_bool(_ma_break(close, c["trend_ma"])),
+                       score=_float(momentum), **_atr_swing_stop(c, history))
 
     def describe(self, history_slice):
         c = self.config
         close = history_slice["Close"]
-        momentum = float(indicators.roc(close, c["mom_lookback"]).iloc[-1])
-        last = float(close.iloc[-1])
-        sma_long = float(indicators.sma(close, c["trend_ma"]).iloc[-1])
+        facts = _trend_facts(close, indicators.roc(close, c["mom_lookback"]).iloc[-1], c["trend_ma"])
         middle, upper, lower = indicators.bollinger_bands(close, c["bb_period"], c["bb_std"])
-        bw = float(indicators.bandwidth(upper, lower, middle).iloc[-2])
-        return {"mom_%": round(momentum * 100, 1),
-                "pct_vs_200ma": round((last / sma_long - 1) * 100, 1),
-                "squeeze_bw": round(bw, 3)}
+        facts["squeeze_bw"] = round(float(indicators.bandwidth(upper, lower, middle).iloc[-2]), 3)
+        return facts
 
 
 # Registry consumed by the simulation and the dashboard dropdowns.
 ALGORITHMS = {
-    BollingerSqueezeBreakout.name: BollingerSqueezeBreakout,
-    BollingerBounce.name: BollingerBounce,
-    SMACrossover.name: SMACrossover,
-    TrendFollower.name: TrendFollower,
-    TimeSeriesMomentum.name: TimeSeriesMomentum,
-    FiftyTwoWeekHighMomentum.name: FiftyTwoWeekHighMomentum,
-    ShortTermMomentum.name: ShortTermMomentum,
-    PullbackReversal.name: PullbackReversal,
-    HighBreakout.name: HighBreakout,
-    SqueezeBreakout.name: SqueezeBreakout,
-    PivotBreakout.name: PivotBreakout,
-    TrendRider.name: TrendRider,
-    MomentumRider.name: MomentumRider,
-    VolAdjustedMomentumRider.name: VolAdjustedMomentumRider,
-    DualConfirmTrendHold.name: DualConfirmTrendHold,
-    EfficiencyTrendRider.name: EfficiencyTrendRider,
-    TwoSpeedDonchian.name: TwoSpeedDonchian,
-    GrowthRider.name: GrowthRider,
-    AcceleratingMomentumRider.name: AcceleratingMomentumRider,
-    SqueezeMomentumBuy.name: SqueezeMomentumBuy,
-    BuyAndHold.name: BuyAndHold,
-    DummyAlgorithm.name: DummyAlgorithm,
+    algorithm.name: algorithm
+    for algorithm in (
+        BollingerSqueezeBreakout, BollingerBounce, SMACrossover, TrendFollower,
+        TimeSeriesMomentum, FiftyTwoWeekHighMomentum, ShortTermMomentum, PullbackReversal,
+        HighBreakout, SqueezeBreakout, PivotBreakout, TrendRider, MomentumRider,
+        VolAdjustedMomentumRider, DualConfirmTrendHold, EfficiencyTrendRider,
+        TwoSpeedDonchian, GrowthRider, AcceleratingMomentumRider, SqueezeMomentumBuy,
+        BuyAndHold, DummyAlgorithm,
+    )
 }
 
 

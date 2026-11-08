@@ -17,7 +17,6 @@ which surfaces as EmptyDataError — use a recent date range for hourly candles.
 import os
 
 import pandas as pd
-import yfinance as yf
 
 from errors import EmptyDataError, MissingColumnError, DataIntegrityError, ConfigurationError
 
@@ -33,9 +32,11 @@ def fetch_data(ticker, start_date, end_date, interval="1d", use_cache=True):
 
     `interval` selects the candle size (see SUPPORTED_INTERVALS). On a cache hit
     the data is loaded from disk; otherwise it is downloaded and then cached.
-    Validation runs for BOTH paths so a corrupt cache still surfaces.
+    Validation runs for BOTH paths so a corrupt cache still surfaces. The ticker
+    is normalized to Yahoo's form first (e.g. 'brk.b' -> 'BRK-B').
     """
     _validate_interval(interval)
+    ticker = normalize_ticker(ticker)
     cache_path = _cache_path(ticker, start_date, end_date, interval)
 
     if use_cache and os.path.exists(cache_path):
@@ -49,6 +50,63 @@ def fetch_data(ticker, start_date, end_date, interval="1d", use_cache=True):
     return df
 
 
+def normalize_ticker(symbol):
+    """Upper-case, strip, and convert share-class dots to Yahoo's dash form (BRK.B -> BRK-B)."""
+    return symbol.strip().upper().replace(".", "-")
+
+
+def prefetch(tickers, start_date, end_date, interval="1d", chunk_size=100):
+    """Bulk-download every ticker not yet cached, in chunks, and cache the valid ones.
+
+    One multi-ticker request per chunk is far faster than one request per ticker.
+    Only frames that pass the same validation as `fetch_data` are cached; a ticker
+    that fails (no data, NaNs) is simply left uncached, so the caller's subsequent
+    `fetch_data` re-requests it alone and raises the precise named error. Returns the
+    list of tickers newly cached.
+
+    In a multi-ticker response every symbol shares one calendar, so a stock has
+    all-NaN rows on days it did not trade (before listing, halts). Those rows are
+    bars that do not exist for that stock and are dropped — exactly what a
+    single-ticker download returns — while partially-NaN rows still fail validation.
+    """
+    import yfinance as yf  # network dependency, only needed for downloads
+
+    _validate_interval(interval)
+    wanted = list(dict.fromkeys(normalize_ticker(t) for t in tickers))
+    missing = [t for t in wanted if not os.path.exists(_cache_path(t, start_date, end_date, interval))]
+    cached = []
+    for first in range(0, len(missing), chunk_size):
+        chunk = missing[first:first + chunk_size]
+        raw = yf.download(chunk, start=start_date, end=end_date, interval=interval,
+                          auto_adjust=True, progress=False, group_by="ticker", threads=True)
+        if raw is None or raw.empty:
+            continue
+        present = set(raw.columns.get_level_values(0))
+        for ticker in chunk:
+            if ticker not in present:
+                continue
+            frame = _bulk_frame(raw[ticker])
+            if frame is None:
+                continue
+            _save_to_cache(frame, _cache_path(ticker, start_date, end_date, interval))
+            cached.append(ticker)
+    return cached
+
+
+def _bulk_frame(raw_one):
+    """One ticker's slice of a bulk download -> validated OHLCV frame, or None if unusable."""
+    if any(column not in raw_one.columns for column in REQUIRED_COLUMNS):
+        return None
+    df = raw_one[REQUIRED_COLUMNS].copy()
+    df.index = pd.to_datetime(df.index)
+    df.index.name = "Date"
+    absent = df[["Open", "High", "Low", "Close"]].isna().all(axis=1)
+    df = df[~absent]
+    if df.empty or bool(df.isna().any().any()):
+        return None
+    return df
+
+
 def _validate_interval(interval):
     """Fail fast on an unsupported candle interval."""
     if interval not in SUPPORTED_INTERVALS:
@@ -59,6 +117,8 @@ def _validate_interval(interval):
 
 def _download_and_prepare(ticker, start_date, end_date, interval):
     """Download from yfinance, flatten columns, validate presence, slice to OHLCV."""
+    import yfinance as yf  # network dependency, only needed on a cache miss
+
     raw = yf.download(
         ticker,
         start=start_date,

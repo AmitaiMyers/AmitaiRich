@@ -17,6 +17,7 @@ import os
 import pandas as pd
 import requests
 
+from data_engine import normalize_ticker as _normalize
 from errors import ConfigurationError, EmptyDataError
 
 CACHE_DIR = "universe_cache"
@@ -24,12 +25,9 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (capital-market-roof-simulator)"}
 SP500_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 NDX_URL = "https://en.wikipedia.org/wiki/Nasdaq-100"
 
-VALID_SCOPES = ("sp500", "nasdaq100", "sp500_ndx", "watchlist")
-
-
-def _normalize(symbol):
-    """Upper-case, strip, and convert share-class dots to Yahoo's dash form."""
-    return symbol.strip().upper().replace(".", "-")
+VALID_SCOPES = ("sp500", "nasdaq100", "sp500_ndx", "watchlist", "magic_formula", "all")
+# Every cached list: the research universe (union, de-duplicated).
+ALL_LISTS = ("sp500", "nasdaq100", "watchlist", "magic_formula")
 
 
 def _cache_path(name):
@@ -78,30 +76,31 @@ def get_nasdaq100(use_cache=True, refresh=False):
     """The ~101 Nasdaq-100 symbols (Yahoo-normalized)."""
     return _get("nasdaq100", NDX_URL, {"ticker", "symbol"}, use_cache, refresh)
 
-# def get_magic_formula(use_cache=True, refresh=False):
-#     """The ~1000 Magic Formula symbols (Yahoo-normalized)."""
-#     return _get("magic_formula",  , {"ticker", "symbol"}, use_cache, refresh)
+def get_cached_list(name):
+    """A hand-curated list (watchlist / magic_formula) read from universe_cache/<name>.csv.
+
+    Unlike the index scopes there is no Wikipedia source to scrape, so these are
+    cache-only: edit the CSV to change them. Fail fast if the file is missing or
+    empty rather than scanning a silently-empty universe.
+    """
+    symbols = _load_cache(name)
+    if not symbols:
+        raise ConfigurationError(
+            f"{name} list is empty or missing — expected symbols in {_cache_path(name)}")
+    return [_normalize(s) for s in symbols]
 
 
 def get_watchlist():
-    """A hand-curated list of symbols not in the index CSVs.
-
-    Unlike the index scopes there is no Wikipedia source to scrape, so this is
-    cache-only: edit universe_cache/watchlist.csv to change it. Fail fast if the
-    file is missing rather than scanning a silently-empty universe.
-    """
-    symbols = _load_cache("watchlist")
-    if not symbols:
-        raise ConfigurationError(
-            f"watchlist is empty or missing — expected symbols in {_cache_path('watchlist')}")
-    return [_normalize(s) for s in symbols]
+    """The hand-curated watchlist (universe_cache/watchlist.csv)."""
+    return get_cached_list("watchlist")
 
 
 def get_universe(scope="sp500_ndx", use_cache=True, refresh=False):
     """Return the symbol list for a scope.
 
     scope: 'sp500' | 'nasdaq100' | 'sp500_ndx' (de-duplicated union, order
-    preserved) | 'watchlist' (the hand-curated universe_cache/watchlist.csv).
+    preserved) | 'watchlist' / 'magic_formula' (hand-curated CSVs) | 'all' (every
+    list — the research universe).
     """
     if scope not in VALID_SCOPES:
         raise ConfigurationError(f"scope must be one of {VALID_SCOPES}, got {scope!r}")
@@ -109,9 +108,11 @@ def get_universe(scope="sp500_ndx", use_cache=True, refresh=False):
         return get_sp500(use_cache, refresh)
     if scope == "nasdaq100":
         return get_nasdaq100(use_cache, refresh)
-    if scope == "watchlist":
-        return get_watchlist()
-    # if scope == "magic_formula":
-    #     return get_magic_formula(use_cache, refresh)
+    if scope in ("watchlist", "magic_formula"):
+        return get_cached_list(scope)
+    if scope == "all":
+        union = get_sp500(use_cache, refresh) + get_nasdaq100(use_cache, refresh) \
+            + get_cached_list("watchlist") + get_cached_list("magic_formula")
+        return list(dict.fromkeys(union))
     union = get_sp500(use_cache, refresh) + get_nasdaq100(use_cache, refresh)
     return list(dict.fromkeys(union))

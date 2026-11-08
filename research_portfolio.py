@@ -1,255 +1,273 @@
-"""Portfolio research harness — find the best BUY+SELL strategy as a realistic system.
+"""Portfolio research harness — evaluate strategies as a realistic shared-capital system.
 
-Unlike research.py (which scores each stock independently), this evaluates every
-strategy as ONE shared-capital account (see portfolio.py): finite capital, max
-concurrent positions, risk-based sizing on live equity, transaction costs,
-long-only, optional market-regime filter. The benchmark to beat is equal-weight
-Buy & Hold of the same universe.
+Every candidate is run as ONE account (portfolio.py): finite capital, max concurrent
+positions, 1%-risk sizing on live equity, transaction costs, long-only, and
+optionally next-day-open fills. Benchmarks: equal-weight Buy & Hold of the same
+universe and SPY Buy & Hold.
 
-Validation design (per the owner): a STOCK split, not a time split. 300 training
-stocks are used to choose strategies/parameters; the chosen finalists are then
-reported out-of-sample on 100 DIFFERENT, never-tuned stocks — over each stock's
-full available history (2004-2026).
+Validation layers (all used by research_grids.py's `v3` phase):
+  * STOCK split   — tune on 300 stocks, report on 100 never-tuned stocks;
+  * MULTI-SPLIT   — re-draw the 300/100 split with other seeds to check the result
+                    is not an artifact of one lucky draw;
+  * WALK-FORWARD  — the same rules over disjoint time windows (regime stability).
 
-Heavy step = generating each stock's round-trip trades for a strategy config. That
-is done once per (strategy, config, stop_mode, universe), parallelised across
-processes and cached to disk; the portfolio overlay (sweeping max_positions /
-risk / market filter / ranking) is then near-instant on the cached trades.
-
-Phases:
-  python research_portfolio.py split        # build + show the 300/100 split
-  python research_portfolio.py smoke         # tiny end-to-end sanity run
-  python research_portfolio.py train         # full grid on the 300 train stocks
-  python research_portfolio.py validate      # finalists out-of-sample on 100 test stocks
+Portable by design: paths are relative / env-configurable, data is bulk-downloaded
+and cached, candidates run in parallel processes. Environment overrides:
+  RESEARCH_END   last data date (default: today)      RESEARCH_OUT  scratch dir
+  RESEARCH_WORKERS  process count (default: all CPUs)
 """
 
-import hashlib
 import json
 import os
-import pickle
-import sys
+import random
 from concurrent.futures import ProcessPoolExecutor
+from dataclasses import dataclass, field, replace
+from datetime import date
 
 import pandas as pd
 
-import analytics
-import indicators
+import universe
 from algorithms import build_algorithm
-from data_engine import fetch_data
-from errors import SimulatorError
-from portfolio import (PortfolioConfig, simulate_ticker_trades, run_portfolio,
-                       buy_and_hold_portfolio)
+from batch import PER_TICKER_ERRORS
+from data_engine import fetch_data, prefetch
+from errors import ConfigurationError
+from portfolio import (PortfolioConfig, buy_and_hold_portfolio, equity_metrics,
+                       run_portfolio, single_asset_benchmark)
 
-# Canonical data range — MUST match the bulk fetch (cache-key stability).
-FETCH_START, FETCH_END = "2004-01-01", "2026-06-27"
+FETCH_START = "2004-01-01"
+FETCH_END = os.environ.get("RESEARCH_END", date.today().isoformat())
 INTERVAL = "1d"
 MARKET_TICKER = "SPY"
 
 SEED = 20260626
 N_TRAIN, N_TEST = 300, 100
 MIN_BARS = 1500           # ~6y minimum history to be eligible for selection
-N_WORKERS = 10
+DD_CAP = 40.0             # growth objective: max drawdown must stay within -40%
 
-SCRATCH = r"C:\Users\AMITAI~1\AppData\Local\Temp\claude\C--axioma-code-ntp\202db557-a354-4c66-8cac-c70edaf325e2\scratchpad"
-SPLIT_JSON = os.path.join(SCRATCH, "train_test_split.json")
-TRADE_CACHE = os.path.join(SCRATCH, "trade_cache")
-RESULTS_DIR = os.path.join(SCRATCH, "results")
-UNIVERSE_DIR = r"C:\axioma\code\ntp\universe_cache"
-LISTS = ["sp500.csv", "nasdaq100.csv", "watchlist.csv", "magic_formula.csv"]
-
-os.makedirs(TRADE_CACHE, exist_ok=True)
-os.makedirs(RESULTS_DIR, exist_ok=True)
+OUT_DIR = os.environ.get("RESEARCH_OUT", "research_out")      # scratch (gitignored)
+RESULTS_DIR = "research_results"                              # published summaries
+SPLIT_JSON = os.path.join(OUT_DIR, "split.json")
+N_WORKERS = int(os.environ.get("RESEARCH_WORKERS", os.cpu_count() or 1))
 
 
-# ---------------------------------------------------------------------------
-# Universe assembly + 300/100 split
-# ---------------------------------------------------------------------------
+@dataclass
+class Candidate:
+    """One system to evaluate: buy (+ optional different sell) strategy + account rules."""
 
-def _read_symbol_list(path):
-    df = pd.read_csv(path)
-    if "symbol" in df.columns:
-        return df["symbol"].astype(str).tolist()
-    return pd.read_csv(path, header=None).iloc[:, 0].astype(str).tolist()
+    label: str
+    buy: str
+    buy_config: dict
+    stop_mode: str = "widest"
+    sell: str = None             # None = the buy strategy's own exit
+    sell_config: dict = None
+    portfolio: dict = field(default_factory=dict)   # PortfolioConfig overrides
 
+    def portfolio_config(self, base):
+        return replace(base, stop_mode=self.stop_mode, **self.portfolio)
 
-def _all_symbols():
-    seen, out = set(), []
-    for name in LISTS:
-        path = os.path.join(UNIVERSE_DIR, name)
-        if not os.path.exists(path):
-            continue
-        for raw in _read_symbol_list(path):
-            sym = raw.strip().upper().replace(".", "-")
-            if sym and sym != "NAN" and sym not in seen:
-                seen.add(sym)
-                out.append(sym)
-    return out
-
-
-def _bar_count(ticker):
-    """Cached-history bar count for a ticker; 0 if unavailable."""
-    try:
-        return len(fetch_data(ticker, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True))
-    except SimulatorError:
-        return 0
-
-
-def build_split(force=False):
-    """Build (and cache) a seeded, disjoint 300-train / 100-test split.
-
-    Eligible = at least MIN_BARS of cached history. Shuffled with a fixed seed so
-    the split is reproducible; train and test never overlap.
-    """
-    if os.path.exists(SPLIT_JSON) and not force:
-        with open(SPLIT_JSON) as fh:
-            data = json.load(fh)
-        return data["train"], data["test"]
-
-    import random
-    symbols = _all_symbols()
-    eligible = [s for s in symbols if _bar_count(s) >= MIN_BARS]
-    rng = random.Random(SEED)
-    rng.shuffle(eligible)
-    if len(eligible) < N_TRAIN + N_TEST:
-        raise SimulatorError(f"Only {len(eligible)} eligible symbols; need {N_TRAIN + N_TEST}.")
-    train = sorted(eligible[:N_TRAIN])
-    test = sorted(eligible[N_TRAIN:N_TRAIN + N_TEST])
-    with open(SPLIT_JSON, "w") as fh:
-        json.dump({"seed": SEED, "min_bars": MIN_BARS, "n_eligible": len(eligible),
-                   "train": train, "test": test}, fh, indent=2)
-    return train, test
+    def algorithms(self):
+        buy = build_algorithm(self.buy, self.buy_config)
+        if self.sell is None:
+            return buy, buy
+        return buy, build_algorithm(self.sell, self.sell_config if self.sell_config is not None else {})
 
 
 # ---------------------------------------------------------------------------
-# Data loading + parallel, cached trade generation
+# Data + splits
 # ---------------------------------------------------------------------------
 
-def load_closes(tickers):
-    """ticker -> daily close Series (for mark-to-market + Buy&Hold)."""
-    closes = {}
+def research_symbols():
+    """The research pool: every cached list (S&P 500, Nasdaq-100, watchlist, magic formula)."""
+    return universe.get_universe("all")
+
+
+def ensure_data(tickers):
+    """Bulk-download whatever is not cached yet (fast path before per-ticker loads)."""
+    newly = prefetch(list(tickers) + [MARKET_TICKER], FETCH_START, FETCH_END, interval=INTERVAL)
+    print(f"  data: {len(newly)} tickers downloaded, rest from cache", flush=True)
+
+
+def load_frames(tickers):
+    """{ticker: frame} for every ticker with usable data; failures are reported, not raised."""
+    frames, failed = {}, []
     for ticker in tickers:
         try:
-            closes[ticker] = fetch_data(ticker, FETCH_START, FETCH_END,
-                                        interval=INTERVAL, use_cache=True)["Close"]
-        except SimulatorError:
-            continue
-    return closes
+            frames[ticker] = fetch_data(ticker, FETCH_START, FETCH_END, interval=INTERVAL)
+        except PER_TICKER_ERRORS as exc:
+            failed.append(f"{ticker} ({type(exc).__name__})")
+    if failed:
+        print(f"  data: skipped {len(failed)}: {', '.join(failed[:12])}", flush=True)
+    return frames
 
 
 def load_market_close():
-    return fetch_data(MARKET_TICKER, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)["Close"]
+    return fetch_data(MARKET_TICKER, FETCH_START, FETCH_END, interval=INTERVAL)["Close"]
 
 
-# Per-process cache of the SPY 'risk-on' regime (close > 200-day SMA), so each
-# worker computes it once and reuses it across the tickers it handles.
-_REGIME_CACHE = {}
+def eligible_symbols():
+    """Research-pool symbols with at least MIN_BARS of history, sorted."""
+    symbols = research_symbols()
+    ensure_data(symbols)
+    frames = load_frames(symbols)
+    return sorted(t for t, df in frames.items() if len(df) >= MIN_BARS)
 
 
-def _spy_regime():
-    """Boolean Series: is SPY above its 200-day SMA (market risk-on) on each date?"""
-    if "series" not in _REGIME_CACHE:
-        spy = load_market_close()
-        _REGIME_CACHE["series"] = spy > indicators.sma(spy, 200)
-    return _REGIME_CACHE["series"]
+def draw_split(eligible, seed):
+    """Seeded, disjoint (train, test) draw of N_TRAIN / N_TEST names from `eligible`."""
+    if len(eligible) < N_TRAIN + N_TEST:
+        raise ConfigurationError(f"Only {len(eligible)} eligible symbols; need {N_TRAIN + N_TEST}.")
+    shuffled = list(eligible)
+    random.Random(seed).shuffle(shuffled)
+    return sorted(shuffled[:N_TRAIN]), sorted(shuffled[N_TRAIN:N_TRAIN + N_TEST])
 
 
-def _config_key(strategy, config, stop_mode, universe_tag, sell_strategy=None,
-                sell_config=None, regime=False):
-    payload = {"s": strategy, "c": config, "m": stop_mode, "u": universe_tag}
-    # Only add optional fields to the key when they are in play, so single-strategy /
-    # no-regime cache entries from earlier runs stay valid.
-    if sell_strategy is not None:
-        payload["ss"] = sell_strategy
-        payload["sc"] = sell_config
-    if regime:
-        payload["rg"] = True
-    return hashlib.md5(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
-
-
-def _gen_one(args):
-    """Worker: generate one ticker's round-trip trades for a (buy, sell) config pair."""
-    ticker, strategy, config, stop_mode, sell_strategy, sell_config, regime = args
-    try:
-        df = fetch_data(ticker, FETCH_START, FETCH_END, interval=INTERVAL, use_cache=True)
-    except SimulatorError:
-        return ticker, []
-    buy = build_algorithm(strategy, config)
-    # A distinct SELL algorithm lets one strategy's entry pair with another's exit
-    # (two algorithms in one strategy). build_algorithm filters unknown keys, so
-    # passing the buy config to a different sell class is safe.
-    sell = build_algorithm(sell_strategy if sell_strategy is not None else strategy,
-                           sell_config if sell_config is not None else config)
-    regime_ok = None
-    if regime:
-        regime_ok = _spy_regime().reindex(df.index, method="ffill").fillna(False).to_numpy()
-    return ticker, simulate_ticker_trades(ticker, df, buy, sell, stop_mode, regime_ok=regime_ok)
-
-
-def gen_trades(strategy, config, tickers, stop_mode, universe_tag,
-               sell_strategy=None, sell_config=None, regime=False, n_workers=N_WORKERS):
-    """All tickers' trades for one (buy, sell) config (disk-cached, parallelised)."""
-    key = _config_key(strategy, config, stop_mode, universe_tag, sell_strategy, sell_config, regime)
-    cache_path = os.path.join(TRADE_CACHE, f"{key}.pkl")
-    if os.path.exists(cache_path):
-        with open(cache_path, "rb") as fh:
-            return pickle.load(fh)
-
-    work = [(t, strategy, config, stop_mode, sell_strategy, sell_config, regime) for t in tickers]
-    trades_by_ticker = {}
-    with ProcessPoolExecutor(max_workers=n_workers) as pool:
-        for ticker, trades in pool.map(_gen_one, work, chunksize=4):
-            trades_by_ticker[ticker] = trades
-    with open(cache_path, "wb") as fh:
-        pickle.dump(trades_by_ticker, fh)
-    return trades_by_ticker
+def build_split(force=False):
+    """The canonical split (seed SEED), cached to OUT_DIR so every phase uses the same one."""
+    if os.path.exists(SPLIT_JSON) and not force:
+        with open(SPLIT_JSON) as fh:
+            data = json.load(fh)
+        return data["train"], data["test"], data["eligible"]
+    eligible = eligible_symbols()
+    train, test = draw_split(eligible, SEED)
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(SPLIT_JSON, "w") as fh:
+        json.dump({"seed": SEED, "min_bars": MIN_BARS, "data_end": FETCH_END,
+                   "eligible": eligible, "train": train, "test": test}, fh, indent=1)
+    return train, test, eligible
 
 
 # ---------------------------------------------------------------------------
-# Evaluation
+# Parallel evaluation (each worker loads the frames once)
 # ---------------------------------------------------------------------------
 
-def benchmark_metrics(closes, pcfg, periods_per_year=252):
-    """Equal-weight Buy & Hold metrics over the universe (the bar to beat)."""
-    equity = buy_and_hold_portfolio(closes, pcfg)
-    return {
-        "total_return": float(equity.iloc[-1] / equity.iloc[0] - 1.0),
-        "cagr": analytics.cagr(equity), "max_dd": analytics.max_drawdown(equity),
-        "sharpe": analytics.sharpe(equity),
-        "calmar": float(analytics.cagr(equity) / abs(analytics.max_drawdown(equity)))
-        if analytics.max_drawdown(equity) < 0 else 0.0,
+_WORKER = {}
+
+
+def _init_worker(tickers):
+    _WORKER["frames"] = load_frames(tickers)
+    _WORKER["market"] = load_market_close()
+
+
+def _window(frames, start, end):
+    """Frames cut at `end` (inclusive); `start` is applied as trade_from by the caller."""
+    if end is None:
+        return frames
+    cut = {t: df[df.index <= pd.Timestamp(end)] for t, df in frames.items()}
+    return {t: df for t, df in cut.items() if len(df) and (start is None or df.index[-1] >= pd.Timestamp(start))}
+
+
+def _evaluate_task(task):
+    candidate, tickers, base, start, end = task
+    frames = _window({t: _WORKER["frames"][t] for t in tickers if t in _WORKER["frames"]}, start, end)
+    market = _WORKER["market"]
+    buy, sell = candidate.algorithms()
+    config = candidate.portfolio_config(base)
+    result = run_portfolio(frames, buy, sell, config, market_close=market, trade_from=start)
+    return metrics_row(candidate.label, result.metrics, config, candidate)
+
+
+def evaluate(candidates, tickers, base=None, start=None, end=None, pool_tickers=None):
+    """Evaluate candidates on `tickers` (optionally a [start, end] window) in parallel.
+
+    `pool_tickers` (default `tickers`) is what each worker loads — pass the whole
+    eligible pool when several universes are evaluated with one pool.
+    """
+    base = PortfolioConfig() if base is None else base
+    tasks = [(c, tickers, base, start, end) for c in candidates]
+    workers = max(1, min(N_WORKERS, len(tasks)))
+    with ProcessPoolExecutor(max_workers=workers, initializer=_init_worker,
+                             initargs=(pool_tickers or tickers,)) as pool:
+        rows = []
+        for row in pool.map(_evaluate_task, tasks):
+            print(f"    {row['strategy']:44s} cagr={row['cagr']:5.1f}% maxDD={row['maxDD']:6.1f}% "
+                  f"sharpe={row['sharpe']:.2f} trades={row['trades']}", flush=True)
+            rows.append(row)
+    return rows
+
+
+def benchmark_rows(tickers, base=None, start=None, end=None):
+    """Equal-weight Buy & Hold of `tickers` and SPY Buy & Hold over the same window."""
+    base = PortfolioConfig() if base is None else base
+    frames = _window(load_frames(tickers), start, end)
+    market = load_market_close()
+    if end is not None:
+        market = market[market.index <= pd.Timestamp(end)]
+    closes = {t: df["Close"] for t, df in frames.items()}
+    ew = buy_and_hold_portfolio(closes, base)
+    if start is not None:
+        ew = ew[ew.index >= pd.Timestamp(start)]
+    spy = single_asset_benchmark(market, base, start=start)
+    return [metrics_row("BENCH equal-weight Buy&Hold", equity_metrics(ew), base, None),
+            metrics_row("BENCH SPY Buy&Hold", equity_metrics(spy), base, None)]
+
+
+def metrics_row(label, metrics, config, candidate):
+    """A flat, rounded result row (the unit of every results table)."""
+    row = {
+        "strategy": label,
+        "cagr": round(metrics["cagr"] * 100, 2),
+        "maxDD": round(metrics["max_dd"] * 100, 1),
+        "sharpe": round(metrics["sharpe"], 2),
+        "calmar": round(metrics["calmar"], 2),
+        "totRet": round(metrics["total_return"] * 100, 0),
+        "finalEq": round(metrics["final_equity"], 0),
+        "ddOK": bool(metrics["max_dd"] * 100 >= -DD_CAP),
     }
+    if candidate is not None:
+        row.update({
+            "trades": metrics["n_trades"], "winRate": round(metrics["win_rate"] * 100, 0),
+            "avgHold": round(metrics["avg_hold_bars"], 0),
+            "maxPos": config.max_positions, "fill": config.fill_mode, "rank": config.rank_by,
+            "buy": candidate.buy, "buyCfg": candidate.buy_config, "stop": candidate.stop_mode,
+            "sell": candidate.sell, "sellCfg": candidate.sell_config,
+        })
+    return row
 
 
-def eval_config(label, strategy, config, tickers, closes, market_close, pcfg,
-                stop_mode, universe_tag, sell_strategy=None, sell_config=None,
-                regime=False, n_workers=N_WORKERS):
-    """Run one (buy, sell) config through the portfolio; return a metrics row."""
-    trades = gen_trades(strategy, config, tickers, stop_mode, universe_tag,
-                        sell_strategy, sell_config, regime, n_workers)
-    result = run_portfolio(trades, closes, pcfg, market_close=market_close)
-    m = result.metrics
-    return {
-        "strategy": label, "algo": strategy, "stop": stop_mode,
-        "cagr": round(m["cagr"] * 100, 1), "sharpe": round(m["sharpe"], 2),
-        "maxDD": round(m["max_dd"] * 100, 1), "calmar": round(m["calmar"], 2),
-        "totRet": round(m["total_return"] * 100, 0),
-        "finalEq": round(m["final_equity"], 0),
-        "nTaken": m["n_taken"], "nSig": m["n_signals"],
-        "avgHoldDays": round(m["avg_hold_days"], 0), "winRate": round(m["win_rate"] * 100, 0),
-        "config": config, "mkt": pcfg.market_filter, "maxPos": pcfg.max_positions,
-    }
+# ---------------------------------------------------------------------------
+# Reporting
+# ---------------------------------------------------------------------------
+
+SHOW = ["strategy", "cagr", "maxDD", "sharpe", "calmar", "trades", "avgHold", "winRate", "ddOK"]
 
 
-def _print_rows(rows, bench, sort_key="sharpe"):
+def print_table(title, rows, sort_key="cagr"):
     df = pd.DataFrame(rows).sort_values(sort_key, ascending=False)
-    show = ["strategy", "stop", "maxPos", "mkt", "cagr", "sharpe", "maxDD", "calmar",
-            "totRet", "nTaken", "avgHoldDays", "winRate", "finalEq"]
-    print(df[show].to_string(index=False))
-    print(f"\n  BENCHMARK Buy&Hold: cagr={bench['cagr']*100:.1f}% sharpe={bench['sharpe']:.2f} "
-          f"maxDD={bench['max_dd']*100:.1f}% calmar={bench['calmar']:.2f}")
+    print(f"\n=== {title} ===")
+    print(df[[c for c in SHOW if c in df.columns]].to_string(index=False))
     return df
 
 
+def table(title, rows, sort_key="cagr", note=None):
+    """A results table for the JSON report (rows sorted best-first)."""
+    ordered = sorted(rows, key=lambda r: r[sort_key], reverse=True)
+    columns = [c for c in SHOW if any(c in r for r in ordered)]
+    return {"title": title, "note": note, "columns": columns,
+            "rows": [{c: r[c] for c in columns if c in r} for r in ordered]}
+
+
+def write_report(phase, tables, verdict=None, extra=None):
+    """Write research_results/<phase>.json (published to the PWA) and update the index."""
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    report = {"phase": phase, "generated": pd.Timestamp.now().isoformat(timespec="seconds"),
+              "data": {"start": FETCH_START, "end": FETCH_END},
+              "objective": f"max CAGR with max drawdown within -{DD_CAP:.0f}%",
+              "tables": tables, "verdict": verdict, **(extra or {})}
+    with open(os.path.join(RESULTS_DIR, f"{phase}.json"), "w") as fh:
+        json.dump(report, fh, indent=1, default=str)
+    index_path = os.path.join(RESULTS_DIR, "index.json")
+    index = {}
+    if os.path.exists(index_path):
+        with open(index_path) as fh:
+            index = json.load(fh)
+    index[phase] = report["generated"]
+    with open(index_path, "w") as fh:
+        json.dump(index, fh, indent=1, sort_keys=True)
+    print(f"\nWritten: {os.path.join(RESULTS_DIR, phase + '.json')}")
+
+
 if __name__ == "__main__":
-    import research_grids  # dispatch lives in a sibling so the grid is editable alone
-    research_grids.main(sys.argv[1:] if len(sys.argv) > 1 else ["smoke"])
+    import sys
+
+    import research_grids  # phase dispatch lives in the sibling so the grids are editable alone
+    research_grids.main(sys.argv[1:])

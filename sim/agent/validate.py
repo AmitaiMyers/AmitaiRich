@@ -19,7 +19,7 @@ import sys
 import numpy as np
 
 from sim.agent.dataset import load_dataset, DATASET_PATH
-from sim.agent.daily_env import DailyTradingEnv, START_CASH
+from sim.agent.daily_env import DEFAULT_COST_BPS, DailyTradingEnv, START_CASH
 from sim.agent import viz
 # load_agent (torch) is imported lazily inside main() so the tape/metrics helpers
 # here can be imported and tested without torch installed.
@@ -35,16 +35,18 @@ def _run_greedy(agent, env):
     return equity, actions
 
 
-def evaluate(agent, val_set, window=1, verbose=False):
+def evaluate(agent, val_set, window=1, verbose=False, cost_bps=DEFAULT_COST_BPS):
     """Aggregate metrics over the validation ticker set."""
     rets, buyhold = [], []
     for ticker, feats, closes, _dates in val_set:
         if len(closes) <= window + 1:
             continue
-        env = DailyTradingEnv(ticker, feats, closes, window=window)
+        env = DailyTradingEnv(ticker, feats, closes, window=window, cost_bps=cost_bps)
         equity, acts = _run_greedy(agent, env)
         r = equity / START_CASH - 1.0
-        bh = float(closes[-1] / closes[window - 1] - 1.0)
+        # The baseline pays the same round-trip cost the agent does.
+        cost = cost_bps / 10_000.0
+        bh = float(closes[-1] / closes[window - 1] * (1.0 - cost) / (1.0 + cost) - 1.0)
         rets.append(r); buyhold.append(bh)
         if verbose:
             print(f"  {ticker:6s} agent {viz.pct_color(r)}  buy&hold {viz.pct_color(bh)}  "
@@ -61,13 +63,13 @@ def evaluate(agent, val_set, window=1, verbose=False):
     }
 
 
-def run_signals(agent, feats, closes, dates, window):
+def run_signals(agent, feats, closes, dates, window, cost_bps=DEFAULT_COST_BPS):
     """Step through one ticker day by day; record each day's decision + realized trade.
 
     The model outputs an action every day; a BUY only fills from flat and a SELL only
     from long (the realized events), just like a real account. Returns (days, trades).
     """
-    env = DailyTradingEnv("", feats, closes, window=window)
+    env = DailyTradingEnv("", feats, closes, window=window, cost_bps=cost_bps)
     state, done = env.reset(), False
     days, trades, entry = [], [], None
     while not done:
@@ -136,6 +138,8 @@ def main(argv=None):
     p.add_argument("--ticker", default=None, help="Ticker for the day-by-day tape (default: first val ticker).")
     p.add_argument("--daily", action="store_true", help="Print every session, not just BUY/SELL events.")
     p.add_argument("--verbose", action="store_true", help="Per-ticker aggregate results.")
+    p.add_argument("--cost-bps", type=float, default=DEFAULT_COST_BPS,
+                   help="Transaction cost per side in basis points (default 10).")
     p.add_argument("--csv", nargs="?", const="auto", default=None,
                    help="Export the day-by-day tape to CSV (optional path; default models/tape_<ticker>.csv).")
     args = p.parse_args(argv)
@@ -157,7 +161,7 @@ def main(argv=None):
     if pick is None:
         raise SystemExit(f"Ticker {args.ticker!r} not in the validation set.")
     ticker, feats, closes, dates = pick
-    days, trades = run_signals(agent, feats, closes, dates, window)
+    days, trades = run_signals(agent, feats, closes, dates, window, cost_bps=args.cost_bps)
     print_tape(ticker, days, trades, window, daily=args.daily)
     if args.csv:
         csv_path = os.path.join("models", f"tape_{ticker}.csv") if args.csv == "auto" else args.csv
@@ -166,7 +170,7 @@ def main(argv=None):
 
     # aggregate over the whole validation split
     print(viz.color(f"\n═══ Aggregate over {len(val)} validation tickers ═══", viz.BOLD))
-    m = evaluate(agent, val, window=window, verbose=args.verbose)
+    m = evaluate(agent, val, window=window, verbose=args.verbose, cost_bps=args.cost_bps)
     print(f"  mean return {viz.pct_color(m['mean_return'])} | median {viz.pct_color(m['median_return'])} "
           f"| % profitable {m['pct_profitable'] * 100:.0f}%")
     print(f"  buy & hold {viz.pct_color(m['mean_buyhold'])} | excess {viz.pct_color(m['excess_vs_buyhold'])} "

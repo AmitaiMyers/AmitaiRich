@@ -19,6 +19,7 @@ import os
 import sys
 import time
 
+from sim.agent.daily_env import DEFAULT_COST_BPS
 from sim.agent.dataset import load_dataset, select_indicators, DATASET_PATH
 from sim.agent.features import ALL_GROUPS
 from sim.agent import viz
@@ -72,7 +73,8 @@ def _write_report(run_dir, cfg, results, agg, tape):
 
 def run(name, indicators=None, arch="mlp", window=1, d_model=None, seq_layers=None,
         episodes=2000, batch_size=None, dataset_path=DATASET_PATH, ticker=None, val_every=100,
-        size="medium", nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None):
+        size="medium", nhead=None, ff_mult=None, hidden=None, buffer_size=None, lr=None,
+        cost_bps=DEFAULT_COST_BPS):
     # Lazy torch imports (only needed to actually run an experiment).
     from sim.agent.train_daily import train
     from sim.agent.checkpoint import load_agent
@@ -89,20 +91,20 @@ def run(name, indicators=None, arch="mlp", window=1, d_model=None, seq_layers=No
                     val_every=val_every, arch=arch, window=window, d_model=d_model,
                     seq_layers=seq_layers, nhead=nhead, ff_mult=ff_mult, hidden=hidden,
                     buffer_size=buffer_size, lr=lr, size=size,
-                    indicators=indicators, out_dir=run_dir)
+                    indicators=indicators, out_dir=run_dir, cost_bps=cost_bps)
 
     # 2) VALIDATE the best model on the same indicator subset
     print(viz.color("\nValidating best model...", viz.BOLD))
     agent, ckpt = load_agent(results["best_path"])
     win = ckpt["window"]
     data = select_indicators(load_dataset(dataset_path), indicators)
-    agg = evaluate(agent, data["val"], window=win)
+    agg = evaluate(agent, data["val"], window=win, cost_bps=cost_bps)
 
     # 3) Day-by-day tape for one ticker (+ CSV export)
     val = [r for r in data["val"] if len(r[2]) > win + 1]
     pick = next((r for r in val if r[0] == ticker), None) if ticker else val[0]
     sym, feats, closes, dates = pick
-    days, trades = run_signals(agent, feats, closes, dates, win)
+    days, trades = run_signals(agent, feats, closes, dates, win, cost_bps=cost_bps)
     csv_path = write_tape_csv(os.path.join(run_dir, f"tape_{sym}.csv"), sym, days)
     wins = sum(1 for *_, r in trades if r > 0)
     tape = {
@@ -153,12 +155,14 @@ def main(argv=None):
     p.add_argument("--val-every", type=int, default=100)
     p.add_argument("--dataset", default=DATASET_PATH)
     p.add_argument("--ticker", default=None, help="Ticker for the day-by-day sample (default: first val ticker).")
+    p.add_argument("--cost-bps", type=float, default=DEFAULT_COST_BPS,
+                   help="Transaction cost per side in basis points (default 10).")
     args = p.parse_args(argv)
     run(name=args.name, indicators=args.indicators, arch=args.arch, window=args.window,
         d_model=args.d_model, seq_layers=args.seq_layers, episodes=args.episodes,
         batch_size=args.batch_size, dataset_path=args.dataset, ticker=args.ticker,
         val_every=args.val_every, size=args.size, nhead=args.nhead, ff_mult=args.ff_mult,
-        hidden=args.hidden, buffer_size=args.buffer_size, lr=args.lr)
+        hidden=args.hidden, buffer_size=args.buffer_size, lr=args.lr, cost_bps=args.cost_bps)
     return 0
 
 
