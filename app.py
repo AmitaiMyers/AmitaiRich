@@ -1,8 +1,18 @@
 """Module 5 — Streamlit dashboard.
 
 Control panel (sidebar) to configure and launch a backtest, KPI tiles, an
-interactive Plotly candlestick chart with Bollinger Bands and BUY/SELL markers
-read from the trade ledger, and an equity curve.
+interactive Plotly candlestick chart with the strategy's own overlay and BUY/SELL
+markers read from the trade ledger, and an equity curve.
+
+Modes: one stock, an independent per-stock batch scan, a realistic shared-capital
+PORTFOLIO backtest (the research system, vs equal-weight and SPY buy & hold), and
+"scan today" (the production BUY list).
+
+Strategy parameters are generated from the SELECTED strategy's own DEFAULTS (seeded
+with the production config for the production strategy). The sidebar used to send
+one superset of Bollinger-panel values to every strategy, which silently replaced
+e.g. the Momentum Rider's atr_mult 4.0 / atr_period 20 / swing_lookback 20 with
+2.0 / 14 / 10 — a different system from the one the research validated.
 
 Run with:  streamlit run app.py
 """
@@ -16,23 +26,28 @@ import indicators
 import universe
 from algorithms import ALGORITHMS, build_algorithm
 from batch import PER_TICKER_ERRORS, compute_batch_summary, run_batch
-from data_engine import fetch_data
-from scan_today import check_holding, scan_for_buys
+from data_engine import fetch_data, prefetch
+from portfolio import (PortfolioConfig, buy_and_hold_portfolio, equity_metrics,
+                       run_portfolio, single_asset_benchmark)
+from scan_today import DEFAULT_BUY, DEFAULT_CONFIG, DEFAULT_STOP_MODE, TARGET_POSITIONS, check_holding, scan_for_buys
 from simulation import compute_kpis, run_simulation
 
 st.set_page_config(page_title="Capital Market Roof Simulator", layout="wide")
 st.title("📈 Capital Market Roof Simulator")
-st.caption("Local, zero-cost backtesting of breakout strategies on historical stock data.")
+st.caption("Local, zero-cost backtesting of trend and breakout strategies on historical stock data.")
 
 PRESET_TICKERS = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META", "SPY", "QQQ", "Custom…"]
-FLAGSHIP_NAME = "Bollinger Squeeze + Volume Breakout"
-SCANNER_NAME = "Roof: 52-Week-High Breakout"  # research-recommended daily scanner
+MODES = ("Single stock", "Batch scan", "Portfolio backtest", "Scan today")
+RUN_LABELS = {"Single stock": "🚀 Run Simulation", "Batch scan": "🚀 Run Scan",
+              "Portfolio backtest": "🚀 Run Portfolio", "Scan today": "🔭 Scan Today"}
+SAME_AS_BUY = "(same as buy strategy)"
 
-# Universe scope labels for "Scan today" -> universe.get_universe scope code.
+# Universe scope labels -> universe.get_universe scope code.
 SCAN_SCOPES = {
     "S&P 500 + Nasdaq-100": "sp500_ndx",
     "S&P 500": "sp500",
     "Nasdaq-100": "nasdaq100",
+    "Watchlist": "watchlist",
 }
 
 # Friendly candle-interval label -> yfinance interval code.
@@ -47,163 +62,132 @@ DEFAULT_UNIVERSE = [
 
 
 def _algo_index(default_name):
-    names = list(ALGORITHMS.keys())
-    return names.index(default_name) if default_name in names else 0
+    return list(ALGORITHMS).index(default_name)
+
+
+def strategy_params(name, key):
+    """Number/select inputs for exactly the selected strategy's parameters.
+
+    Seeded with the class DEFAULTS, overlaid with the production config when this
+    is the production strategy, so the dashboard runs the validated system by default.
+    """
+    seed = dict(ALGORITHMS[name].DEFAULTS)
+    if name == DEFAULT_BUY:
+        seed.update(DEFAULT_CONFIG)
+    config = {}
+    for param, value in seed.items():
+        widget_key = f"{key}:{name}:{param}"
+        if isinstance(value, str):
+            options = ["trailing", "structural", "target"]
+            config[param] = st.selectbox(param, options, index=options.index(value), key=widget_key)
+        elif isinstance(value, int):
+            config[param] = int(st.number_input(param, value=value, step=1, key=widget_key))
+        else:
+            config[param] = float(st.number_input(param, value=float(value), step=0.05, format="%.4g", key=widget_key))
+    return config
 
 
 def render_sidebar():
     """Collect every run parameter and return it as a dict."""
     with st.sidebar:
         st.header("Configuration")
-
         mode = st.radio(
-            "Mode", ["Single stock", "Batch scan", "Scan today"],
-            help="Single = one ticker with full charts. Batch = backtest one strategy "
-                 "across many tickers. Scan today = which stocks fire a BUY on the "
-                 "latest bar, across the whole market.",
+            "Mode", MODES,
+            help="Single = one ticker with full charts. Batch = the strategy on each ticker "
+                 "independently. Portfolio = ONE account holding many positions (the realistic "
+                 "research system). Scan today = which stocks fire a BUY on the latest bar.",
         )
 
-        ticker = "AAPL"
-        tickers = []
-        scan_scope = "sp500_ndx"
+        ticker, tickers, scan_scope = "AAPL", [], "sp500_ndx"
         as_of = pd.Timestamp.today().normalize()
         if mode == "Scan today":
-            scope_label = st.selectbox("Universe to scan", list(SCAN_SCOPES.keys()), index=0)
+            scope_label = st.selectbox("Universe to scan", list(SCAN_SCOPES), index=0)
             scan_scope = SCAN_SCOPES[scope_label]
             as_of = st.date_input("Scan as of", value=pd.Timestamp.today().normalize(),
                                   help="Which day's close to scan. Defaults to today.")
-            st.caption("First run downloads data for the whole universe (slow); "
-                       "repeat runs the same day are cached.")
-        if mode == "Single stock":
+            st.caption("First run downloads data for the whole universe; repeat runs are cached.")
+        elif mode == "Single stock":
             ticker_choice = st.selectbox("Ticker", PRESET_TICKERS, index=0)
-            ticker = (
-                st.text_input("Custom ticker", value="AAPL").strip().upper()
-                if ticker_choice == "Custom…"
-                else ticker_choice
-            )
+            ticker = (st.text_input("Custom ticker", value="AAPL").strip().upper()
+                      if ticker_choice == "Custom…" else ticker_choice)
+        elif mode == "Portfolio backtest":
+            scope_label = st.selectbox("Universe", list(SCAN_SCOPES), index=2)
+            scan_scope = SCAN_SCOPES[scope_label]
         else:
-            selected = st.multiselect(
-                "Universe", DEFAULT_UNIVERSE, default=DEFAULT_UNIVERSE,
-                help="Pick from the default universe, and/or add more below.",
-            )
-            extra_raw = st.text_area(
-                "Extra tickers (comma / space / newline separated)", value="",
-                placeholder="e.g. ORCL, QCOM, T",
-            )
-            extra = [tok for tok in extra_raw.replace(",", " ").split()]
-            tickers = selected + extra
+            selected = st.multiselect("Universe", DEFAULT_UNIVERSE, default=DEFAULT_UNIVERSE,
+                                      help="Pick from the default universe, and/or add more below.")
+            extra_raw = st.text_area("Extra tickers (comma / space / newline separated)", value="",
+                                     placeholder="e.g. ORCL, QCOM, T")
+            tickers = selected + extra_raw.replace(",", " ").split()
             st.caption(f"{len(tickers)} ticker(s) queued for the scan.")
 
-        start_date = st.date_input("Start date", value=pd.to_datetime("2018-01-01"))
-        end_date = st.date_input("End date", value=pd.to_datetime("2023-12-31"))
+        portfolio_mode = mode == "Portfolio backtest"
+        start_date = st.date_input("Start date", value=pd.to_datetime("2008-01-01" if portfolio_mode else "2018-01-01"))
+        end_date = st.date_input("End date", value=pd.Timestamp.today().normalize())
+        interval = "1d"
+        if mode in ("Single stock", "Batch scan"):
+            interval_label = st.selectbox(
+                "Candle interval", list(INTERVAL_OPTIONS), index=1,
+                help="Hourly only has ~730 days of history on Yahoo — use a recent date range for it.")
+            interval = INTERVAL_OPTIONS[interval_label]
+            if interval == "1h":
+                st.warning("Hourly data is limited to ~the last 730 days. Pick a recent date range.")
 
-        interval_label = st.selectbox(
-            "Candle interval", list(INTERVAL_OPTIONS.keys()), index=1,
-            help="Candle size for both data and signals. Hourly only has ~730 days "
-                 "of history on Yahoo — use a recent date range for it.",
-        )
-        interval = INTERVAL_OPTIONS[interval_label]
-        if interval == "1h":
-            st.warning("Hourly data is limited to ~the last 730 days. Pick a recent date range.")
+        starting_capital = st.number_input("Starting capital ($)", min_value=100.0,
+                                           value=100_000.0 if portfolio_mode else 10_000.0, step=1_000.0)
 
-        starting_capital = st.number_input(
-            "Starting capital ($)", min_value=100.0, value=10_000.0, step=1_000.0
-        )
-
-        algo_names = list(ALGORITHMS.keys())
-        default_buy = SCANNER_NAME if mode == "Scan today" else FLAGSHIP_NAME
-        buy_name = st.selectbox("Buy strategy", algo_names, index=_algo_index(default_buy))
-        if mode == "Scan today":
-            sell_name = buy_name  # the buy scan does not use exit logic
-        else:
-            sell_name = st.selectbox("Sell strategy", algo_names, index=_algo_index(FLAGSHIP_NAME))
+        algo_names = list(ALGORITHMS)
+        buy_name = st.selectbox("Buy strategy", algo_names, index=_algo_index(DEFAULT_BUY))
+        with st.expander("Buy strategy parameters"):
+            buy_config = strategy_params(buy_name, "buy")
+        sell_name, sell_config = buy_name, buy_config
+        if mode != "Scan today":
+            sell_choice = st.selectbox("Sell strategy", [SAME_AS_BUY] + algo_names, index=0)
+            if sell_choice != SAME_AS_BUY:
+                sell_name = sell_choice
+                with st.expander("Sell strategy parameters"):
+                    sell_config = strategy_params(sell_name, "sell")
 
         st.subheader("Test toggles")
-        stop_mode = st.selectbox(
-            "Stop-loss mode", ["tightest", "widest"],
-            help="tightest = smallest loss (highest stop); widest = most room (lowest stop).",
-        )
-        sizing_mode = st.selectbox(
-            "Position sizing", ["risk_based", "all_in", "fixed_fraction"],
-            help="risk_based needs a strategy that defines a stop (not the Dummy).",
-        )
+        stop_mode = st.selectbox("Stop-loss mode", ["widest", "tightest"],
+                                 index=0 if DEFAULT_STOP_MODE == "widest" else 1,
+                                 help="widest = most room (production); tightest = smallest loss.")
+        sizing_mode, fixed_fraction, max_positions, cost_bps = "risk_based", 0.95, TARGET_POSITIONS, 10.0
+        if portfolio_mode:
+            max_positions = int(st.number_input("Max positions", 1, 100, TARGET_POSITIONS))
+            cost_bps = float(st.number_input("Cost (bps per side)", 0.0, 100.0, 10.0, 1.0))
+        else:
+            sizing_mode = st.selectbox("Position sizing", ["risk_based", "all_in", "fixed_fraction"],
+                                       help="risk_based needs a strategy that defines a stop.")
+            fixed_fraction = st.slider("Equity fraction % (fixed_fraction)", 10, 100, 95, 5) / 100.0
         risk_pct = st.slider("Risk % per trade (risk_based)", 0.1, 5.0, 1.0, 0.1) / 100.0
-        fixed_fraction = st.slider("Equity fraction % (fixed_fraction)", 10, 100, 95, 5) / 100.0
-        fill_mode = st.selectbox(
-            "Fill timing", ["close", "next_open"],
-            help="close = fill at signal day's close; next_open = fill at next day's open.",
-        )
-
-        with st.expander("Bollinger strategy parameters"):
-            bb_period = int(st.number_input("BB period", 5, 100, 20))
-            bb_std = float(st.number_input("BB std", 1.0, 4.0, 2.0, 0.5))
-            bandwidth_threshold = float(st.number_input("Bandwidth threshold", 0.01, 1.0, 0.10, 0.01))
-            min_squeeze_candles = int(st.number_input("Min squeeze candles", 1, 30, 5))
-            vol_avg_period = int(st.number_input("Volume avg period", 5, 60, 20))
-            vol_breakout_mult = float(st.number_input("Volume breakout multiple", 1.0, 5.0, 1.5, 0.1))
-            atr_period = int(st.number_input("ATR period", 2, 50, 14))
-            atr_mult = float(st.number_input("ATR multiple", 0.5, 6.0, 2.0, 0.5))
-            swing_lookback = int(st.number_input("Swing lookback", 2, 60, 10))
-
-        with st.expander("Optional strategy parameters (SMA)"):
-            fast_period = int(st.number_input("SMA fast period", 2, 100, 20))
-            slow_period = int(st.number_input("SMA slow period", 5, 300, 50))
-            hold_bars = int(st.number_input("Dummy hold bars", 1, 60, 5))
-
-        with st.expander("Breakout (roof) parameters", expanded=(mode == "Scan today")):
-            roof_lookback = int(st.number_input(
-                "Roof lookback (bars; 252 = 52-week high)", 20, 1000, 252))
-            vol_surge_mult = float(st.number_input(
-                "Volume surge × average (0 = off)", 0.0, 5.0, 1.5, 0.1))
-            use_htf = 1 if st.checkbox("Require weekly-trend agreement", value=False) else 0
+        fill_mode = st.selectbox("Fill timing", ["next_open", "close"],
+                                 help="next_open = decide at the close, fill at the next open (realistic).")
 
         use_cache = st.checkbox("Use local price cache", value=True)
-        button_labels = {"Batch scan": "🚀 Run Scan", "Scan today": "🔭 Scan Today"}
-        button_label = button_labels.get(mode, "🚀 Run Simulation")
-        run_clicked = st.button(button_label, type="primary", use_container_width=True)
+        run_clicked = st.button(RUN_LABELS[mode], type="primary", use_container_width=True)
 
     return {
-        "mode": mode,
-        "ticker": ticker,
-        "tickers": tickers,
-        "scan_scope": scan_scope,
-        "as_of": str(as_of),
-        "start_date": str(start_date),
-        "end_date": str(end_date),
-        "interval": interval,
-        "starting_capital": starting_capital,
-        "buy_name": buy_name,
-        "sell_name": sell_name,
-        "stop_mode": stop_mode,
-        "sizing_mode": sizing_mode,
-        "risk_pct": risk_pct,
-        "fixed_fraction": fixed_fraction,
-        "fill_mode": fill_mode,
-        "use_cache": use_cache,
-        "run_clicked": run_clicked,
-        # algorithm parameters (a superset; build_algorithm filters per strategy)
-        "bb_period": bb_period,
-        "bb_std": bb_std,
-        "bandwidth_threshold": bandwidth_threshold,
-        "min_squeeze_candles": min_squeeze_candles,
-        "vol_avg_period": vol_avg_period,
-        "vol_breakout_mult": vol_breakout_mult,
-        "atr_period": atr_period,
-        "atr_mult": atr_mult,
-        "swing_lookback": swing_lookback,
-        "fast_period": fast_period,
-        "slow_period": slow_period,
-        "hold_bars": hold_bars,
-        "roof_lookback": roof_lookback,
-        "vol_surge_mult": vol_surge_mult,
-        "use_htf": use_htf,
+        "mode": mode, "ticker": ticker, "tickers": tickers, "scan_scope": scan_scope,
+        "as_of": str(as_of), "start_date": str(start_date), "end_date": str(end_date),
+        "interval": interval, "starting_capital": starting_capital,
+        "buy_name": buy_name, "buy_config": buy_config, "sell_name": sell_name, "sell_config": sell_config,
+        "stop_mode": stop_mode, "sizing_mode": sizing_mode, "risk_pct": risk_pct,
+        "fixed_fraction": fixed_fraction, "fill_mode": fill_mode, "max_positions": max_positions,
+        "cost_bps": cost_bps, "use_cache": use_cache, "run_clicked": run_clicked,
     }
+
+
+def build_algorithms(params):
+    """(buy, sell) instances; the same instance when the sell side is the buy strategy."""
+    buy = build_algorithm(params["buy_name"], params["buy_config"])
+    same = params["sell_name"] == params["buy_name"] and params["sell_config"] == params["buy_config"]
+    return buy, buy if same else build_algorithm(params["sell_name"], params["sell_config"])
 
 
 def execute_run(params):
     """Build the algorithms, run the simulation, and stash results in session state."""
-    buy_algo = build_algorithm(params["buy_name"], params)
-    sell_algo = build_algorithm(params["sell_name"], params)
+    buy_algo, sell_algo = build_algorithms(params)
     run_id = run_simulation(
         ticker=params["ticker"],
         start_date=params["start_date"],
@@ -226,8 +210,7 @@ def execute_run(params):
 
 def execute_batch(params):
     """Build the algorithms, scan every ticker, and stash the batch in session state."""
-    buy_algo = build_algorithm(params["buy_name"], params)
-    sell_algo = build_algorithm(params["sell_name"], params)
+    buy_algo, sell_algo = build_algorithms(params)
     batch_id = run_batch(
         tickers=params["tickers"],
         start_date=params["start_date"],
@@ -251,7 +234,7 @@ def execute_batch(params):
 def execute_scan(params):
     """Run the daily BUY scan across the chosen universe; stash hits in session state."""
     tickers = universe.get_universe(params["scan_scope"], use_cache=params["use_cache"])
-    buy_algo = build_algorithm(params["buy_name"], params)
+    buy_algo = build_algorithm(params["buy_name"], params["buy_config"])
     hits, errors = scan_for_buys(
         tickers, buy_algo, as_of=params["as_of"],
         interval=params["interval"], use_cache=params["use_cache"],
@@ -263,11 +246,71 @@ def execute_scan(params):
     st.session_state["params"] = params
 
 
-def build_price_chart(df, trades, bb_period, bb_std):
-    """Candlestick + Bollinger Bands + BUY/SELL markers from the ledger."""
-    middle, upper, lower = indicators.bollinger_bands(df["Close"], bb_period, bb_std)
-    band_line = dict(width=1)
+def execute_portfolio(params):
+    """Backtest ONE shared account over a universe (the research system) + benchmarks."""
+    tickers = universe.get_universe(params["scan_scope"], use_cache=params["use_cache"])
+    if params["use_cache"]:
+        prefetch(tickers + ["SPY"], params["start_date"], params["end_date"])
+    frames, failed = {}, []
+    for ticker in tickers:
+        try:
+            frames[ticker] = fetch_data(ticker, params["start_date"], params["end_date"], use_cache=params["use_cache"])
+        except PER_TICKER_ERRORS as exc:
+            failed.append(f"{ticker} ({type(exc).__name__})")
+    config = PortfolioConfig(
+        starting_capital=params["starting_capital"], max_positions=params["max_positions"],
+        risk_pct=params["risk_pct"], cost_bps=params["cost_bps"], fill_mode=params["fill_mode"],
+        stop_mode=params["stop_mode"])
+    buy_algo, sell_algo = build_algorithms(params)
+    result = run_portfolio(frames, buy_algo, sell_algo, config)
+    spy = fetch_data("SPY", params["start_date"], params["end_date"], use_cache=params["use_cache"])["Close"]
+    benchmarks = {
+        "Equal-weight buy & hold": buy_and_hold_portfolio({t: df["Close"] for t, df in frames.items()}, config),
+        "SPY buy & hold": single_asset_benchmark(spy, config),
+    }
+    st.session_state.update({"result_kind": "portfolio", "params": params, "portfolio_result": result,
+                             "portfolio_benchmarks": benchmarks, "portfolio_failed": failed,
+                             "portfolio_size": len(frames)})
 
+
+def render_portfolio_results():
+    params = st.session_state["params"]
+    result = st.session_state["portfolio_result"]
+    benchmarks = st.session_state["portfolio_benchmarks"]
+    m = result.metrics
+    st.subheader(f"Portfolio — {params['buy_name']} · {st.session_state['portfolio_size']} stocks · "
+                 f"max {params['max_positions']} positions · {params['fill_mode']} fills")
+    cols = st.columns(5)
+    cols[0].metric("CAGR", f"{m['cagr'] * 100:.1f}%")
+    cols[1].metric("Max drawdown", f"{m['max_dd'] * 100:.1f}%")
+    cols[2].metric("Sharpe", f"{m['sharpe']:.2f}")
+    cols[3].metric("Final equity", f"${m['final_equity']:,.0f}")
+    cols[4].metric("Trades", f"{m['n_trades']}", help=f"win rate {m['win_rate'] * 100:.0f}%, "
+                                                         f"avg hold {m['avg_hold_bars']:.0f} bars")
+    fig = go.Figure(go.Scatter(x=result.equity.index, y=result.equity, name="Strategy", line=dict(width=2.5)))
+    rows = [{"system": "Strategy", **{k: m[k] for k in ("cagr", "max_dd", "sharpe", "calmar")}}]
+    for name, equity in benchmarks.items():
+        equity = equity[equity.index >= result.equity.index[0]]
+        fig.add_trace(go.Scatter(x=equity.index, y=equity, name=name, line=dict(width=1.3)))
+        bench = equity_metrics(equity)
+        rows.append({"system": name, **{k: bench[k] for k in ("cagr", "max_dd", "sharpe", "calmar")}})
+    fig.update_layout(height=420, yaxis_type="log", margin=dict(l=10, r=10, t=30, b=10), legend=dict(orientation="h"))
+    st.plotly_chart(fig, use_container_width=True)
+    table = pd.DataFrame(rows)
+    table["cagr"] = (table["cagr"] * 100).round(2)
+    table["max_dd"] = (table["max_dd"] * 100).round(1)
+    st.dataframe(table.round(2), use_container_width=True, hide_index=True)
+    trades = pd.DataFrame([{**t.__dict__, "ret_%": round(t.ret * 100, 2), "pnl": round(t.pnl, 2)}
+                           for t in result.trades])
+    if not trades.empty:
+        st.markdown("**Trades**")
+        st.dataframe(trades.sort_values("entry_date", ascending=False), use_container_width=True, hide_index=True)
+    if st.session_state["portfolio_failed"]:
+        st.caption("Skipped (no usable data): " + ", ".join(st.session_state["portfolio_failed"]))
+
+
+def build_price_chart(df, trades, config):
+    """Candlestick + the strategy's own overlay (Bollinger Bands or its trend MA) + BUY/SELL markers."""
     fig = go.Figure()
     fig.add_trace(
         go.Candlestick(
@@ -275,9 +318,16 @@ def build_price_chart(df, trades, bb_period, bb_std):
             name="Price",
         )
     )
-    fig.add_trace(go.Scatter(x=df.index, y=upper, name="Upper BB", line=dict(color="#8fa8ff", **band_line)))
-    fig.add_trace(go.Scatter(x=df.index, y=middle, name="Middle BB", line=dict(color="#aaaaaa", dash="dot", **band_line)))
-    fig.add_trace(go.Scatter(x=df.index, y=lower, name="Lower BB", line=dict(color="#8fa8ff", **band_line)))
+    band_line = dict(width=1)
+    if "bb_period" in config:
+        middle, upper, lower = indicators.bollinger_bands(df["Close"], config["bb_period"], config["bb_std"])
+        fig.add_trace(go.Scatter(x=df.index, y=upper, name="Upper BB", line=dict(color="#8fa8ff", **band_line)))
+        fig.add_trace(go.Scatter(x=df.index, y=middle, name="Middle BB", line=dict(color="#aaaaaa", dash="dot", **band_line)))
+        fig.add_trace(go.Scatter(x=df.index, y=lower, name="Lower BB", line=dict(color="#8fa8ff", **band_line)))
+    for key in ("trend_ma", "exit_ma", "ma_period", "trend_sma"):
+        if key in config:
+            fig.add_trace(go.Scatter(x=df.index, y=indicators.sma(df["Close"], config[key]),
+                                     name=f"SMA {config[key]} ({key})", line=dict(color="#e39b3c", **band_line)))
 
     buys = trades[trades["trade_type"] == "BUY"]
     sells = trades[trades["trade_type"] == "SELL"]
@@ -336,7 +386,7 @@ def render_results():
         interval=params["interval"], use_cache=True,
     )
     st.plotly_chart(
-        build_price_chart(df, trades, params["bb_period"], params["bb_std"]),
+        build_price_chart(df, trades, params["buy_config"]),
         use_container_width=True,
     )
 
@@ -425,7 +475,7 @@ def render_batch_results():
             interval=params["interval"], use_cache=True,
         )
         st.plotly_chart(
-            build_price_chart(chosen_df, trades, params["bb_period"], params["bb_std"]),
+            build_price_chart(chosen_df, trades, params["buy_config"]),
             use_container_width=True,
         )
 
@@ -442,15 +492,12 @@ def render_scan_results():
     cols[0].metric("Universe scanned", n_universe)
     cols[1].metric("BUY signals", len(hits))
     cols[2].metric("No data", len(errors))
-    cols[3].metric("Volume filter",
-                   f"{params['vol_surge_mult']:g}× avg" if params["vol_surge_mult"] else "off")
+    cols[3].metric("Stop mode", params["stop_mode"])
 
     if hits.empty:
-        st.info("No stocks broke their roof on volume on this bar — a normal outcome "
-                "(breakouts are rare). Try another date, a different universe, or relax "
-                "the roof / volume parameters in the sidebar.")
+        st.info("No stock fires the entry signal on this bar. Try another date or universe.")
     else:
-        st.markdown("**Stocks to consider buying** (largest volume surge first)")
+        st.markdown("**Stocks to consider buying** (strongest score first)")
         st.dataframe(hits, use_container_width=True, hide_index=True)
         st.download_button(
             "⬇ Download buy list (CSV)", hits.to_csv(index=False),
@@ -467,7 +514,7 @@ def render_scan_results():
                                           value=0.0, key="hold_entry_price")
     check_clicked = hc[3].button("Check", use_container_width=True)
     if check_clicked and hold_ticker:
-        algo = build_algorithm(params["buy_name"], params)
+        algo = build_algorithm(params["buy_name"], params["buy_config"])
         try:
             verdict = check_holding(
                 hold_ticker, algo, str(hold_entry_date),
@@ -494,6 +541,9 @@ if params["run_clicked"]:
     if params["mode"] == "Batch scan":
         with st.spinner(f"Scanning {len(params['tickers'])} stocks… (first run downloads data)"):
             execute_batch(params)
+    elif params["mode"] == "Portfolio backtest":
+        with st.spinner("Backtesting one shared account over the universe… (first run downloads data)"):
+            execute_portfolio(params)
     elif params["mode"] == "Scan today":
         with st.spinner("Scanning the universe for breakouts… (first run downloads data)"):
             execute_scan(params)
@@ -507,6 +557,8 @@ if "result_kind" in st.session_state:
         render_batch_results()
     elif kind == "scan":
         render_scan_results()
+    elif kind == "portfolio":
+        render_portfolio_results()
     else:
         render_results()
 else:
