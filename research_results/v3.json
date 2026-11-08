@@ -1,0 +1,769 @@
+{
+ "phase": "v3",
+ "generated": "2026-11-08T04:33:38",
+ "data": {
+  "start": "2004-01-01",
+  "end": "2026-11-08"
+ },
+ "objective": "max CAGR with max drawdown within -40%",
+ "tables": [
+  {
+   "title": "Train grid (300 stocks, next-open fills)",
+   "note": null,
+   "columns": [
+    "strategy",
+    "cagr",
+    "maxDD",
+    "sharpe",
+    "calmar",
+    "trades",
+    "avgHold",
+    "winRate",
+    "ddOK"
+   ],
+   "rows": [
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=1 rank=signal",
+     "cagr": 21.4,
+     "maxDD": -43.2,
+     "sharpe": 0.89,
+     "calmar": 0.5,
+     "trades": 1158,
+     "avgHold": 109.0,
+     "winRate": 35.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=25 xc=1 rank=signal",
+     "cagr": 20.72,
+     "maxDD": -41.2,
+     "sharpe": 0.87,
+     "calmar": 0.5,
+     "trades": 985,
+     "avgHold": 114.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=25 xc=1 rank=signal",
+     "cagr": 20.67,
+     "maxDD": -40.6,
+     "sharpe": 0.86,
+     "calmar": 0.51,
+     "trades": 1193,
+     "avgHold": 109.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+     "cagr": 20.47,
+     "maxDD": -36.6,
+     "sharpe": 0.84,
+     "calmar": 0.56,
+     "trades": 1115,
+     "avgHold": 110.0,
+     "winRate": 36.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=20 xc=1 rank=signal",
+     "cagr": 20.12,
+     "maxDD": -40.4,
+     "sharpe": 0.83,
+     "calmar": 0.5,
+     "trades": 929,
+     "avgHold": 110.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+     "cagr": 19.97,
+     "maxDD": -39.7,
+     "sharpe": 0.84,
+     "calmar": 0.5,
+     "trades": 984,
+     "avgHold": 131.0,
+     "winRate": 38.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=3 rank=signal",
+     "cagr": 19.23,
+     "maxDD": -43.1,
+     "sharpe": 0.8,
+     "calmar": 0.45,
+     "trades": 951,
+     "avgHold": 131.0,
+     "winRate": 38.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=25 xc=3 rank=signal",
+     "cagr": 18.94,
+     "maxDD": -43.2,
+     "sharpe": 0.79,
+     "calmar": 0.44,
+     "trades": 1013,
+     "avgHold": 129.0,
+     "winRate": 38.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "PRODUCTION MomRider thr=0.25 mp=20",
+     "cagr": 18.68,
+     "maxDD": -41.1,
+     "sharpe": 0.79,
+     "calmar": 0.45,
+     "trades": 956,
+     "avgHold": 109.0,
+     "winRate": 36.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=signal",
+     "cagr": 18.68,
+     "maxDD": -41.1,
+     "sharpe": 0.79,
+     "calmar": 0.45,
+     "trades": 956,
+     "avgHold": 109.0,
+     "winRate": 36.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=3 rank=signal",
+     "cagr": 18.67,
+     "maxDD": -48.8,
+     "sharpe": 0.77,
+     "calmar": 0.38,
+     "trades": 813,
+     "avgHold": 130.0,
+     "winRate": 40.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=20 xc=3 rank=signal",
+     "cagr": 18.67,
+     "maxDD": -43.6,
+     "sharpe": 0.79,
+     "calmar": 0.43,
+     "trades": 740,
+     "avgHold": 132.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=3 rank=signal",
+     "cagr": 18.66,
+     "maxDD": -41.5,
+     "sharpe": 0.79,
+     "calmar": 0.45,
+     "trades": 816,
+     "avgHold": 131.0,
+     "winRate": 40.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+     "cagr": 18.57,
+     "maxDD": -36.4,
+     "sharpe": 0.87,
+     "calmar": 0.51,
+     "trades": 875,
+     "avgHold": 120.0,
+     "winRate": 38.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=1 rank=vol_adj",
+     "cagr": 18.44,
+     "maxDD": -42.8,
+     "sharpe": 0.88,
+     "calmar": 0.43,
+     "trades": 1066,
+     "avgHold": 117.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=signal",
+     "cagr": 18.31,
+     "maxDD": -41.6,
+     "sharpe": 0.78,
+     "calmar": 0.44,
+     "trades": 984,
+     "avgHold": 108.0,
+     "winRate": 36.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=20 xc=1 rank=signal",
+     "cagr": 17.75,
+     "maxDD": -41.4,
+     "sharpe": 0.79,
+     "calmar": 0.43,
+     "trades": 846,
+     "avgHold": 114.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj",
+     "cagr": 17.57,
+     "maxDD": -33.8,
+     "sharpe": 0.82,
+     "calmar": 0.52,
+     "trades": 903,
+     "avgHold": 116.0,
+     "winRate": 38.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=20 xc=3 rank=signal",
+     "cagr": 17.54,
+     "maxDD": -38.8,
+     "sharpe": 0.76,
+     "calmar": 0.45,
+     "trades": 792,
+     "avgHold": 132.0,
+     "winRate": 40.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=25 xc=1 rank=vol_adj",
+     "cagr": 17.5,
+     "maxDD": -39.2,
+     "sharpe": 0.81,
+     "calmar": 0.45,
+     "trades": 983,
+     "avgHold": 116.0,
+     "winRate": 37.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MIX MomRider-entry + DualConfirm-exit mp=20",
+     "cagr": 17.47,
+     "maxDD": -48.1,
+     "sharpe": 0.75,
+     "calmar": 0.36,
+     "trades": 657,
+     "avgHold": 161.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=20 xc=1 rank=vol_adj",
+     "cagr": 17.32,
+     "maxDD": -38.6,
+     "sharpe": 0.79,
+     "calmar": 0.45,
+     "trades": 843,
+     "avgHold": 115.0,
+     "winRate": 37.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=20 xc=1 rank=vol_adj",
+     "cagr": 17.15,
+     "maxDD": -35.9,
+     "sharpe": 0.79,
+     "calmar": 0.48,
+     "trades": 875,
+     "avgHold": 117.0,
+     "winRate": 37.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=vol_adj",
+     "cagr": 17.13,
+     "maxDD": -41.7,
+     "sharpe": 0.79,
+     "calmar": 0.41,
+     "trades": 1080,
+     "avgHold": 113.0,
+     "winRate": 36.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=25 xc=3 rank=signal",
+     "cagr": 16.96,
+     "maxDD": -46.7,
+     "sharpe": 0.73,
+     "calmar": 0.36,
+     "trades": 879,
+     "avgHold": 131.0,
+     "winRate": 38.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=25 xc=1 rank=vol_adj",
+     "cagr": 16.23,
+     "maxDD": -38.8,
+     "sharpe": 0.78,
+     "calmar": 0.42,
+     "trades": 1118,
+     "avgHold": 113.0,
+     "winRate": 37.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=20 xc=3 rank=vol_adj",
+     "cagr": 16.2,
+     "maxDD": -41.7,
+     "sharpe": 0.75,
+     "calmar": 0.39,
+     "trades": 734,
+     "avgHold": 135.0,
+     "winRate": 40.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=3 rank=vol_adj",
+     "cagr": 15.57,
+     "maxDD": -43.4,
+     "sharpe": 0.75,
+     "calmar": 0.36,
+     "trades": 797,
+     "avgHold": 132.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.4 mp=25 xc=3 rank=vol_adj",
+     "cagr": 15.22,
+     "maxDD": -46.2,
+     "sharpe": 0.71,
+     "calmar": 0.33,
+     "trades": 869,
+     "avgHold": 134.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=20 xc=3 rank=vol_adj",
+     "cagr": 15.09,
+     "maxDD": -44.2,
+     "sharpe": 0.73,
+     "calmar": 0.34,
+     "trades": 777,
+     "avgHold": 134.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=3 rank=vol_adj",
+     "cagr": 14.73,
+     "maxDD": -45.9,
+     "sharpe": 0.74,
+     "calmar": 0.32,
+     "trades": 930,
+     "avgHold": 135.0,
+     "winRate": 40.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=vol_adj",
+     "cagr": 14.6,
+     "maxDD": -42.9,
+     "sharpe": 0.73,
+     "calmar": 0.34,
+     "trades": 965,
+     "avgHold": 133.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "VolAdj thr=10 mp=20",
+     "cagr": 14.2,
+     "maxDD": -35.0,
+     "sharpe": 0.76,
+     "calmar": 0.41,
+     "trades": 798,
+     "avgHold": 126.0,
+     "winRate": 39.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=25 xc=3 rank=vol_adj",
+     "cagr": 14.05,
+     "maxDD": -40.9,
+     "sharpe": 0.72,
+     "calmar": 0.34,
+     "trades": 956,
+     "avgHold": 134.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "BENCH equal-weight Buy&Hold",
+     "cagr": 13.83,
+     "maxDD": -45.3,
+     "sharpe": 0.83,
+     "calmar": 0.31,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=3 rank=vol_adj",
+     "cagr": 13.35,
+     "maxDD": -40.7,
+     "sharpe": 0.69,
+     "calmar": 0.33,
+     "trades": 794,
+     "avgHold": 133.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "TrendRider bl=50 xMA=200 mp=20",
+     "cagr": 13.26,
+     "maxDD": -39.2,
+     "sharpe": 0.74,
+     "calmar": 0.34,
+     "trades": 848,
+     "avgHold": 124.0,
+     "winRate": 39.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "BENCH SPY Buy&Hold",
+     "cagr": 10.62,
+     "maxDD": -55.2,
+     "sharpe": 0.64,
+     "calmar": 0.19,
+     "ddOK": false
+    },
+    {
+     "strategy": "Donchian e=200 x=100 mp=20",
+     "cagr": 10.54,
+     "maxDD": -39.2,
+     "sharpe": 0.62,
+     "calmar": 0.27,
+     "trades": 581,
+     "avgHold": 174.0,
+     "winRate": 39.0,
+     "ddOK": true
+    }
+   ]
+  },
+  {
+   "title": "Out-of-sample: 100 never-tuned stocks",
+   "note": null,
+   "columns": [
+    "strategy",
+    "cagr",
+    "maxDD",
+    "sharpe",
+    "calmar",
+    "trades",
+    "avgHold",
+    "winRate",
+    "ddOK"
+   ],
+   "rows": [
+    {
+     "strategy": "BENCH equal-weight Buy&Hold",
+     "cagr": 15.02,
+     "maxDD": -46.6,
+     "sharpe": 0.84,
+     "calmar": 0.32,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+     "cagr": 10.93,
+     "maxDD": -36.6,
+     "sharpe": 0.66,
+     "calmar": 0.3,
+     "trades": 763,
+     "avgHold": 116.0,
+     "winRate": 38.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+     "cagr": 10.83,
+     "maxDD": -42.7,
+     "sharpe": 0.67,
+     "calmar": 0.25,
+     "trades": 740,
+     "avgHold": 137.0,
+     "winRate": 40.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "BENCH SPY Buy&Hold",
+     "cagr": 10.62,
+     "maxDD": -55.2,
+     "sharpe": 0.64,
+     "calmar": 0.19,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+     "cagr": 10.26,
+     "maxDD": -43.8,
+     "sharpe": 0.65,
+     "calmar": 0.23,
+     "trades": 832,
+     "avgHold": 110.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "PRODUCTION MomRider thr=0.25 mp=20",
+     "cagr": 10.22,
+     "maxDD": -40.3,
+     "sharpe": 0.64,
+     "calmar": 0.25,
+     "trades": 769,
+     "avgHold": 112.0,
+     "winRate": 38.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj",
+     "cagr": 9.68,
+     "maxDD": -39.5,
+     "sharpe": 0.62,
+     "calmar": 0.25,
+     "trades": 764,
+     "avgHold": 114.0,
+     "winRate": 38.0,
+     "ddOK": true
+    }
+   ]
+  },
+  {
+   "title": "Robustness: OOS CAGR on 5 re-drawn 100-stock test sets",
+   "note": null,
+   "columns": [
+    "strategy",
+    "meanCagr",
+    "minCagr",
+    "beatsProduction"
+   ],
+   "rows": [
+    {
+     "strategy": "PRODUCTION MomRider thr=0.25 mp=20",
+     "meanCagr": 14.0,
+     "minCagr": 11.8,
+     "beatsProduction": "-"
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+     "meanCagr": 14.28,
+     "minCagr": 10.55,
+     "beatsProduction": "3/5"
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+     "meanCagr": 13.9,
+     "minCagr": 11.99,
+     "beatsProduction": "3/5"
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+     "meanCagr": 13.78,
+     "minCagr": 12.22,
+     "beatsProduction": "1/5"
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj",
+     "meanCagr": 13.99,
+     "minCagr": 13.21,
+     "beatsProduction": "3/5"
+    }
+   ]
+  },
+  {
+   "title": "Walk-forward window 2006-01-01 .. 2015-12-31 (all eligible stocks)",
+   "note": null,
+   "columns": [
+    "strategy",
+    "cagr",
+    "maxDD",
+    "sharpe",
+    "calmar",
+    "trades",
+    "avgHold",
+    "winRate",
+    "ddOK"
+   ],
+   "rows": [
+    {
+     "strategy": "PRODUCTION MomRider thr=0.25 mp=20",
+     "cagr": 17.43,
+     "maxDD": -46.9,
+     "sharpe": 0.77,
+     "calmar": 0.37,
+     "trades": 419,
+     "avgHold": 114.0,
+     "winRate": 37.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj",
+     "cagr": 16.53,
+     "maxDD": -41.3,
+     "sharpe": 0.81,
+     "calmar": 0.4,
+     "trades": 436,
+     "avgHold": 109.0,
+     "winRate": 35.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+     "cagr": 15.86,
+     "maxDD": -49.0,
+     "sharpe": 0.71,
+     "calmar": 0.32,
+     "trades": 499,
+     "avgHold": 115.0,
+     "winRate": 38.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+     "cagr": 13.92,
+     "maxDD": -45.2,
+     "sharpe": 0.74,
+     "calmar": 0.31,
+     "trades": 441,
+     "avgHold": 107.0,
+     "winRate": 34.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "BENCH equal-weight Buy&Hold",
+     "cagr": 12.86,
+     "maxDD": -48.5,
+     "sharpe": 0.72,
+     "calmar": 0.27,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+     "cagr": 12.47,
+     "maxDD": -50.5,
+     "sharpe": 0.61,
+     "calmar": 0.25,
+     "trades": 463,
+     "avgHold": 127.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "BENCH SPY Buy&Hold",
+     "cagr": 7.05,
+     "maxDD": -55.2,
+     "sharpe": 0.43,
+     "calmar": 0.13,
+     "ddOK": false
+    }
+   ]
+  },
+  {
+   "title": "Walk-forward window 2016-01-01 .. today (all eligible stocks)",
+   "note": null,
+   "columns": [
+    "strategy",
+    "cagr",
+    "maxDD",
+    "sharpe",
+    "calmar",
+    "trades",
+    "avgHold",
+    "winRate",
+    "ddOK"
+   ],
+   "rows": [
+    {
+     "strategy": "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+     "cagr": 31.93,
+     "maxDD": -51.8,
+     "sharpe": 0.94,
+     "calmar": 0.62,
+     "trades": 539,
+     "avgHold": 123.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+     "cagr": 28.56,
+     "maxDD": -43.2,
+     "sharpe": 0.92,
+     "calmar": 0.66,
+     "trades": 617,
+     "avgHold": 106.0,
+     "winRate": 39.0,
+     "ddOK": false
+    },
+    {
+     "strategy": "PRODUCTION MomRider thr=0.25 mp=20",
+     "cagr": 27.66,
+     "maxDD": -38.8,
+     "sharpe": 0.92,
+     "calmar": 0.71,
+     "trades": 499,
+     "avgHold": 107.0,
+     "winRate": 40.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj",
+     "cagr": 26.49,
+     "maxDD": -33.8,
+     "sharpe": 1.03,
+     "calmar": 0.78,
+     "trades": 444,
+     "avgHold": 120.0,
+     "winRate": 43.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+     "cagr": 24.04,
+     "maxDD": -30.6,
+     "sharpe": 0.94,
+     "calmar": 0.78,
+     "trades": 443,
+     "avgHold": 121.0,
+     "winRate": 44.0,
+     "ddOK": true
+    },
+    {
+     "strategy": "BENCH equal-weight Buy&Hold",
+     "cagr": 16.54,
+     "maxDD": -33.5,
+     "sharpe": 0.92,
+     "calmar": 0.49,
+     "ddOK": true
+    },
+    {
+     "strategy": "BENCH SPY Buy&Hold",
+     "cagr": 14.53,
+     "maxDD": -33.7,
+     "sharpe": 0.86,
+     "calmar": 0.43,
+     "ddOK": true
+    }
+   ]
+  }
+ ],
+ "verdict": {
+  "winner": "PRODUCTION MomRider thr=0.25 mp=20",
+  "promoted": [],
+  "summary": "No candidate beat production on every check \u2014 keep production."
+ },
+ "finalists": [
+  "MomRider thr=0.3 mp=25 xc=1 rank=signal",
+  "MomRider thr=0.25 mp=25 xc=3 rank=signal",
+  "MomRider thr=0.2 mp=20 xc=1 rank=vol_adj",
+  "MomRider thr=0.25 mp=20 xc=1 rank=vol_adj"
+ ],
+ "fill_mode": "next_open"
+}
