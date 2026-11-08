@@ -172,7 +172,7 @@ recordings (`python -m sim.crypto_record`), and trained models (retrain, or copy
 
 ## The original backtester (Streamlit)
 
-The pre-existing Bollinger-squeeze backtesting dashboard (separate from the sim):
+The backtesting dashboard (single stock, batch, portfolio backtest, scan today), separate from the sim:
 ```bash
 streamlit run app.py
 ```

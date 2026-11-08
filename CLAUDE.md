@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A local, zero-cost stock backtesting + visualization tool ("Capital Market Roof Simulator").
-Python backend (yfinance data, SQLite storage, day-by-day simulation) decoupled from a Streamlit +
-Plotly frontend. The flagship strategy is a Bollinger squeeze + volume-bandwidth breakout.
+A local, zero-cost stock backtesting + research tool ("Capital Market Roof Simulator") with a
+production daily scanner and a PWA ("Roof Signals") deployed to GitHub Pages.
+Python backend (yfinance data, vectorized signals, one shared backtest engine, SQLite storage)
++ a Streamlit/Plotly dashboard + a static PWA whose JavaScript engine reproduces the Python
+engine exactly. The production strategy is the Growth Momentum Rider (`scan_today.DEFAULT_*`).
 
 ## Commands
 
@@ -16,23 +18,23 @@ breaks calling `conda.exe` by full path — **activate the env first**, or invok
 
 ```powershell
 conda activate ntp
-streamlit run app.py            # launch the dashboard
+streamlit run app.py                         # dashboard
+python scan_today.py                         # daily BUY list + HOLD/SELL on positions.csv
+python research_grids.py v3                  # research phase (see research_grids.py docstring)
+python publish.py --out site --demo          # build the PWA offline (synthetic data)
 ```
 
-Recreate / install:
-```powershell
-conda env create -f environment.yml      # or: pip install -r requirements.txt
+Recreate / install: `conda env create -f environment.yml` or `pip install -r requirements.txt`
+(`requirements-core.txt` is the lean set CI uses: no torch/streamlit).
+
+**Tests (run before every commit; CI runs the same):**
+```bash
+python -m unittest discover -s tests -t .    # Python (~1 min, offline, synthetic data)
+node --test pwa/tests/*.test.mjs             # JS engine exact parity with Python
+python -m tests.make_js_fixtures             # regenerate the parity fixture after engine changes
 ```
-
-**There is no automated test suite.** Verify changes by:
-- Running a short simulation against live yfinance data through the `ntp` env Python, e.g. import
-  `simulation.run_simulation` / `batch.run_batch` and assert on `compute_kpis` output.
-- Booting Streamlit headless and checking health:
-  `streamlit run app.py --server.headless true --server.port <p>` then GET
-  `http://localhost:<p>/_stcore/health` (expects `ok`).
-
-Network is required (yfinance). First fetch per (ticker, range, interval) downloads; subsequent runs
-read `data_cache/*.csv`. Runs persist to `simulation.db`.
+Live-data checks still need network (yfinance): first fetch per (ticker, range, interval)
+downloads; later runs read `data_cache/*.csv`. `data_engine.prefetch` bulk-downloads many tickers.
 
 ## Strict coding rules (enforced — deviations are rejected)
 
@@ -40,55 +42,64 @@ read `data_cache/*.csv`. Runs persist to `simulation.db`.
 - **Fail fast, no silent failures**: never `.get()` on our own dicts (direct access + explicit validation);
   no `try/except` for control flow; no `.fillna()` (raise on empty/NaN/missing data instead). Invalid
   assumptions should crash with a named exception from `errors.py`.
-- **No lookahead bias**: algorithms only ever receive history up to the current bar. The loop enforces
-  this by passing `df.iloc[:i+1]` — never index ahead of `i` inside a strategy.
-- **DRY**: shared math lives in `indicators.py`; shared stop selection in `algorithms.select_stop`.
+- **No lookahead bias**: every indicator in a strategy's `_build_signals` must be causal (rolling /
+  shifted / EWM windows that only look back). Signals are computed once on the full history, so a
+  non-causal indicator WOULD leak the future — `tests/test_parity.py` (CausalityTest + per-bar
+  parity with the frozen per-slice legacy engine) is the guard; run it after touching any strategy.
+- **DRY**: shared math lives in `indicators.py`; fills/stops/sizing/costs live only in `engine.py`.
+- **Python ↔ JS parity**: `pwa/js/engine/*` mirrors `indicators.py`/`algorithms.py`/`engine.py` for
+  the production-family strategies. Change one side → regenerate the fixture → both test suites pass.
 - **Surface bugs explicitly**: if you find a logic flaw or risky edge case, call it out and show the fix.
 
 ## Architecture (the parts that span files)
 
-Data flow: `app.py` builds strategy instances via `algorithms.build_algorithm` →
-`simulation.run_simulation` (one ticker) or `batch.run_batch` (a universe) → `data_engine.fetch_data`
-(+ `indicators`, `algorithms`) → `database` (SQLite) → read back for KPIs/charts.
+**Strategies** (`algorithms.py`): each class declares `DEFAULTS`, `warmup_bars()` and
+`_build_signals(history) -> Signals` (vectorized arrays: `entry`, `exit`, `score`, stop candidates
+`stop_levels` + `stop_atr`, and path-dependent exits `trail_atr` / `target_mult` / `max_hold`).
+The base class derives the classic per-bar interface (`scan_and_buy`, `compute_stop`,
+`calculate_sell`, `score_today`) from it. Strategies hold only config, so one instance is reused
+across tickers. `build_algorithm(name, cfg)` filters to the class's `DEFAULTS` keys.
 
-**Strategy interface & registry** (`algorithms.py`): every strategy is a class implementing
-`warmup_bars`, `scan_and_buy(history_slice)`, `compute_stop(entry, history, stop_mode)`,
-`calculate_sell(position, history)`. They hold only config (no per-ticker state), so the same instance
-is safely reused across many tickers in a batch. All are registered in `ALGORITHMS`; the GUI passes a
-superset of params and `build_algorithm` filters each class's `DEFAULTS` keys (unknown keys raise).
+**Engine** (`engine.py`): the ONE day loop (one account, N stocks): next-open fills (sells then
+buys) → intrabar stop (gap-downs fill at the open) → optional regime exit → BUY decisions at the
+close ranked by score → SELL decisions → final-bar liquidation → mark to market. Entries are
+state-based (a qualifying stock stays a candidate while its condition holds), like the daily scan.
+- `simulation.run_simulation` = engine with one stock + SQLite persistence (dashboard).
+- `portfolio.run_portfolio` = engine with the realistic account (`PortfolioConfig`: max positions,
+  1% risk on live equity, cost bps, fill mode, rank_by, trade_from) + benchmarks
+  (equal-weight B&H keeps each sleeve in cash until its stock lists; SPY B&H).
+- `batch.run_batch` = independent per-stock runs (algorithm scan, not a portfolio). Per-ticker data
+  failures are caught only at orchestration boundaries (`PER_TICKER_ERRORS`) — `ConfigurationError`
+  is never caught.
 
-**Buy/sell are independent roles** (`simulation.py`): the *buy* algorithm supplies the entry signal
-**and** the initial stop (`compute_stop`); the *sell* algorithm supplies the discretionary exit
-(`calculate_sell`). The simulation enforces the stop loss separately (intrabar, gap-down fills at
-open), so an exit = stop hit OR sell signal. This is why the dashboard shows two dropdowns with the
-same list — they mix one strategy's entry/stop with another's exit.
+**Buy/sell are independent roles**: the buy algorithm supplies entry + initial stop; the sell
+algorithm supplies the discretionary exit. Exit = stop hit OR sell signal.
 
-**Runtime toggles** (plumbed app → simulation/batch, defaults in bold): `stop_mode`
-(**tightest**/widest, see `select_stop`), `sizing_mode` (**risk_based** + `risk_pct` / all_in /
-fixed_fraction, in `_size_position`), `fill_mode` (**close**/next_open — next_open uses a pending-order
-queue; an order on the last bar is dropped, never back-filled), `interval`
-(**1d**/1h/1wk/1mo). Indicator periods are measured in **bars**, so strategies are timeframe-agnostic —
-adding/changing a timeframe needs no algorithm changes.
+**Runtime toggles**: `stop_mode` (tightest/**widest** in production), `sizing_mode`
+(**risk_based**/all_in/fixed_fraction), `fill_mode` (close/**next_open** = realistic for an
+after-the-close scan), `interval` (**1d**/1h/1wk/1mo; periods are in bars).
 
-**Batch mode** (`batch.py`): runs the strategy *independently* per ticker with the same starting
-capital, so per-stock % returns are comparable. It is an algorithm-evaluation scan, **not** a
-shared-capital portfolio. Per-ticker data failures are caught only at this orchestration boundary
-(`PER_TICKER_ERRORS`) and recorded as `status='error'` rows — `ConfigurationError` is deliberately NOT
-caught so a whole-batch setup mistake aborts loudly. This per-ticker `try/except` is the one sanctioned
-exception to the no-try/except rule, and it surfaces errors in the summary rather than hiding them.
+**Production** (`scan_today.py`): `daily_report` (ranked BUY list + rank history) and
+`holding_verdict` (pure HOLD/SELL) are shared by the CLI, `scan_sell_today.py`, `score_stock.py`,
+the dashboard and `publish.py`.
 
-**Database** (`database.py`): single-runs use `runs`/`trades`/`daily_equity` (keyed by `run_id`);
-batches use `batches`/`batch_results` (keyed by `batch_id`, each result links back to a `run_id`).
-`init_db` is idempotent. Write helpers (`record_trade`/`record_equity`) do NOT commit — the simulation
-loop commits once at the end as a batch; `create_run`/`create_batch` commit so ids are durable.
+**Research** (`research_portfolio.py` + `research_grids.py`): `Candidate` specs evaluated in parallel
+on the 300/100 stock split; `v3` = train grid → finalists → OOS → re-drawn splits → walk-forward →
+verdict. Reports land in `research_results/*.json` (published to the PWA). Env: `RESEARCH_END`,
+`RESEARCH_OUT`, `RESEARCH_WORKERS`.
+
+**PWA** (`pwa/`, built by `publish.py`, deployed by `.github/workflows/publish.yml`): static site;
+positions live only in the browser (localStorage); HOLD/SELL and the lab run client-side
+(`pwa/js/engine`, lab in a Web Worker). Price files use `pwa_format.py`'s compact format.
+
+**Database** (`database.py`): single runs use `runs`/`trades`/`daily_equity`; batches use
+`batches`/`batch_results`. Write helpers don't commit; `create_run`/`create_batch` do.
 
 ## yfinance gotchas baked into `data_engine.py`
 
-- Single-ticker downloads still return **MultiIndex columns** — flattened to OHLCV via the level
-  containing `Close`.
+- Single-ticker downloads still return **MultiIndex columns** — flattened via the level containing `Close`.
 - `auto_adjust=True` (split/dividend-adjusted; no `Adj Close`).
-- Share classes use a **dash, not a dot** on Yahoo: `BRK.B` → `BRK-B`. Ticker inputs are NOT yet
-  auto-normalized — pasting `BRK.B` will raise `EmptyDataError`.
+- Share classes use a **dash, not a dot** on Yahoo: `fetch_data` normalizes `BRK.B` → `BRK-B`.
+- Bulk downloads share one calendar: all-NaN rows (days a stock did not trade) are dropped.
 - Intraday `1h` history is limited to ~the last 730 days; older ranges return empty → `EmptyDataError`.
-- The cache key includes the interval, so timeframes never collide; `simulation._date_str` stores the
-  full datetime so intraday bars stay distinct.
+- The cache key includes the interval and date range, so timeframes never collide.
