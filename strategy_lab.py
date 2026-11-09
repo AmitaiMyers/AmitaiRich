@@ -79,6 +79,37 @@ class LabData:
             self._factors[name] = factors.FACTORS[name].compute(self.panel)
         return self._factors[name]
 
+    def ic_history(self, name):
+        """Monthly rank IC of a factor vs the next-month return, with the date each IC became KNOWN
+        (decision month-end + 22 bars: the forward return must have finished)."""
+        key = ("ic", name)
+        if key not in self._factors:
+            import factor_report
+
+            dates = self.panel.dates
+            month_ends = factor_report.month_ends(dates, dates[0], dates[-1])
+            returns = factor_report.forward_returns(self.panel, 21)
+            ics = factor_report._rank_ic(self.factor(name).reindex(month_ends), returns.reindex(month_ends),
+                                         self.eligible.reindex(month_ends))
+            position = dates.searchsorted(ics.index) + 22
+            valid = position < len(dates)
+            self._factors[key] = pd.DataFrame({"ic": ics.to_numpy()[valid],
+                                               "known": dates[position[valid]]}, index=ics.index[valid])
+        return self._factors[key]
+
+    def adaptive_weights(self, names, rows, months):
+        """rows x factors weights: each factor's mean IC over the last `months` months whose
+        outcome was already known on that row's date, floored at 0 (a factor that has not been
+        working gets no weight). Causal: only completed forward windows are used."""
+        weights = np.zeros((len(rows), len(names)))
+        for j, name in enumerate(names):
+            history = self.ic_history(name)
+            for i, date in enumerate(rows):
+                usable = history[(history["known"] <= date) & (history.index >= date - pd.DateOffset(months=months))]
+                if len(usable) >= 12:
+                    weights[i, j] = max(float(usable["ic"].mean()), 0.0)
+        return weights
+
 
 _DATA = {}
 
@@ -190,11 +221,18 @@ class RankedStrategy:
         """
         rows = rebalance[rebalance].index
         eligible = d.eligible.loc[rows]
-        pcts = [d.factor(name).loc[rows].where(eligible).rank(axis=1, pct=True).to_numpy() * weight
-                for name, weight in version.weights.items()]
-        weights = [np.where(np.isnan(p), 0.0, w) for p, w in zip(pcts, version.weights.values())]
-        total, seen = np.nansum(np.stack(pcts), axis=0), np.sum(np.stack(weights), axis=0)
-        enough = seen >= 0.5 * sum(version.weights.values())
+        names = list(version.weights)
+        if version.adaptive:
+            row_weights = d.adaptive_weights(names, rows, version.adaptive_months)     # rows x factors
+        else:
+            row_weights = np.tile([version.weights[n] for n in names], (len(rows), 1)).astype(float)
+        pcts = np.stack([d.factor(n).loc[rows].where(eligible).rank(axis=1, pct=True).to_numpy() for n in names])
+        known = ~np.isnan(pcts)                                                    # factors x rows x tickers
+        w = row_weights.T[:, :, None]                                              # factors x rows x 1
+        total = np.sum(np.where(known, pcts, 0.0) * w, axis=0)
+        seen = np.sum(known * w, axis=0)
+        needed = 0.5 * row_weights.sum(axis=1)[:, None]
+        enough = (seen >= needed) & (needed > 0)
         composite = np.where(enough, total / np.where(enough, seen, 1.0), np.nan)
         return pd.DataFrame(composite, index=rows, columns=d.panel.tickers).reindex(d.panel.dates).ffill()
 
@@ -270,7 +308,32 @@ def run_window(version, start, end, strategy=None, allow_holdout=False):
     strategy = strategy or build_strategy(version, data)
     frames = {t: f[f.index <= end] for t, f in data.stock_frames.items()}
     frames = {t: f for t, f in frames.items() if len(f) > 2}
-    return run_portfolio(frames, strategy, strategy, portfolio_config(version), trade_from=start)
+    result = run_portfolio(frames, strategy, strategy, portfolio_config(version), trade_from=start)
+    if version.cash_in == "SPY":
+        result = with_spy_fill(result, data.benchmarks["SPY"])
+    return result
+
+
+def with_spy_fill(result, spy_close):
+    """Re-price the account as if every uninvested dollar sat in SPY instead of cash.
+
+    Daily: return = stock-book return + (yesterday's cash share) x SPY's return, minus the
+    10 bps/side cost of moving money between cash and SPY when the cash share changes.
+    """
+    from portfolio import PortfolioResult, portfolio_metrics
+
+    equity, holdings = result.equity, result.holdings
+    cash_share = ((equity - holdings) / equity).clip(lower=0.0)
+    spy_return = spy_close.reindex(equity.index).pct_change(fill_method=None)
+    book_return = equity.pct_change(fill_method=None)
+    traded = cash_share.diff().abs() * COST_BPS / 10_000.0
+    total = (book_return + cash_share.shift(1) * spy_return - traded).iloc[1:]
+    filled = pd.concat([equity.iloc[:1], equity.iloc[0] * (1.0 + total).cumprod()])
+    # `holdings` keeps meaning "money in the strategy's stock picks" (the rest is in SPY).
+    out = PortfolioResult(equity=filled, trades=result.trades, n_signals=result.n_signals,
+                          holdings=holdings / equity * filled)
+    out.metrics = portfolio_metrics(out)
+    return out
 
 
 def benchmark_curves(start, end, universe="core"):

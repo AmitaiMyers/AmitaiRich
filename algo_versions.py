@@ -30,6 +30,9 @@ class Version:
     universe: str = "core"            # core = point-in-time S&P 500; extended adds current mid/small caps
     base_algorithm: str = None        # set => run this algorithms.py strategy instead of a ranked one
     base_config: dict = field(default_factory=dict)
+    cash_in: str = "cash"             # "cash" | "SPY": uninvested money sits in SPY instead of cash
+    adaptive: bool = False            # weights = each factor's trailing IC (past months only)
+    adaptive_months: int = 36
     parent: str = None
 
 

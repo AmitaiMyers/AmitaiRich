@@ -45,4 +45,5 @@ every development number as optimistic.
 
 ## Holdout openings
 
-(none)
+- 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.
+  Result: v6b +8.4% CAGR / -27% max DD vs SPY +20.9% / -19%, RSP +14.2% / -18% — FAILS (reports/versions/v6b/holdout.md).

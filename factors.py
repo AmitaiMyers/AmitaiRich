@@ -159,6 +159,9 @@ TECHNICAL = [
            "(close - lower) / (upper - lower), bands = SMA(20) +/- 2 std", _bb_pct_b),
     Factor("bb_squeeze", "volatility", "Narrow Bollinger Bands (a volatility squeeze).",
            "-(upper - lower) / SMA(20)", _bb_squeeze),
+    Factor("size", "size", "Company size proxy: average daily dollar volume (bigger = higher). What tilts "
+           "a portfolio toward the giants that drive SPY.", "log(SMA(close * volume, 60))",
+           lambda p: np.log(sma(p.close * p.volume, 60).where(lambda dv: dv > 0))),
     Factor("low_vol", "volatility", "Calmer stocks (lower 3-month daily volatility).",
            "-std(daily returns, 63)", lambda p: -p.close.pct_change(fill_method=None).rolling(63, min_periods=63).std()),
 ]
