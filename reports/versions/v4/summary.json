@@ -1,0 +1,95 @@
+{
+ "version": "v4",
+ "description": "Post-earnings drift: buy FRESH big beats (report <= 30 days old) with a beat history, in an uptrend; weekly; exit on rank drop or a 1-year time stop. Motivated by beat_streak's 1-month edge (t=3.4) in development.",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 2.1242846529745703,
+    "cagr": 0.08489943597116656,
+    "max_dd": -0.5582920865013961,
+    "max_underwater_days": 1925,
+    "sharpe": 0.5325441375233027,
+    "calmar": 0.15206992544565515,
+    "final_equity": 99977.10889518625,
+    "n_trades": 990,
+    "n_signals": 3306,
+    "win_rate": 0.5565656565656566,
+    "avg_hold_bars": 69.52929292929294,
+    "costs": 5377.295186428245,
+    "profit_factor": 1.637644455897654,
+    "longest_losing_streak": 26,
+    "exposure": 0.9713528899823285
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 864,
+    "stop": 106,
+    "final": 20
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.4354987091213154,
+    "cagr": 0.09458804769388984,
+    "max_dd": -0.35005474628994715,
+    "max_underwater_days": 433,
+    "sharpe": 0.5330038472647561,
+    "calmar": 0.27020929924927634,
+    "final_equity": 45935.95869188209,
+    "n_trades": 388,
+    "n_signals": 1128,
+    "win_rate": 0.5798969072164949,
+    "avg_hold_bars": 50.82216494845361,
+    "costs": 1429.4374112919866,
+    "profit_factor": 1.4742404517354517,
+    "longest_losing_streak": 24,
+    "exposure": 0.9468962269883849
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 328,
+    "stop": 40,
+    "final": 20
+   }
+  }
+ },
+ "overfit_flags": []
+}

@@ -39,15 +39,21 @@ class RankedStrategyTest(unittest.TestCase):
         self.data = FakeLabData()
         self.strategy = strategy_lab.RankedStrategy(VERSION, self.data)
 
-    def test_entries_only_on_month_ends_top_n_eligible_and_filtered(self):
+    def test_entries_come_from_the_latest_rebalance_top_n_and_are_eligible(self):
         entry = self.strategy.entry
         rebalance = strategy_lab.rebalance_days(self.data.panel.dates, "monthly")
-        self.assertFalse(entry.loc[~rebalance.to_numpy()].any().any())
-        self.assertTrue((entry.sum(axis=1) <= 3).all())
         self.assertGreater(int(entry.sum().sum()), 10)
         self.assertFalse(entry["T05"].any())
+        # Between rebalances the list is frozen: at most N names and the SAME names every day.
+        period = rebalance.cumsum()
+        for _, rows in entry.groupby(period.to_numpy()):
+            listed = rows.any()
+            self.assertLessEqual(int(listed.sum()), 3)
+            self.assertTrue((rows.loc[:, listed].sum() > 0).all())
+        # Each listed name passed the filter on its rebalance day.
         above = self.data.panel.close > factors.sma(self.data.panel.close, 200)
-        self.assertFalse((entry & ~above).any().any())
+        on_rebalance = entry.loc[rebalance.to_numpy()]
+        self.assertFalse((on_rebalance & ~above.loc[rebalance.to_numpy()]).any().any())
 
     def test_month_end_days_are_the_last_trading_day_of_each_month(self):
         dates = pd.bdate_range("2021-01-01", "2021-03-31")

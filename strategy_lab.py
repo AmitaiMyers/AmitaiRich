@@ -6,6 +6,7 @@
     python strategy_lab.py ablate v1         # which factors/filters actually add return
     python strategy_lab.py regime v1         # behaviour by market regime
     python strategy_lab.py montecarlo v1     # resampled outcomes: stable or fragile?
+    python strategy_lab.py controls          # sanity check: random portfolios must track RSP
     python strategy_lab.py holdout v3 "reason"   # the ONE-TIME final test (logged in ALGO_LOG.md)
 
 Every run uses point-in-time S&P 500 membership, point-in-time fundamentals, next-open fills,
@@ -166,8 +167,17 @@ class RankedStrategy:
             if mask is not None:
                 candidates &= mask
         rank = self.composite.where(candidates).rank(axis=1, ascending=False)
-        self.entry = (rank <= version.max_positions) & _broadcast(rebalance, rank)
+        # The list chosen at a rebalance stays valid until the next one: a slot freed by a sell
+        # (sells fill the morning after the rebalance, because BUYs are decided before SELLs) is
+        # refilled from the current top-N on the following days — exactly how the owner acts on
+        # the published list. (Allowing buys ONLY on the rebalance day left freed cash idle for a
+        # whole period: v1-v3 were only ~70% invested.) Ranks are known at the rebalance close,
+        # so carrying them forward is causal. On the buy day the stock must STILL pass every buy
+        # filter and must not be triggering a sell rule — otherwise a stock sold for breaking its
+        # MA would be re-bought from the frozen list the next morning (a churn loop).
+        on_list = (rank <= version.max_positions).where(_broadcast(rebalance, rank)).ffill()
         self.exit = self._exits(version, d, rebalance)
+        self.entry = (on_list == 1.0) & candidates & ~self.exit
         e = version.exits
         self.trail = factors.atr(d.panel, 22) if "trail_atr" in e else None
         self.max_hold = e["time_stop"] if "time_stop" in e else None
@@ -186,7 +196,7 @@ class RankedStrategy:
         total, seen = np.nansum(np.stack(pcts), axis=0), np.sum(np.stack(weights), axis=0)
         enough = seen >= 0.5 * sum(version.weights.values())
         composite = np.where(enough, total / np.where(enough, seen, 1.0), np.nan)
-        return pd.DataFrame(composite, index=rows, columns=d.panel.tickers).reindex(d.panel.dates)
+        return pd.DataFrame(composite, index=rows, columns=d.panel.tickers).reindex(d.panel.dates).ffill()
 
     def _exits(self, version, d, rebalance):
         e = version.exits
@@ -393,7 +403,36 @@ def write_version_report(version, results):
     with open(os.path.join(out_dir, "summary.json"), "w") as fh:
         json.dump(summary, fh, indent=1, default=float)
     update_log(version, dev, val, flags)
+    export_for_pwa(version, summary, flags)
     print(f"Written {os.path.join(out_dir, 'report.md')}")
+
+
+PWA_COLUMNS = ["strategy", "cagr", "maxDD", "sharpe", "calmar", "trades", "avgHold", "winRate"]
+
+
+def _pwa_row(label, m):
+    row = {"strategy": label, "cagr": round(m["cagr"] * 100, 2), "maxDD": round(m["max_dd"] * 100, 1),
+           "sharpe": round(m["sharpe"], 2), "calmar": round(m["calmar"], 2)}
+    if "n_trades" in m:
+        row.update({"trades": m["n_trades"], "avgHold": round(m["avg_hold_bars"]), "winRate": round(m["win_rate"] * 100)})
+    return row
+
+
+def export_for_pwa(version, summary, flags):
+    """research_results/lab_<version>.json in the schema the PWA Research page renders."""
+    import research_portfolio
+
+    tables = []
+    for window in WINDOWS:
+        w = summary["windows"][window]
+        start, end = periods.research_window(window)
+        rows = [_pwa_row(version.name, w["metrics"])] + [_pwa_row(f"BENCH {b}", m) for b, m in w["benchmarks"].items()]
+        tables.append({"title": f"{window.capitalize()} {start.year}-{end.year} (point-in-time S&P 500, "
+                                f"${CAPITAL:,.0f}, next-open fills, {COST_BPS:.0f} bps)",
+                       "note": None, "columns": PWA_COLUMNS, "rows": rows})
+    research_portfolio.write_report(f"lab_{version.name}", tables, verdict={
+        "winner": version.name, "promoted": [],
+        "summary": f"{version.description} Overfitting flags: {'; '.join(flags) if flags else 'none'}."})
 
 
 def update_log(version, dev, val, flags):
@@ -569,6 +608,47 @@ def monte_carlo(name, paths=5000, block=21, horizon_years=(1, 5), seed=7):
                     + _table("Outcome distribution", rows, list(rows[0].keys())))
 
 
+def _register_controls(data):
+    """Neutral 'factors' for control portfolios: a fixed random number per ticker (buy & hold a
+    random 20) and a fresh random draw every month (maximum rotation)."""
+    import zlib
+
+    tickers, dates = data.panel.tickers, data.panel.dates
+    static = np.tile([zlib.crc32(t.encode()) / 2 ** 32 for t in tickers], (len(dates), 1))
+    months = dates.to_period("M")
+    draws = pd.DataFrame(np.random.default_rng(3).random((months.nunique(), len(tickers))),
+                         index=months.unique(), columns=tickers)
+    data._factors["control_static"] = pd.DataFrame(static, index=dates, columns=tickers).astype("float32")
+    data._factors["control_monthly"] = draws.reindex(months).set_axis(dates).astype("float32")
+    for name in ("control_static", "control_monthly"):
+        factors.FACTORS[name] = factors.Factor(name, "control", "random control", "random", lambda p: None)
+
+
+def controls(universe="core"):
+    """Sanity check: random portfolios through the SAME machinery should track RSP (minus costs).
+
+    On the extended (survivor-biased) universe the controls are the fair bar for a strategy:
+    survivorship inflates the random picks exactly as it inflates the strategy's.
+    """
+    from algo_versions import Version
+
+    _register_controls(lab_data(universe))
+    variants = [("random 20, held", "control_static", {"rank_drop": True}),
+                ("random 20, re-drawn monthly", "control_monthly", {"rank_drop": True}),
+                ("random 20 held + MA200 exit", "control_static", {"rank_drop": True, "ma_break": 200})]
+    rows = [_summary_row(label, evaluate(Version("control", label, weights={w: 1.0}, exits=exits, atr_mult=8.0,
+                                                 universe=universe)))
+            for label, w, exits in variants]
+    columns = ["variant", "dev CAGR", "dev maxDD", "dev Sharpe", "val CAGR", "val maxDD", "val Sharpe", "trades"]
+    lines = ["# Control portfolios — is the machinery neutral?", "",
+             "Random selections run through the identical engine, costs and fills. Held random 20 should "
+             "track RSP (equal-weight S&P 500); rotation costs only trading costs if the machinery is sound.", ""]
+    os.makedirs(REPORT_DIR, exist_ok=True)
+    with open(os.path.join(REPORT_DIR, f"controls_{universe}.md"), "w") as fh:
+        fh.write("\n".join(lines + _table("Controls", rows, columns)) + "\n")
+    print("\n".join(_table("Controls", rows, columns)))
+
+
 def compare(names):
     rows = [_summary_row(name, evaluate(VERSIONS[name])) for name in names]
     columns = ["variant", "dev CAGR", "dev maxDD", "dev Sharpe", "val CAGR", "val maxDD", "val Sharpe", "trades", "avg hold"]
@@ -594,11 +674,12 @@ def holdout(name, reason):
 
 COMMANDS = {"run": lambda a: run_version(a[0]), "compare": compare, "sell": lambda a: sell_tournament(a[0]),
             "ablate": lambda a: ablate(a[0]), "regime": lambda a: regimes(a[0]),
-            "montecarlo": lambda a: monte_carlo(a[0]), "holdout": lambda a: holdout(a[0], " ".join(a[1:]))}
+            "montecarlo": lambda a: monte_carlo(a[0]), "holdout": lambda a: holdout(a[0], " ".join(a[1:])),
+            "controls": lambda a: controls(a[0] if a else "core")}
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3 or sys.argv[1] not in COMMANDS:
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
         print(__doc__)
         sys.exit(1)
     COMMANDS[sys.argv[1]](sys.argv[2:])

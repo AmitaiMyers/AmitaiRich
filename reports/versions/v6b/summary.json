@@ -1,0 +1,95 @@
+{
+ "version": "v6b",
+ "description": "v6 with the development-best exit from the v4 SELL tournament (rank drop only, no time stop).",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 1.9956292300059828,
+    "cagr": 0.08164106027898921,
+    "max_dd": -0.21934332997016248,
+    "max_underwater_days": 545,
+    "sharpe": 0.6762372069995505,
+    "calmar": 0.3722067148797957,
+    "final_equity": 95860.13536019145,
+    "n_trades": 451,
+    "n_signals": 1792,
+    "win_rate": 0.5942350332594235,
+    "avg_hold_bars": 102.48558758314856,
+    "costs": 2916.2789419612645,
+    "profit_factor": 2.1545861180484955,
+    "longest_losing_streak": 9,
+    "exposure": 0.6524560174553435
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 369,
+    "stop": 62,
+    "final": 20
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.561658124251728,
+    "cagr": 0.11788335899957003,
+    "max_dd": -0.31636231716915353,
+    "max_underwater_days": 365,
+    "sharpe": 0.6340498306171969,
+    "calmar": 0.37262136671144624,
+    "final_equity": 49973.059976055294,
+    "n_trades": 308,
+    "n_signals": 963,
+    "win_rate": 0.6006493506493507,
+    "avg_hold_bars": 64.26623376623377,
+    "costs": 1235.7741686075567,
+    "profit_factor": 1.6771593822493296,
+    "longest_losing_streak": 11,
+    "exposure": 0.9527651593624057
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 246,
+    "stop": 42,
+    "final": 20
+   }
+  }
+ },
+ "overfit_flags": []
+}

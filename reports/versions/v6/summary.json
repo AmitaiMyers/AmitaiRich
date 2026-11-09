@@ -1,0 +1,95 @@
+{
+ "version": "v6",
+ "description": "v4 without the fresh-surprise factor. Development-only reason: removing it cost 0.5%/yr but cut the development max drawdown from -56% to -24% (criterion 2: max DD <= 35%).",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 1.9358077874067399,
+    "cagr": 0.08008150970261863,
+    "max_dd": -0.23727816404040025,
+    "max_underwater_days": 545,
+    "sharpe": 0.6685099301751497,
+    "calmar": 0.33750054509433713,
+    "final_equity": 93945.84919701568,
+    "n_trades": 520,
+    "n_signals": 1792,
+    "win_rate": 0.5865384615384616,
+    "avg_hold_bars": 88.75,
+    "costs": 3397.5826556713123,
+    "profit_factor": 1.9194296084835523,
+    "longest_losing_streak": 14,
+    "exposure": 0.6467029075682857
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 427,
+    "stop": 73,
+    "final": 20
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.6157110935068209,
+    "cagr": 0.12743347826920015,
+    "max_dd": -0.3001682186518657,
+    "max_underwater_days": 365,
+    "sharpe": 0.6687832358536983,
+    "calmar": 0.42454020895862116,
+    "final_equity": 51702.754992218266,
+    "n_trades": 303,
+    "n_signals": 963,
+    "win_rate": 0.6072607260726073,
+    "avg_hold_bars": 65.34983498349835,
+    "costs": 1246.7493264629236,
+    "profit_factor": 1.744101070635661,
+    "longest_losing_streak": 15,
+    "exposure": 0.9555712975292091
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 242,
+    "stop": 41,
+    "final": 20
+   }
+  }
+ },
+ "overfit_flags": []
+}

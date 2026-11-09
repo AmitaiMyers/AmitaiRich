@@ -1,0 +1,95 @@
+{
+ "version": "v0",
+ "description": "Production Growth Momentum Rider (ROC126 > 25% & close > SMA200; exit close < SMA200), restricted to point-in-time S&P 500 members; 20 positions, 1% risk.",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 1.1334987682403654,
+    "cagr": 0.055698638282390966,
+    "max_dd": -0.43085286326712147,
+    "max_underwater_days": 1934,
+    "sharpe": 0.3748934956640277,
+    "calmar": 0.12927531190122032,
+    "final_equity": 68271.96058369169,
+    "n_trades": 590,
+    "n_signals": 13804,
+    "win_rate": 0.3813559322033898,
+    "avg_hold_bars": 108.7593220338983,
+    "costs": 2579.6404034772304,
+    "profit_factor": 1.451491927816001,
+    "longest_losing_streak": 24,
+    "exposure": 0.9380474518423034
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 412,
+    "stop": 166,
+    "final": 12
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.244529055375033,
+    "cagr": 0.056212395746082944,
+    "max_dd": -0.27353062446464926,
+    "max_underwater_days": 335,
+    "sharpe": 0.3502704326087192,
+    "calmar": 0.20550677225301972,
+    "final_equity": 39824.92977200106,
+    "n_trades": 184,
+    "n_signals": 6025,
+    "win_rate": 0.375,
+    "avg_hold_bars": 102.03260869565217,
+    "costs": 608.142471548927,
+    "profit_factor": 1.3873101689044105,
+    "longest_losing_streak": 15,
+    "exposure": 0.9388760324186763
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 117,
+    "stop": 47,
+    "final": 20
+   }
+  }
+ },
+ "overfit_flags": []
+}

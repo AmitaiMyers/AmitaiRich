@@ -1,0 +1,95 @@
+{
+ "version": "v5",
+ "description": "v3's best form (MA200 + 1-year time stop) on the EXTENDED universe (+ current S&P 400/600, Nasdaq-100, lists). Survivor-biased: judge it against the extended random control.",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 0.7360921796380617,
+    "cagr": 0.040247373891604266,
+    "max_dd": -0.6664401538734339,
+    "max_underwater_days": 2606,
+    "sharpe": 0.2966698697007665,
+    "calmar": 0.06039158003562881,
+    "final_equity": 55554.949748417974,
+    "n_trades": 836,
+    "n_signals": 1959,
+    "win_rate": 0.3456937799043062,
+    "avg_hold_bars": 81.82894736842105,
+    "costs": 2792.8690599839974,
+    "profit_factor": 1.2825399961816564,
+    "longest_losing_streak": 78,
+    "exposure": 0.9662776983596549
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 778,
+    "stop": 42,
+    "final": 16
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.21072756766557021,
+    "cagr": 0.04896647366643547,
+    "max_dd": -0.29212417243742417,
+    "max_underwater_days": 416,
+    "sharpe": 0.3189489622274996,
+    "calmar": 0.1676221219828173,
+    "final_equity": 38743.282165298246,
+    "n_trades": 285,
+    "n_signals": 653,
+    "win_rate": 0.3192982456140351,
+    "avg_hold_bars": 68.7859649122807,
+    "costs": 988.7687104517456,
+    "profit_factor": 1.2411159340868247,
+    "longest_losing_streak": 25,
+    "exposure": 0.9703238548733133
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 261,
+    "final": 20,
+    "stop": 4
+   }
+  }
+ },
+ "overfit_flags": []
+}

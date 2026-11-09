@@ -16,6 +16,7 @@ import fundamentals_pit
 from factors import FACTORS, Factor
 
 MAX_AGE_DAYS = 200
+FRESH_DAYS = 30
 
 
 def _daily(events, calendar, tickers, max_age_days=MAX_AGE_DAYS):
@@ -94,6 +95,8 @@ def growth_events(quarterly):
 FUNDAMENTAL_SPECS = [
     ("eps_surprise", "earnings", "Last quarter's EPS surprise vs the consensus estimate (beat = positive).",
      "(reported EPS - consensus) / |consensus| in %, clipped to +/-100"),
+    ("surprise_fresh", "earnings", "An EPS surprise reported in the last 30 days (post-earnings drift window).",
+     "eps_surprise, only while the report is <= 30 days old"),
     ("beat_streak", "earnings", "How many of the last 4 reports matched or beat the consensus (0-4).",
      "count(reported >= estimate) over the last 4 reports"),
     ("sue", "earnings", "Standardized unexpected earnings: EPS growth vs its own usual variability.",
@@ -116,12 +119,13 @@ def build_all(panel):
     calendar, tickers = panel.dates, panel.tickers
     surprise = earnings_events(earnings_pit.load_earnings())
     growth = growth_events(fundamentals_pit.load_quarterly())
+    surprise["surprise_fresh"] = surprise["eps_surprise"]
     sources = {**surprise, **{name: growth[["ticker", "available", name]].rename(columns={name: "value"})
                              for name in ("sue", "eps_growth_yoy", "rev_growth_yoy", "rev_accel",
                                           "rev_consistency", "eps_consistency")}}
     built = {}
     for name, group, meaning, formula in FUNDAMENTAL_SPECS:
-        frame = _daily(sources[name], calendar, tickers)
+        frame = _daily(sources[name], calendar, tickers, max_age_days=FRESH_DAYS if name == "surprise_fresh" else MAX_AGE_DAYS)
         built[name] = frame
         FACTORS[name] = Factor(name, group, meaning, formula, lambda p, f=frame: f)
     return built

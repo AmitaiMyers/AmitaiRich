@@ -1,0 +1,97 @@
+{
+ "version": "v2",
+ "description": "v1 without the market filter and with a wide (8xATR) catastrophe stop \u2014 development showed 206 of 603 exits were stop-outs (churn) and the filter sat in cash through rebounds.",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 0.5741571602370716,
+    "cagr": 0.03298695997524215,
+    "max_dd": -0.5309130677758798,
+    "max_underwater_days": 2507,
+    "sharpe": 0.2687206229447941,
+    "calmar": 0.062132507141766755,
+    "final_equity": 50373.02912758629,
+    "n_trades": 1081,
+    "n_signals": 1652,
+    "win_rate": 0.3635522664199815,
+    "avg_hold_bars": 61.88529139685476,
+    "costs": 3454.221470822965,
+    "profit_factor": 1.2374775887270044,
+    "longest_losing_streak": 50,
+    "exposure": 0.9509695103966008
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 1008,
+    "stop": 62,
+    "final": 11
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.30888601764558743,
+    "cagr": 0.06961000615829294,
+    "max_dd": -0.275993184152879,
+    "max_underwater_days": 416,
+    "sharpe": 0.4156658879993603,
+    "calmar": 0.2522163957488687,
+    "final_equity": 41884.352564658795,
+    "n_trades": 328,
+    "n_signals": 522,
+    "win_rate": 0.42378048780487804,
+    "avg_hold_bars": 59.359756097560975,
+    "costs": 1158.7415739637745,
+    "profit_factor": 1.3587685583308886,
+    "longest_losing_streak": 26,
+    "exposure": 0.9605789076931883
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 299,
+    "final": 20,
+    "stop": 9
+   }
+  }
+ },
+ "overfit_flags": [
+  "16 tuned components (> 15): high risk of fitting noise"
+ ]
+}

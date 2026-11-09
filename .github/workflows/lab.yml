@@ -1,0 +1,98 @@
+name: Strategy lab
+
+# Runs the strategy lab (GOAL_SPEC.md) on GitHub's runners with fresh data, commits the reports
+# (reports/, research_results/lab_*.json, ALGO_LOG.md), and "Publish PWA" then shows them on the
+# Research page. Market data is cached between runs (first run downloads ~1 hour of earnings data).
+# One-time setup: Settings -> Secrets and variables -> Actions -> Variables -> New repository
+# variable SEC_USER_AGENT = "Your Name your-email@example.com" (SEC requires a contact).
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Lab command"
+        required: true
+        default: compare
+        type: choice
+        options: [run, compare, sell, ablate, regime, montecarlo, controls, factors, coverage]
+      versions:
+        description: "Version name(s), space-separated (e.g. 'v6b' or 'v0 v6b'); empty for factors/coverage/controls"
+        required: false
+        default: "v0 v6b"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lab
+  cancel-in-progress: false
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Install dependencies
+        run: pip install -r requirements-core.txt
+
+      - name: Validate inputs
+        env:
+          VERSIONS: ${{ inputs.versions }}
+        run: |
+          if ! [[ "$VERSIONS" =~ ^[A-Za-z0-9_\ ]*$ ]]; then echo "versions: letters, digits, spaces only"; exit 1; fi
+          if [ -z "$SEC_USER_AGENT" ]; then echo "Set the repository variable SEC_USER_AGENT (see workflow header)"; exit 1; fi
+
+      - name: Restore market data
+        uses: actions/cache/restore@v4
+        with:
+          path: market_data
+          key: market-data-${{ github.run_id }}
+          restore-keys: market-data-
+
+      - name: Refresh data (prices, membership, EDGAR, earnings, macro)
+        run: |
+          python market_data.py update
+          python fundamentals_pit.py update
+          python earnings_pit.py update
+          python macro_data.py update
+
+      - name: Save market data
+        uses: actions/cache/save@v4
+        with:
+          path: market_data
+          key: market-data-${{ github.run_id }}
+
+      - name: Run the lab
+        env:
+          COMMAND: ${{ inputs.command }}
+          VERSIONS: ${{ inputs.versions }}
+        run: |
+          set -o pipefail
+          case "$COMMAND" in
+            factors)  python factor_report.py ;;
+            coverage) python data_coverage.py ;;
+            controls) python strategy_lab.py controls ;;
+            compare)  python strategy_lab.py compare $VERSIONS ;;
+            *)        for v in $VERSIONS; do python strategy_lab.py "$COMMAND" "$v"; done ;;
+          esac 2>&1 | tee lab_log.txt
+
+      - name: Commit the reports
+        env:
+          COMMAND: ${{ inputs.command }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/ research_results/ ALGO_LOG.md
+          if git diff --cached --quiet; then
+            echo "No report changes."
+          else
+            git commit -m "Strategy lab: $COMMAND"
+            git push
+          fi

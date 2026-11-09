@@ -1,0 +1,98 @@
+{
+ "version": "v1",
+ "description": "Owner's thesis as first written: earnings beats + growth + trend, market filter, indicator confirmation, equal-weighted top 20, monthly.",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 1.3328134749328044,
+    "cagr": 0.062464523767241875,
+    "max_dd": -0.2287314554819756,
+    "max_underwater_days": 817,
+    "sharpe": 0.4589403786052571,
+    "calmar": 0.27309109556277966,
+    "final_equity": 74650.03119784975,
+    "n_trades": 788,
+    "n_signals": 1670,
+    "win_rate": 0.41116751269035534,
+    "avg_hold_bars": 73.57994923857868,
+    "costs": 3659.603541802339,
+    "profit_factor": 1.5439651775983008,
+    "longest_losing_streak": 18,
+    "exposure": 0.8285473475323615
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 566,
+    "stop": 220,
+    "final": 2
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": -0.037679653986598116,
+    "cagr": -0.009556019204102206,
+    "max_dd": -0.23349981335649173,
+    "max_underwater_days": 416,
+    "sharpe": 0.03240447814361401,
+    "calmar": -0.04092516849044638,
+    "final_equity": 30794.25107242886,
+    "n_trades": 237,
+    "n_signals": 395,
+    "win_rate": 0.39662447257383965,
+    "avg_hold_bars": 63.755274261603375,
+    "costs": 737.3116530704494,
+    "profit_factor": 0.9372160589383471,
+    "longest_losing_streak": 11,
+    "exposure": 0.740970934235079
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 159,
+    "stop": 58,
+    "final": 20
+   }
+  }
+ },
+ "overfit_flags": [
+  "validation CAGR -1.0% is more than a third below development +6.2%",
+  "17 tuned components (> 15): high risk of fitting noise"
+ ]
+}
