@@ -59,5 +59,6 @@ jobs:
           git add reports/paper/ research_results/ signal_log/
           if git diff --cached --quiet; then echo "No changes."; else
             git commit -m "Paper trading: $(date -u +%F)"
-            git push
+            git pull --rebase origin main   # main may have moved while the job ran
+            git push origin HEAD:main
           fi
