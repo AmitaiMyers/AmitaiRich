@@ -37,7 +37,7 @@ import pandas as pd
 from algorithms import exit_hit, stop_price_at
 from errors import ConfigurationError, InsufficientCashError
 
-VALID_SIZING = ("risk_based", "all_in", "fixed_fraction")
+VALID_SIZING = ("risk_based", "all_in", "fixed_fraction", "equal_weight")
 VALID_FILL = ("close", "next_open")
 VALID_STOP_MODES = ("tightest", "widest")
 
@@ -48,7 +48,7 @@ class EngineConfig:
 
     starting_capital: float = 100_000.0
     max_positions: int = 1
-    sizing_mode: str = "risk_based"
+    sizing_mode: str = "risk_based"  # equal_weight = equity / max_positions per position
     risk_pct: float = 0.01           # fraction of live equity risked per trade (risk_based)
     fixed_fraction: float = 0.95     # fraction of buying power per trade (fixed_fraction)
     leverage: float = 1.0            # buying power = cash + equity * (leverage - 1)
@@ -147,9 +147,9 @@ class _Book:
             for name in ("Open", "High", "Low", "Close"):
                 getattr(self, name.lower())[k, cols] = df[name].to_numpy(dtype=float)
             self.last_day[k] = cols[-1]
-            buy = buy_algo.signals(df)
+            buy = buy_algo.signals_for(ticker, df)
             self.buy_signals.append(buy)
-            self.sell_signals.append(buy if sell_algo is buy_algo else sell_algo.signals(df))
+            self.sell_signals.append(buy if sell_algo is buy_algo else sell_algo.signals_for(ticker, df))
             tradable = buy.entry.copy()
             # Bars before `warmup` never trade; a too-short history never trades at all.
             tradable[:warmup] = False
@@ -372,6 +372,9 @@ class _Loop:
         max_affordable = (budget / (1.0 + self.cost)) // fill_price
         if cfg.sizing_mode in ("all_in", "fixed_fraction"):
             return float(int(max_affordable))
+        if cfg.sizing_mode == "equal_weight":
+            target_shares = (equity / cfg.max_positions) / (1.0 + self.cost) // fill_price
+            return float(int(min(target_shares, max_affordable)))
         if stop_price is None:
             raise ConfigurationError(
                 "risk_based sizing requires a stop loss, but the chosen buy algorithm "

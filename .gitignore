@@ -8,3 +8,5 @@ __pycache__/
 /data_cache/
 /research_out/
 /site/
+/market_data/
+/reports/_cache/

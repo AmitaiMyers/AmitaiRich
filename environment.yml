@@ -7,6 +7,9 @@ dependencies:
   - pip:
       - yfinance>=0.2.40
       - requests>=2.31
+      - pyarrow>=15
+      - matplotlib>=3.8
+      - lxml>=5
       - streamlit>=1.30
       - plotly>=5.18
       - pandas>=2.0

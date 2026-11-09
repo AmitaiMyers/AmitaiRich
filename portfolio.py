@@ -39,6 +39,7 @@ class PortfolioConfig:
     cost_bps: float = 10.0          # per-side cost in basis points (10 = 0.10%)
     fill_mode: str = "close"        # "close" | "next_open" (scan after the close, buy next open)
     stop_mode: str = "widest"
+    sizing_mode: str = "risk_based"  # or "equal_weight"
     rank_by: str = "signal"         # "signal" (strategy score) | "momentum" | "vol_adj"
     regime_filter: bool = False     # SPY below its MA -> no new buys, exit holdings
     market_ma: int = 200
@@ -46,7 +47,7 @@ class PortfolioConfig:
     def engine_config(self):
         return EngineConfig(
             starting_capital=self.starting_capital, max_positions=self.max_positions,
-            sizing_mode="risk_based", risk_pct=self.risk_pct, cost_bps=self.cost_bps,
+            sizing_mode=self.sizing_mode, risk_pct=self.risk_pct, cost_bps=self.cost_bps,
             fill_mode=self.fill_mode, stop_mode=self.stop_mode, skip_unprotectable=True,
             regime_filter=self.regime_filter,
         )
@@ -66,6 +67,7 @@ class PortfolioResult:
     equity: pd.Series
     trades: list
     n_signals: int
+    holdings: pd.Series = None      # market value of open positions per day
     metrics: dict = field(default_factory=dict)
 
 
@@ -79,8 +81,8 @@ class _AdjustedBuy:
     def warmup_bars(self):
         return self._algorithm.warmup_bars()
 
-    def signals(self, history):
-        built = self._algorithm.signals(history)
+    def signals_for(self, ticker, history):
+        built = self._algorithm.signals_for(ticker, history)
         if self._ranker is not None:
             built = replace(built, score=self._ranker(history))
         if self._trade_from is not None:
@@ -110,8 +112,9 @@ def run_portfolio(frames, buy_algo, sell_algo, config, market_close=None, trade_
         frames = {t: df for t, df in frames.items() if df.index[-1] >= start}
 
     result = run_engine(frames, buy_algo, sell_algo, config.engine_config(), regime_ok=regime_ok)
-    equity = result.equity if start is None else result.equity[result.equity.index >= start]
-    out = PortfolioResult(equity=equity, trades=result.trades, n_signals=result.n_entry_signals)
+    keep = result.equity.index >= start if start is not None else slice(None)
+    out = PortfolioResult(equity=result.equity[keep], trades=result.trades,
+                          n_signals=result.n_entry_signals, holdings=result.holdings[keep])
     out.metrics = portfolio_metrics(out)
     return out
 
@@ -168,6 +171,7 @@ def equity_metrics(equity, periods_per_year=252):
         "total_return": float(equity.iloc[-1] / equity.iloc[0] - 1.0),
         "cagr": cagr,
         "max_dd": max_dd,
+        "max_underwater_days": analytics.longest_underwater_days(equity),
         "sharpe": analytics.sharpe(equity, periods_per_year),
         "calmar": float(cagr / abs(max_dd)) if max_dd < 0 else 0.0,
         "final_equity": float(equity.iloc[-1]),
@@ -178,11 +182,25 @@ def portfolio_metrics(result, periods_per_year=252):
     """Risk/return + activity metrics for ranking a portfolio run."""
     metrics = equity_metrics(result.equity, periods_per_year)
     trades = result.trades
+    gains = sum(t.pnl for t in trades if t.pnl > 0)
+    losses = -sum(t.pnl for t in trades if t.pnl < 0)
     metrics.update({
         "n_trades": len(trades),
         "n_signals": result.n_signals,
         "win_rate": float(np.mean([t.pnl > 0 for t in trades])) if trades else 0.0,
         "avg_hold_bars": float(np.mean([t.bars_held for t in trades])) if trades else 0.0,
         "costs": float(sum(t.costs for t in trades)),
+        "profit_factor": float(gains / losses) if losses > 0 else float("inf"),
+        "longest_losing_streak": longest_losing_streak(trades),
+        "exposure": float((result.holdings / result.equity).mean()) if result.holdings is not None else None,
     })
     return metrics
+
+
+def longest_losing_streak(trades):
+    """Most consecutive losing round trips, in exit order."""
+    longest = current = 0
+    for trade in sorted(trades, key=lambda t: t.exit_date):
+        current = current + 1 if trade.pnl < 0 else 0
+        longest = max(longest, current)
+    return longest

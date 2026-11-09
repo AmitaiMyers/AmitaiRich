@@ -102,9 +102,9 @@ class InvariantTest(unittest.TestCase):
     def test_alternative_ranking_replaces_the_score(self):
         df = self.frames["T00"]
         adjusted = portfolio._AdjustedBuy(self.algo, portfolio.RANKERS["vol_adj"], None)
-        np.testing.assert_array_equal(adjusted.signals(df).score,
+        np.testing.assert_array_equal(adjusted.signals_for("T00", df).score,
                                       vol_adjusted_momentum(df, 126, 20).to_numpy())
-        np.testing.assert_array_equal(adjusted.signals(df).entry, self.algo.signals(df).entry)
+        np.testing.assert_array_equal(adjusted.signals_for("T00", df).entry, self.algo.signals(df).entry)
         vol = run_portfolio(self.frames, self.algo, self.algo,
                             PortfolioConfig(max_positions=2, rank_by="vol_adj"))
         self.assertGreater(len(vol.trades), 0)

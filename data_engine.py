@@ -85,7 +85,7 @@ def prefetch(tickers, start_date, end_date, interval="1d", chunk_size=100):
         for ticker in chunk:
             if ticker not in present:
                 continue
-            frame = _bulk_frame(raw[ticker])
+            frame = clean_bulk_frame(raw[ticker])
             if frame is None:
                 continue
             _save_to_cache(frame, _cache_path(ticker, start_date, end_date, interval))
@@ -93,7 +93,7 @@ def prefetch(tickers, start_date, end_date, interval="1d", chunk_size=100):
     return cached
 
 
-def _bulk_frame(raw_one):
+def clean_bulk_frame(raw_one):
     """One ticker's slice of a bulk download -> validated OHLCV frame, or None if unusable."""
     if any(column not in raw_one.columns for column in REQUIRED_COLUMNS):
         return None

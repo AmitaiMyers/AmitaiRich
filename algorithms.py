@@ -189,6 +189,11 @@ class Algorithm:
     def _build_signals(self, history):
         raise NotImplementedError
 
+    def signals_for(self, ticker, history):
+        """Signals for a named stock. Single-stock strategies ignore the name; cross-sectional
+        strategies (strategy_lab.RankedStrategy) use it to read their precomputed ranks."""
+        return self.signals(history)
+
     def signals(self, history):
         """All per-bar decision arrays for `history` (entries masked during warmup).
 

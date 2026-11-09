@@ -4,3 +4,6 @@ yfinance>=0.2.40
 pandas>=2.0
 numpy>=1.24
 requests>=2.31
+pyarrow>=15          # parquet research data store
+matplotlib>=3.8      # report charts
+lxml>=5              # Wikipedia index lists (pandas.read_html)

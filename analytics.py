@@ -37,3 +37,20 @@ def sharpe(equity, periods_per_year=252):
     if std == 0:
         return 0.0
     return float(np.sqrt(periods_per_year) * returns.mean() / std)
+
+
+def longest_underwater_days(equity):
+    """Longest stretch (calendar days) the curve spent below a previous peak (recovery time)."""
+    if len(equity) < 2:
+        return 0
+    peak = equity.cummax()
+    longest, start = 0, None
+    for date, below in (equity < peak).items():
+        if below and start is None:
+            start = date
+        elif not below and start is not None:
+            longest = max(longest, (date - start).days)
+            start = None
+    if start is not None:
+        longest = max(longest, (equity.index[-1] - start).days)
+    return int(longest)
