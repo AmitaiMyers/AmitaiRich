@@ -1,0 +1,95 @@
+{
+ "version": "v7",
+ "description": "Earnings-led, concentrated: beat streak + SUE + revenue acceleration; buy only stocks in an uptrend that beat last quarter; top 10, checked weekly; sell when a holding drops out of the top 30. Chosen from a 767-config search as the centre of a robust plateau (24 neighbours: dev 7.6-10.0% CAGR, -20% to -26% max DD).",
+ "windows": {
+  "development": {
+   "metrics": {
+    "total_return": 2.747212801402046,
+    "cagr": 0.0991003036218352,
+    "max_dd": -0.22159705022012488,
+    "max_underwater_days": 561,
+    "sharpe": 0.768753397511383,
+    "calmar": 0.4472094891308041,
+    "final_equity": 119910.80964486547,
+    "n_trades": 367,
+    "n_signals": 984,
+    "win_rate": 0.667574931880109,
+    "avg_hold_bars": 63.13896457765667,
+    "costs": 5944.767603545216,
+    "profit_factor": 1.9365016595465792,
+    "longest_losing_streak": 6,
+    "exposure": 0.6507052103260265
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 1.7506867573158948,
+     "cagr": 0.07506123160917677,
+     "max_dd": -0.5510783761580118,
+     "max_underwater_days": 1772,
+     "sharpe": 0.4814622699913656,
+     "calmar": 0.13620790591074527,
+     "final_equity": 87934.21948387146
+    },
+    "RSP": {
+     "total_return": 1.9227771237579185,
+     "cagr": 0.07973788857900632,
+     "max_dd": -0.5989217448545376,
+     "max_underwater_days": 1299,
+     "sharpe": 0.4796563308950457,
+     "calmar": 0.1331357381228036,
+     "final_equity": 93435.49959884262
+    }
+   },
+   "exit_reasons": {
+    "signal": 324,
+    "stop": 33,
+    "final": 10
+   }
+  },
+  "validation": {
+   "metrics": {
+    "total_return": 0.7279932415758077,
+    "cagr": 0.1465302295867068,
+    "max_dd": -0.3286368330380709,
+    "max_underwater_days": 340,
+    "sharpe": 0.7266008761156318,
+    "calmar": 0.44587281417032165,
+    "final_equity": 55295.78373042584,
+    "n_trades": 215,
+    "n_signals": 493,
+    "win_rate": 0.6139534883720931,
+    "avg_hold_bars": 45.73953488372093,
+    "costs": 1799.4343554525256,
+    "profit_factor": 1.715990263289895,
+    "longest_losing_streak": 12,
+    "exposure": 0.9563125304008872
+   },
+   "benchmarks": {
+    "SPY": {
+     "total_return": 0.6330316103945333,
+     "cagr": 0.13044294513606736,
+     "max_dd": -0.33684247881085205,
+     "max_underwater_days": 360,
+     "sharpe": 0.6583719624964933,
+     "calmar": 0.3872520639218882,
+     "final_equity": 52204.87704682923
+    },
+    "RSP": {
+     "total_return": 0.6586970473373637,
+     "cagr": 0.13485863864851466,
+     "max_dd": -0.38979054922163103,
+     "max_underwater_days": 359,
+     "sharpe": 0.6504438022099476,
+     "calmar": 0.3459771893336372,
+     "final_equity": 53025.391821586614
+    }
+   },
+   "exit_reasons": {
+    "signal": 185,
+    "stop": 20,
+    "final": 10
+   }
+  }
+ },
+ "overfit_flags": []
+}

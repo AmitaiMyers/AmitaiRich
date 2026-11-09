@@ -14,6 +14,7 @@ recorded here with the date it was opened.
 | v5 | 2026-11-09 | v3's best form (MA200 + 1-year time stop) on the EXTENDED universe (+ current S&P 400/600, Nasdaq-100, lists). Survivor-biased: judge it against the extended random control. | +4.0% / -67% | +4.9% / -29% | see report |
 | v6 | 2026-11-09 | v4 without the fresh-surprise factor. Development-only reason: removing it cost 0.5%/yr but cut the development max drawdown from -56% to -24% (criterion 2: max DD <= 35%). | +8.0% / -24% | +12.7% / -30% | see report |
 | v6b | 2026-11-09 | v6 with the development-best exit from the v4 SELL tournament (rank drop only, no time stop). | +8.2% / -22% | +11.8% / -32% | see report |
+| v7 | 2026-11-09 | Earnings-led, concentrated: beat streak + SUE + revenue acceleration; buy only stocks in an uptrend that beat last quarter; top 10, checked weekly; sell when a holding drops out of the top 30. Chosen from a 767-config search as the centre of a robust plateau (24 neighbours: dev 7.6-10.0% CAGR, -20% to -26% max DD). | +9.9% / -22% | +14.7% / -33% | see report |
 
 ## Round 1 conclusions (2026-11-09)
 
@@ -43,7 +44,32 @@ surprises (119,773 reports). See reports/data/coverage.md and reports/factors/fa
 Selection-bias note: ~10 versions and ~50 variants have now been tried on the same history; treat
 every development number as optimistic.
 
+## Round 2 conclusions (2026-11-09)
+
+1. **Search:** 767 configurations (reports/search/search.md), scored on development only. The
+   single best development config (earnings + short-term reversal, 10.3%) collapsed to 4.0% in
+   validation — selection bias made visible. The robust result is a **plateau**: the "earn3"
+   family (beat streak + SUE + revenue acceleration) with 8-12 positions, weekly, uptrend filter —
+   24 neighbouring settings all give 7.6-10.0% dev CAGR with -20% to -26% max DD.
+2. **Ideas that did not help (development):** idle cash in SPY (the cash was bear-market
+   protection: 8.2% -> 7.3%, DD -22% -> -55%); adaptive weights from trailing IC (4.1%); a size
+   tilt (6.5%); momentum/rider families (best 6.5-8.2%).
+3. **v7** (plateau centre: earn3, 10 positions, weekly, rank-drop exit): dev 9.9% / -22% / Sharpe
+   0.77 vs SPY 7.5% / -55% / 0.48; validation 14.7% / -33% / 0.73 vs SPY 13.0% / -34% / 0.66 —
+   5 of 6 criteria (misses +2pp in validation by 0.3pp). Monte Carlo borderline (5-yr 5th pct -0.5%).
+4. **Holdout 2023-26:** v7 +14.0% / -30% vs SPY +20.9% / -19% (RSP +14.2%) — FAILS. Production v0
+   (momentum rider, never tuned) made +21.2% / -37% there, after trailing SPY badly in 2005-22.
+   Earnings quality and momentum win in opposite regimes; neither beats SPY in all three periods.
+5. A 50/50 v0 + v7 blend (idea inspired by the holdout, so the holdout cannot validate it):
+   2005-18 +8.1% / -24%, 2019-22 +10.7% / -30%, 2023-26 +17.8% / -33% — below SPY in the last two.
+6. **The holdout has now been opened 3 times** (v6b, v7, v0). Any further candidate must be judged
+   by forward paper trading (new data), not by this period.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.
   Result: v6b +8.4% CAGR / -27% max DD vs SPY +20.9% / -19%, RSP +14.2% / -18% — FAILS (reports/versions/v6b/holdout.md).
+- 2026-11-09: holdout opened for **v7** — Final candidate of round 2 (767-config search, plateau centre); holdout previously opened once for v6b, not used for tuning.
+  Result: v7 +14.0% CAGR / -30% max DD vs SPY +20.9% / -19%, RSP +14.2% — FAILS.
+- 2026-11-09: holdout opened for **v0** — Production baseline on the same period, for an apples-to-apples production decision (v0 is fixed, never tuned).
+  Result: v0 +21.2% CAGR / -37% max DD vs SPY +20.9% / -19% — about SPY's return, deeper drawdown.

@@ -91,4 +91,13 @@ V6B = Version(
     weights=V6.weights, filters=V6.filters, exits={"rank_drop": True}, rebalance="weekly", hold_buffer=4.0,
     atr_mult=8.0, parent="v6")
 
-VERSIONS = {v.name: v for v in (V0, V1, V2, V3, V4, V5, V6, V6B)}
+V7 = Version(
+    "v7", "Earnings-led, concentrated: beat streak + SUE + revenue acceleration; buy only stocks in an "
+          "uptrend that beat last quarter; top 10, checked weekly; sell when a holding drops out of the "
+          "top 30. Chosen from a 767-config search as the centre of a robust plateau (24 neighbours: dev "
+          "7.6-10.0% CAGR, -20% to -26% max DD).",
+    weights={"beat_streak": 1.0, "sue": 1.0, "rev_accel": 0.5},
+    filters={"stock_above_ma": 200, "beat_last": True}, exits={"rank_drop": True},
+    rebalance="weekly", max_positions=10, hold_buffer=3.0, atr_mult=8.0, parent="v6b")
+
+VERSIONS = {v.name: v for v in (V0, V1, V2, V3, V4, V5, V6, V6B, V7)}
