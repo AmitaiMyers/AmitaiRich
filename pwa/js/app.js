@@ -1,19 +1,15 @@
 // App shell: loads the published manifest + signals once, routes #/hash views,
 // wires the ticker search and registers the service worker (offline + install).
 
-import { loadManifest, loadSignals } from './data.js';
+import { loadDaily, loadManifest, loadSignals } from './data.js';
 import { h, showBanner } from './ui.js';
-import { renderLab } from './views/lab.js';
 import { renderPositions } from './views/positions.js';
-import { renderResearch } from './views/research.js';
 import { renderTicker } from './views/ticker.js';
 import { renderToday } from './views/today.js';
 
 const ROUTES = {
   today: renderToday,
   positions: renderPositions,
-  lab: renderLab,
-  research: renderResearch,
   t: renderTicker,
 };
 
@@ -23,8 +19,8 @@ let renderToken = 0;
 
 async function boot() {
   try {
-    const [manifest, signals] = await Promise.all([loadManifest(), loadSignals()]);
-    context = { manifest, signals, tickers: new Set(manifest.tickers) };
+    const [manifest, signals, daily] = await Promise.all([loadManifest(), loadSignals(), loadDaily()]);
+    context = { manifest, signals, daily, tickers: new Set(manifest.tickers) };
   } catch (error) {
     showBanner(`Could not load published data (${error.message}). If you are offline, open the app once online first.`, 'error');
     view.replaceChildren(h('div', { class: 'empty', text: 'No data available yet.' }));

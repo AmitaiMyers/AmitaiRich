@@ -9,9 +9,9 @@ const DATA_CACHE = 'data-v1';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
-  'js/app.js', 'js/chart.js', 'js/data.js', 'js/holdings.js', 'js/positions.js', 'js/ui.js', 'js/lab-worker.js',
+  'js/app.js', 'js/chart.js', 'js/data.js', 'js/holdings.js', 'js/positions.js', 'js/push.js', 'js/push-config.js', 'js/ui.js',
   'js/engine/engine.js', 'js/engine/indicators.js', 'js/engine/strategies.js',
-  'js/views/lab.js', 'js/views/positions.js', 'js/views/research.js', 'js/views/ticker.js', 'js/views/today.js',
+  'js/views/positions.js', 'js/views/ticker.js', 'js/views/today.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -49,4 +49,23 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   const path = url.pathname.slice(new URL(self.registration.scope).pathname.length);
   event.respondWith(path.startsWith('data/') ? networkFirst(event.request) : cacheFirst(event.request));
+});
+
+// Daily push (sent by notify.py): {title, body, url}. Tapping it opens / focuses the app.
+self.addEventListener('push', (event) => {
+  const message = event.data.json();
+  event.waitUntil(self.registration.showNotification(message.title, {
+    body: message.body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', data: { url: message.url },
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data.url, self.registration.scope).href;
+  event.waitUntil((async () => {
+    for (const client of await self.clients.matchAll({ type: 'window', includeUncontrolled: true })) {
+      if ('focus' in client) { await client.navigate(target); return client.focus(); }
+    }
+    return self.clients.openWindow(target);
+  })());
 });

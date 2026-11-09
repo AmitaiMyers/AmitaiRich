@@ -1,7 +1,7 @@
 {
   "name": "Roof Signals",
   "short_name": "Roof",
-  "description": "Daily momentum signals, on-device position checks and an in-browser backtest lab.",
+  "description": "Daily new-stock signals (v0 and v7) and your positions' HOLD/SELL status.",
   "id": "./",
   "start_url": "./#/today",
   "scope": "./",
@@ -18,7 +18,6 @@
   ],
   "shortcuts": [
     { "name": "Today's signals", "url": "./#/today" },
-    { "name": "My positions", "url": "./#/positions" },
-    { "name": "Backtest lab", "url": "./#/lab" }
+    { "name": "My positions", "url": "./#/positions" }
   ]
 }

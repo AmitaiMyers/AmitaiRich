@@ -207,6 +207,7 @@ class RankedStrategy:
         # filter and must not be triggering a sell rule — otherwise a stock sold for breaking its
         # MA would be re-bought from the frozen list the next morning (a churn loop).
         on_list = (rank <= version.max_positions).where(_broadcast(rebalance, rank)).ffill()
+        self.on_list = on_list == 1.0            # the current top-N list (for the daily log / app)
         self.exit = self._exits(version, d, rebalance)
         self.entry = (on_list == 1.0) & candidates & ~self.exit
         e = version.exits

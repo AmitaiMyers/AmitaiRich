@@ -104,6 +104,24 @@ def copy_app_shell(out_dir, build_id):
         fh.write(sw.replace("__BUILD_ID__", build_id))
 
 
+SIGNAL_LOG_LATEST = os.path.join("signal_log", "latest.json")
+
+
+def write_daily(data_dir, data_date, demo):
+    """data/daily.json for the app: the latest signal-log record (v0 + v7 lists, paper accounts).
+
+    Written by the Paper trading job; when it is missing (first deploy, demo build) an explicit
+    placeholder is published so the app can say so instead of failing."""
+    if not demo and os.path.exists(SIGNAL_LOG_LATEST):
+        with open(SIGNAL_LOG_LATEST) as fh:
+            daily = json.load(fh)
+        daily["available"] = True
+    else:
+        daily = {"available": False, "date": data_date,
+                 "reason": "demo build" if demo else "the Paper trading job has not run yet"}
+    _write_json(os.path.join(data_dir, "daily.json"), daily)
+
+
 def publish(out_dir, demo, state_path):
     end = (date.today() + timedelta(days=1)).isoformat()   # yfinance's end is exclusive
     frames, lists, failed = demo_frames() if demo else load_universe_frames(end)
@@ -135,6 +153,8 @@ def publish(out_dir, demo, state_path):
         "production": {"strategy": algorithm.name, "config": algorithm.config,
                        "stop_mode": DEFAULT_STOP_MODE, "target_positions": TARGET_POSITIONS},
     })
+
+    write_daily(data_dir, data_date, demo)
 
     research_out = os.path.join(data_dir, "research")
     os.makedirs(research_out, exist_ok=True)

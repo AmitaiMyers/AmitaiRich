@@ -89,8 +89,11 @@ verdict. Reports land in `research_results/*.json` (published to the PWA). Env: 
 `RESEARCH_OUT`, `RESEARCH_WORKERS`.
 
 **PWA** (`pwa/`, built by `publish.py`, deployed by `.github/workflows/publish.yml`): static site;
-positions live only in the browser (localStorage); HOLD/SELL and the lab run client-side
-(`pwa/js/engine`, lab in a Web Worker). Price files use `pwa_format.py`'s compact format.
+positions live only in the browser (localStorage); HOLD/SELL runs client-side (`pwa/js/engine`).
+Today shows the v0 + v7 lists from `data/daily.json` (= `signal_log/latest.json`, written daily by
+`paper_trading.py` via `signal_log.py`; every day's lists are kept in `signal_log/` for diagnosis).
+Daily phone push: `notify.py` + `webpush.py` (secrets VAPID_PRIVATE_KEY, PUSH_SUBSCRIPTION).
+Price files use `pwa_format.py`'s compact format.
 
 **Database** (`database.py`): single runs use `runs`/`trades`/`daily_equity`; batches use
 `batches`/`batch_results`. Write helpers don't commit; `create_run`/`create_batch` do.

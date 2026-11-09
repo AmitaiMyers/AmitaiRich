@@ -35,21 +35,16 @@ export function sliceBars(bars, fromDay, toDay) {
 // ---------------------------------------------------------------------------
 
 const barCache = new Map();
-let dataBase = '';
-
-/** Prefix for data URLs ('' in the page; '../' inside js/lab-worker.js). */
-export function setDataBase(prefix) { dataBase = prefix; }
 
 async function getJson(path) {
-  const response = await fetch(`${dataBase}${path}`);
+  const response = await fetch(path);
   if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
   return response.json();
 }
 
 export const loadManifest = () => getJson('data/manifest.json');
 export const loadSignals = () => getJson('data/signals.json');
-export const loadResearchIndex = () => getJson('data/research/index.json');
-export const loadResearch = (phase) => getJson(`data/research/${encodeURIComponent(phase)}.json`);
+export const loadDaily = () => getJson('data/daily.json');
 
 /** One ticker's full daily history (memoized for the session; the service worker caches it offline). */
 export async function loadBars(ticker) {
@@ -62,19 +57,4 @@ export async function loadBars(ticker) {
     barCache.delete(ticker); // let a later attempt retry (e.g. after reconnecting)
     throw error;
   }
-}
-
-/** Load many tickers with bounded concurrency; reports progress; failed symbols are returned, not thrown. */
-export async function loadManyBars(tickers, onProgress = () => {}, concurrency = 8) {
-  const frames = {}, failed = [];
-  let next = 0, done = 0;
-  async function worker() {
-    while (next < tickers.length) {
-      const ticker = tickers[next++];
-      try { frames[ticker] = await loadBars(ticker); } catch { failed.push(ticker); }
-      onProgress(++done, tickers.length);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(concurrency, tickers.length) }, worker));
-  return { frames, failed };
 }

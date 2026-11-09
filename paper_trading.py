@@ -18,6 +18,7 @@ from dataclasses import replace
 
 import pandas as pd
 
+import signal_log
 import strategy_lab as L
 from algo_versions import VERSIONS
 from engine import run_engine
@@ -54,20 +55,62 @@ def account_summary(name, equity, trades):
 def run():
     data = L.lab_data("core")
     last_date = data.panel.dates[-1]
+    rows, accounts = [], {}
     if last_date < PAPER_START:
         status = f"Paper trading starts {PAPER_START.date()}; latest data is {last_date.date()}."
-        write(status, [], {}, last_date)
-        return
-    rows, accounts = [], {}
-    for name in STRATEGIES:
-        result, equity = run_account(VERSIONS[name], data)
-        live_trades = [t for t in result.trades if t.entry_date >= PAPER_START]
-        accounts[name] = {"result": result, "trades": live_trades}
-        rows.append(account_summary(name, equity, live_trades))
-    for bench, close in data.benchmarks.items():
-        curve = single_asset_benchmark(close[close.index >= PAPER_START], L.portfolio_config(VERSIONS["v7"]))
-        rows.append(account_summary(f"BENCH {bench}", curve, []))
-    write(f"Day {rows[0]['days']} of paper trading (data to {last_date.date()}).", rows, accounts, last_date)
+    else:
+        for name in STRATEGIES:
+            result, equity = run_account(VERSIONS[name], data)
+            live_trades = [t for t in result.trades if t.entry_date >= PAPER_START]
+            accounts[name] = {"result": result, "trades": live_trades}
+            rows.append(account_summary(name, equity, live_trades))
+        for bench, close in data.benchmarks.items():
+            curve = single_asset_benchmark(close[close.index >= PAPER_START], L.portfolio_config(VERSIONS["v7"]))
+            rows.append(account_summary(f"BENCH {bench}", curve, []))
+        status = f"Day {rows[0]['days']} of paper trading (data to {last_date.date()})."
+    write(status, rows, accounts, last_date)
+    signal_log.record(last_date, v0_list(), v7_list(data), rows, accounts, status)
+
+
+# ---------------------------------------------------------------------------
+# The two daily lists (what the app shows and the signal log keeps)
+# ---------------------------------------------------------------------------
+
+V7_FACTORS = ("beat_streak", "sue", "rev_accel", "eps_surprise")
+
+
+def v0_list():
+    """Production v0 scan, exactly as scan_today / the PWA run it (full ranked candidate list)."""
+    import market_data
+    import scan_today
+
+    tickers, sources = scan_today.combined_universe()
+    frames = market_data.load_prices(tickers)
+    report, _state = scan_today.daily_report(scan_today.production_algorithm(), {}, "log", frames=frames,
+                                             top_n=1000, scan_universe=(tickers, sources))
+    return [{"rank": c["rank"], "ticker": c["ticker"], "close": c["close"], "score": c["score"],
+             "mom_pct": c["mom_%"], "vs_ma200_pct": c["pct_vs_200ma"]} for c in report["candidates"]]
+
+
+def v7_list(data):
+    """v7's current top-10 list (set at the last weekly rebalance) with its factor values today."""
+    strategy = L.RankedStrategy(VERSIONS["v7"], data)
+    today = data.panel.dates[-1]
+    listed = strategy.on_list.loc[today]
+    tickers = list(listed[listed].index)
+    rows = []
+    for ticker in tickers:
+        row = {"ticker": ticker, "close": round(float(data.panel.close.at[today, ticker]), 2),
+               "score": round(float(strategy.composite.at[today, ticker]), 4),
+               "buyable_today": bool(strategy.entry.at[today, ticker])}
+        for factor in V7_FACTORS:
+            value = float(data.factor(factor).at[today, ticker])
+            row[factor] = None if value != value else round(value, 3)
+        rows.append(row)
+    rows.sort(key=lambda r: -r["score"])
+    for rank, row in enumerate(rows, start=1):
+        row["rank"] = rank
+    return rows
 
 
 def write(status, rows, accounts, last_date):

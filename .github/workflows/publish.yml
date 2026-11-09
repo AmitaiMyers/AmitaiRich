@@ -71,3 +71,24 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # One push a day: only after the daily Paper trading run (which commits the new lists), and
+  # only once the site with those lists is live. Skips quietly if the push secrets are not set.
+  notify:
+    needs: deploy
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'Paper trading'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Install dependencies
+        run: pip install -r requirements-core.txt
+      - name: Send the daily push
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          PUSH_SUBSCRIPTION: ${{ secrets.PUSH_SUBSCRIPTION }}
+        run: python notify.py signal_log/latest.json
