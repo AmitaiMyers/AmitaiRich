@@ -10,7 +10,7 @@ on:
   schedule:
     - cron: "17 22 * * 1-5"
   workflow_run:
-    workflows: [Research, Strategy lab]
+    workflows: [Research, Strategy lab, Paper trading]
     types: [completed]
   workflow_dispatch:
 

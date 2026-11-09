@@ -22,6 +22,8 @@ Everything runs on GitHub's free infrastructure. No server, no API keys.
 |---|---|---|
 | **CI** (`ci.yml`) | every push / PR | Python tests, exact JS-parity tests, demo site build |
 | **Publish PWA** (`publish.yml`) | weekdays 22:17 UTC (after the US close), after a successful Research run, or manually | downloads fresh daily data for the S&P 500, Nasdaq-100, watchlist and Magic Formula lists, runs the production scan, builds `site/` and deploys it to Pages |
+| **Paper trading** (`paper.yml`) | weekdays 21:37 UTC, or manually | replays v0 and v7 from 2026-11-10 on fresh data, commits `reports/paper/paper.md` (holdings + next-open orders), then Publish PWA shows it — needs the `SEC_USER_AGENT` repository variable |
+| **Strategy lab** (`lab.yml`) | manual | any lab command on fresh data (needs `SEC_USER_AGENT`) |
 | **Research** (`research.yml`) | manual (choose a phase; default `v3`) | runs the research on GitHub's runners, uploads the full output as an artifact, commits `research_results/<phase>.json`, then Publish PWA redeploys so the report appears on the Research page |
 
 The research workflow **never changes the production strategy**. If `v3` promotes a candidate,

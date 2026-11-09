@@ -59,6 +59,10 @@ class EngineConfig:
     # research). False: it raises ConfigurationError (a single-stock run surfaces it).
     skip_unprotectable: bool = False
     regime_filter: bool = False      # needs a market regime series (no entries / exit when off)
+    # Backtests close everything on the last day so results are realized. A LIVE (paper) account
+    # must not: False keeps positions open on the calendar's last day and keeps the orders
+    # decided at that close (reported in EngineResult.open_positions / pending_orders).
+    liquidate_at_end: bool = True
 
     def validate(self):
         if self.sizing_mode not in VALID_SIZING:
@@ -109,6 +113,8 @@ class EngineResult:
     trades: list
     n_entry_signals: int        # distinct entry episodes offered (rising edges)
     meta: dict = field(default_factory=dict)
+    open_positions: list = field(default_factory=list)   # filled when liquidate_at_end=False
+    pending_orders: list = field(default_factory=list)   # next-open orders decided at the last close
 
 
 @dataclass
@@ -222,8 +228,16 @@ class _Loop:
             cash_series[day], holdings_series[day] = self.cash, holdings
         cash = pd.Series(cash_series, index=book.calendar)
         holdings = pd.Series(holdings_series, index=book.calendar)
+        last = n_days - 1
+        open_positions = [{"ticker": book.tickers[k], "entry_date": book.calendar[p.fill_day],
+                           "entry_price": p.entry_price, "shares": p.shares, "stop": p.stop_price,
+                           "last_close": float(book.mark[k, last]), "bars_held": p.bars_held}
+                          for k, p in self.held.items()]
+        pending = ([{"ticker": book.tickers[k], "side": "SELL"} for k in sorted(self.pending_sells)]
+                   + [{"ticker": book.tickers[k], "side": "BUY"} for k in self.pending_buys])
         return EngineResult(equity=cash + holdings, cash=cash, holdings=holdings,
-                            trades=self.trades, n_entry_signals=book.n_entry_episodes())
+                            trades=self.trades, n_entry_signals=book.n_entry_episodes(),
+                            open_positions=open_positions, pending_orders=pending)
 
     # --- per-day steps -------------------------------------------------------
 
@@ -301,6 +315,9 @@ class _Loop:
                 self.pending_sells.add(k)
 
     def _final_liquidations(self, day):
+        live_last_day = not self.config.liquidate_at_end and day == len(self.book.calendar) - 1
+        if live_last_day:
+            return   # a live account keeps its positions and tomorrow's orders
         for k in [k for k in self.held if self.book.last_day[k] == day]:
             self.pending_sells.discard(k)
             self._close(k, day, self.book.close[k, day], "final")

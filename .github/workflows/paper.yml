@@ -1,0 +1,63 @@
+name: Paper trading
+
+# Forward paper trading of v0 (production) vs v7 (earnings-led) from 2026-11-10 (paper_trading.py).
+# Weekdays after the US close: refresh data, replay both frozen strategies from the start date,
+# commit reports/paper/paper.md + research_results/paper.json; "Publish PWA" then shows them.
+# Needs the repository variable SEC_USER_AGENT (v7 uses SEC filings) — see lab.yml.
+on:
+  schedule:
+    - cron: "37 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lab
+  cancel-in-progress: false
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-core.txt
+      - name: Install dependencies
+        run: pip install -r requirements-core.txt
+      - name: Check SEC contact
+        run: |
+          if [ -z "$SEC_USER_AGENT" ]; then echo "Set the repository variable SEC_USER_AGENT (Settings > Secrets and variables > Actions > Variables)"; exit 1; fi
+      - name: Restore market data
+        uses: actions/cache/restore@v4
+        with:
+          path: market_data
+          key: market-data-${{ github.run_id }}
+          restore-keys: market-data-
+      - name: Refresh data
+        run: |
+          python market_data.py update
+          python fundamentals_pit.py update
+          python earnings_pit.py update
+      - name: Save market data
+        uses: actions/cache/save@v4
+        with:
+          path: market_data
+          key: market-data-${{ github.run_id }}
+      - name: Paper accounts
+        run: python paper_trading.py
+      - name: Commit the paper report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/paper/ research_results/
+          if git diff --cached --quiet; then echo "No changes."; else
+            git commit -m "Paper trading: $(date -u +%F)"
+            git push
+          fi

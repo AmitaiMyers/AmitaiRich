@@ -1,0 +1,15 @@
+{
+ "phase": "paper",
+ "generated": "2026-11-09T21:09:53",
+ "data": {
+  "start": "2004-01-01",
+  "end": "2026-11-09"
+ },
+ "objective": "max CAGR with max drawdown within -40%",
+ "tables": [],
+ "verdict": {
+  "winner": "-",
+  "promoted": [],
+  "summary": "Forward paper trading of v0 vs v7 from 2026-11-10. Paper trading starts 2026-11-10; latest data is 2026-11-09. Judge after at least 6-12 months; short windows are mostly noise."
+ }
+}

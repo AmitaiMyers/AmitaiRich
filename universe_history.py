@@ -15,6 +15,7 @@ long after the old membership, so the old membership simply never becomes eligib
 
 import io
 import os
+import time
 
 import pandas as pd
 import requests
@@ -38,10 +39,20 @@ def _history_path():
     return os.path.join(DATA_DIR, "sp500_history.csv")
 
 
+HISTORY_MAX_AGE_DAYS = 7
+
+
 def sp500_snapshots(refresh=False):
-    """DataFrame indexed by date with a `tickers` column (frozenset, Yahoo-normalized)."""
+    """DataFrame indexed by date with a `tickers` column (frozenset, Yahoo-normalized).
+
+    The history file is maintained by hand upstream and lags by weeks to months, so a row
+    dated today holding the CURRENT constituents (Wikipedia, via universe.get_sp500) is appended
+    when today is later than its last snapshot — live scans and paper trading then use today's
+    index. Research periods (<= 2022) are unaffected.
+    """
     path = _history_path()
-    if refresh or not os.path.exists(path):
+    stale = os.path.exists(path) and time.time() - os.path.getmtime(path) > HISTORY_MAX_AGE_DAYS * 86400
+    if refresh or stale or not os.path.exists(path):
         os.makedirs(DATA_DIR, exist_ok=True)
         response = requests.get(SP500_HISTORY_URL, timeout=60)
         response.raise_for_status()
@@ -51,7 +62,23 @@ def sp500_snapshots(refresh=False):
     if raw.empty:
         raise EmptyDataError(f"{path} has no membership rows")
     tickers = raw["tickers"].map(lambda s: frozenset(normalize_ticker(t) for t in s.split(",")))
-    return pd.DataFrame({"tickers": tickers.to_numpy()}, index=pd.DatetimeIndex(raw["date"], name="date"))
+    snapshots = pd.DataFrame({"tickers": tickers.to_numpy()}, index=pd.DatetimeIndex(raw["date"], name="date"))
+    today = pd.Timestamp.today().normalize()
+    if today > snapshots.index[-1]:
+        snapshots.loc[today] = [frozenset(current_sp500(refresh=stale or refresh))]
+    return snapshots
+
+
+def current_sp500(refresh=False):
+    """Today's S&P 500 constituents straight from Wikipedia (cached in the data store).
+
+    Deliberately NOT universe_cache/sp500.csv: that repo list has been hand-extended and holds
+    more than the index's ~503 members."""
+    path = os.path.join(DATA_DIR, "sp500_current.csv")
+    if refresh or not os.path.exists(path):
+        os.makedirs(DATA_DIR, exist_ok=True)
+        pd.DataFrame({"symbol": _wiki_symbols(universe.SP500_URL)}).to_csv(path, index=False)
+    return pd.read_csv(path)["symbol"].astype(str).tolist()
 
 
 def sp500_members_since(start=RESEARCH_START):

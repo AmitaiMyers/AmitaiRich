@@ -1,0 +1,114 @@
+"""Forward paper trading: v0 (production) vs v7 (earnings-led), side by side, on NEW data only.
+
+    python paper_trading.py      # -> reports/paper/paper.md, research_results/paper.json
+
+Both strategies start with $32,000 on PAPER_START with their rules frozen as committed. Every
+run replays the identical engine from that date on the data available today. The rules are
+causal, so this equals live paper trading — nothing after PAPER_START was ever used to choose
+or tune them, which makes this the only truly out-of-sample test left (the 2023-2026 holdout
+has been opened three times).
+
+Reported each day: account value vs SPY and RSP from the same start, open positions, and the
+orders decided at the last close for the next open (the list the owner would act on).
+"""
+
+import json
+import os
+from dataclasses import replace
+
+import pandas as pd
+
+import strategy_lab as L
+from algo_versions import VERSIONS
+from engine import run_engine
+from portfolio import _AdjustedBuy, equity_metrics, longest_losing_streak, single_asset_benchmark
+
+PAPER_START = pd.Timestamp("2026-11-10")
+STRATEGIES = ("v0", "v7")
+OUT_DIR = os.path.join("reports", "paper")
+
+
+def run_account(version, data):
+    """One paper account: the engine from PAPER_START, positions and orders kept open."""
+    strategy = _AdjustedBuy(L.build_strategy(version, data), None, PAPER_START)
+    config = replace(L.portfolio_config(version).engine_config(), liquidate_at_end=False)
+    frames = {t: f for t, f in data.stock_frames.items() if len(f) > 2 and f.index[-1] >= PAPER_START}
+    result = run_engine(frames, strategy, strategy, config)
+    return result, result.equity[result.equity.index >= PAPER_START]
+
+
+def _pct(x):
+    return f"{x * 100:+.2f}%"
+
+
+def account_summary(name, equity, trades):
+    if len(equity) < 2:
+        return {"strategy": name, "days": len(equity), "value": round(float(equity.iloc[-1]), 0) if len(equity) else L.CAPITAL,
+                "return": 0.0, "maxDD": 0.0, "trades": len(trades)}
+    m = equity_metrics(equity)
+    return {"strategy": name, "days": len(equity), "value": round(m["final_equity"], 0),
+            "return": round(m["total_return"] * 100, 2), "maxDD": round(m["max_dd"] * 100, 1),
+            "trades": len(trades)}
+
+
+def run():
+    data = L.lab_data("core")
+    last_date = data.panel.dates[-1]
+    if last_date < PAPER_START:
+        status = f"Paper trading starts {PAPER_START.date()}; latest data is {last_date.date()}."
+        write(status, [], {}, last_date)
+        return
+    rows, accounts = [], {}
+    for name in STRATEGIES:
+        result, equity = run_account(VERSIONS[name], data)
+        live_trades = [t for t in result.trades if t.entry_date >= PAPER_START]
+        accounts[name] = {"result": result, "trades": live_trades}
+        rows.append(account_summary(name, equity, live_trades))
+    for bench, close in data.benchmarks.items():
+        curve = single_asset_benchmark(close[close.index >= PAPER_START], L.portfolio_config(VERSIONS["v7"]))
+        rows.append(account_summary(f"BENCH {bench}", curve, []))
+    write(f"Day {rows[0]['days']} of paper trading (data to {last_date.date()}).", rows, accounts, last_date)
+
+
+def write(status, rows, accounts, last_date):
+    os.makedirs(OUT_DIR, exist_ok=True)
+    lines = ["# Paper trading — v0 vs v7 (forward, out-of-sample)", "",
+             f"Start {PAPER_START.date()} with ${L.CAPITAL:,.0f} each; rules frozen; next-open fills; "
+             f"{L.COST_BPS:.0f} bps/side. {status}", ""]
+    tables = []
+    if rows:
+        lines += ["| Account | Days | Value | Return | Max DD | Trades |", "|---|---|---|---|---|---|"]
+        lines += [f"| {r['strategy']} | {r['days']} | ${r['value']:,.0f} | {r['return']:+.2f}% | {r['maxDD']}% | {r['trades']} |"
+                  for r in rows]
+        tables.append({"title": f"Paper accounts since {PAPER_START.date()} (data to {last_date.date()})", "note": None,
+                       "columns": ["strategy", "days", "value", "return", "maxDD", "trades"], "rows": rows})
+    for name, account in accounts.items():
+        result = account["result"]
+        held = [{"strategy": p["ticker"], "entry": str(p["entry_date"].date()), "shares": int(p["shares"]),
+                 "entry_price": round(p["entry_price"], 2), "last": round(p["last_close"], 2),
+                 "pnl_pct": round((p["last_close"] / p["entry_price"] - 1) * 100, 1)}
+                for p in result.open_positions]
+        orders = [f"{o['side']} {o['ticker']}" for o in result.pending_orders]
+        lines += ["", f"## {name} — {VERSIONS[name].description}", "",
+                  f"**Orders for the next open:** {', '.join(orders) if orders else 'none'}", "",
+                  "| Holding | Entry | Shares | Entry price | Last | P&L |", "|---|---|---|---|---|---|"]
+        lines += [f"| {h['strategy']} | {h['entry']} | {h['shares']} | {h['entry_price']} | {h['last']} | {h['pnl_pct']:+.1f}% |"
+                  for h in held] or ["| (no holdings) | | | | | |"]
+        lines.append(f"\nClosed trades: {len(account['trades'])}, longest losing streak "
+                     f"{longest_losing_streak(account['trades'])}.")
+        tables.append({"title": f"{name} holdings — next-open orders: {', '.join(orders) if orders else 'none'}",
+                       "note": VERSIONS[name].description,
+                       "columns": ["strategy", "entry", "shares", "entry_price", "last", "pnl_pct"], "rows": held})
+    with open(os.path.join(OUT_DIR, "paper.md"), "w") as fh:
+        fh.write("\n".join(lines) + "\n")
+    import research_portfolio
+
+    research_portfolio.write_report("paper", tables, verdict={
+        "winner": "-", "promoted": [],
+        "summary": f"Forward paper trading of v0 vs v7 from {PAPER_START.date()}. {status} Judge after "
+                   "at least 6-12 months; short windows are mostly noise."})
+    print(f"Written {os.path.join(OUT_DIR, 'paper.md')}")
+
+
+if __name__ == "__main__":
+    run()

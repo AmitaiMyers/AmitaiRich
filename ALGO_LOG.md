@@ -65,6 +65,13 @@ every development number as optimistic.
 6. **The holdout has now been opened 3 times** (v6b, v7, v0). Any further candidate must be judged
    by forward paper trading (new data), not by this period.
 
+## Decision (2026-11-09): forward paper trading
+
+The owner chose to paper-trade **v0 and v7 side by side from 2026-11-10** ($32,000 each, rules
+frozen) — the only untouched out-of-sample test left. Daily results: reports/paper/paper.md and
+the PWA Research page ("paper"). Production (scan_today.py) stays v0 until the paper results
+justify a change. Judge after 6-12 months at the earliest; shorter windows are mostly noise.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.

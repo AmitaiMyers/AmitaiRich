@@ -136,3 +136,22 @@ class BenchmarkTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LiveAccountTest(unittest.TestCase):
+    def test_live_mode_keeps_positions_and_next_open_orders(self):
+        from dataclasses import replace as dc_replace
+
+        from engine import EngineConfig, run_engine
+        frames = make_universe(6, seed=5, n_bars=800)
+        algo = algorithms.build_algorithm(MOMENTUM, PRODUCTION)
+        base = EngineConfig(max_positions=4, fill_mode="next_open", stop_mode="widest", skip_unprotectable=True)
+        backtest = run_engine(frames, algo, algo, base)
+        live = run_engine(frames, algo, algo, dc_replace(base, liquidate_at_end=False))
+        self.assertEqual(backtest.open_positions, [])
+        self.assertTrue(all(t.exit_reason != "final" or t.exit_date < live.equity.index[-1] for t in live.trades))
+        self.assertEqual(len(live.open_positions), sum(1 for t in backtest.trades if t.exit_reason == "final"
+                                                       and t.exit_date == backtest.equity.index[-1]))
+        # With zero costs, closing at the last close cannot change the account value.
+        self.assertAlmostEqual(float(live.equity.iloc[-1]), float(backtest.equity.iloc[-1]), places=6)
+        self.assertTrue(all(o["side"] in ("BUY", "SELL") for o in live.pending_orders))
