@@ -6,7 +6,9 @@ import { heldTickers } from '../positions.js';
 import { notificationsCard } from '../push.js';
 import { h, kpi, money, num, pct, signClass, store, table } from '../ui.js';
 
-const V0_COUNTS = [20, 40];
+const V0_COUNTS = [20, 40, 'all'];   // 'all' = every stock that passes v0's rules
+const countLabel = (n) => (n === 'all' ? 'All' : `Top ${n}`);
+const rowsShown = (n, list) => (n === 'all' ? list.length : Math.min(n, list.length));
 const V0_COUNT_KEY = 'roof.v0count.v1';
 const NEW_CHIPS_SHOWN = 24;
 
@@ -51,7 +53,7 @@ function v0Rows(v0, held, count) {
     { label: '6-mo momentum', value: (r) => pct(r.mom_pct), num: true, cls: (r) => signClass(r.mom_pct) },
     { label: 'vs 200-MA', value: (r) => pct(r.vs_ma200_pct), num: true },
     { label: '', value: heldBadge(held) },
-  ], v0.list.slice(0, count), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
+  ], v0.list.slice(0, rowsShown(count, v0.list)), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
 }
 
 function v0Table(v0, held) {
@@ -59,12 +61,14 @@ function v0Table(v0, held) {
   const title = h('h2');
   const host = h('div');
   const draw = () => {
-    title.textContent = `v0 — momentum rider (production) · top ${Math.min(count, v0.list.length)} of ${v0.list.length}`;
+    title.textContent = rowsShown(count, v0.list) === v0.list.length
+      ? `v0 — momentum rider (production) · all ${v0.list.length} that pass`
+      : `v0 — momentum rider (production) · top ${count} of ${v0.list.length}`;
     host.replaceChildren(v0Rows(v0, held, count));
   };
   const picker = h('div', { class: 'segmented', role: 'group', 'aria-label': 'How many v0 stocks to show' },
     V0_COUNTS.map((n) => h('button', {
-      type: 'button', class: n === count ? 'active' : null, text: `Top ${n}`,
+      type: 'button', class: n === count ? 'active' : null, text: countLabel(n),
       onclick: (event) => {
         count = n;
         store.write(V0_COUNT_KEY, n);
