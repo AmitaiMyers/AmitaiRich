@@ -58,7 +58,7 @@ function v7Table(daily, held) {
       { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
       { label: 'Close', value: (r) => num(r.close), num: true },
       { label: 'Beat streak', value: (r) => num(r.beat_streak, 0), num: true },
-      { label: 'EPS surprise', value: (r) => num(r.eps_surprise), num: true, cls: (r) => signClass(r.eps_surprise) },
+      { label: 'EPS surprise', value: (r) => pct(r.eps_surprise), num: true, cls: (r) => signClass(r.eps_surprise) },
       { label: 'Buyable', value: (r) => (r.buyable_today ? 'yes' : 'no') },
       { label: '', value: heldBadge(held) },
     ], daily.v7.list, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
