@@ -4,9 +4,10 @@
 
 import { heldTickers } from '../positions.js';
 import { notificationsCard } from '../push.js';
-import { h, kpi, money, num, pct, signClass, table } from '../ui.js';
+import { h, kpi, money, num, pct, signClass, store, table } from '../ui.js';
 
-const V0_SHOWN = 20;
+const V0_COUNTS = [20, 40];
+const V0_COUNT_KEY = 'roof.v0count.v1';
 const NEW_CHIPS_SHOWN = 24;
 
 const tickerLink = (ticker) => h('a', { class: 'chip', href: `#/t/${encodeURIComponent(ticker)}`, text: ticker });
@@ -31,20 +32,41 @@ function newTodayCard(v0, daily) {
     daily.available ? line('v7 earnings', daily.v7.new) : h('div', { class: 'section muted small', text: `v7: ${daily.reason}.` }));
 }
 
+function v0Rows(v0, held, count) {
+  return table([
+    { label: '#', value: (r) => r.rank, num: true },
+    { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
+    { label: 'Close', value: (r) => num(r.close), num: true },
+    { label: '6-mo momentum', value: (r) => pct(r.mom_pct), num: true, cls: (r) => signClass(r.mom_pct) },
+    { label: 'vs 200-MA', value: (r) => pct(r.vs_ma200_pct), num: true },
+    { label: '', value: heldBadge(held) },
+  ], v0.list.slice(0, count), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
+}
+
 function v0Table(v0, held) {
-  const rows = v0.list.slice(0, V0_SHOWN);
+  let count = store.read(V0_COUNT_KEY, V0_COUNTS[0]);
+  const title = h('h2');
+  const host = h('div');
+  const draw = () => {
+    title.textContent = `v0 — momentum rider (production) · top ${Math.min(count, v0.list.length)} of ${v0.list.length}`;
+    host.replaceChildren(v0Rows(v0, held, count));
+  };
+  const picker = h('div', { class: 'segmented', role: 'group', 'aria-label': 'How many v0 stocks to show' },
+    V0_COUNTS.map((n) => h('button', {
+      type: 'button', class: n === count ? 'active' : null, text: `Top ${n}`,
+      onclick: (event) => {
+        count = n;
+        store.write(V0_COUNT_KEY, n);
+        for (const b of event.target.parentElement.children) b.classList.toggle('active', b === event.target);
+        draw();
+      },
+    })));
+  draw();
   return h('div', { class: 'section' },
-    h('h2', { text: `v0 — momentum rider (production) · top ${rows.length} of ${v0.list.length}` }),
+    h('div', { class: 'row' }, title, h('span', { class: 'spacer' }), picker),
     h('p', { class: 'muted small', text: 'Strong 6-month momentum and price above the 200-day MA; '
       + 'sell on a close below the MA or the stop. Strongest first.' }),
-    table([
-      { label: '#', value: (r) => r.rank, num: true },
-      { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
-      { label: 'Close', value: (r) => num(r.close), num: true },
-      { label: '6-mo momentum', value: (r) => pct(r.mom_pct), num: true, cls: (r) => signClass(r.mom_pct) },
-      { label: 'vs 200-MA', value: (r) => pct(r.vs_ma200_pct), num: true },
-      { label: '', value: heldBadge(held) },
-    ], rows, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
+    host);
 }
 
 function v7Table(daily, held) {
