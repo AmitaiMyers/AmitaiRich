@@ -91,7 +91,9 @@ verdict. Reports land in `research_results/*.json` (published to the PWA). Env: 
 **PWA** (`pwa/`, built by `publish.py`, deployed by `.github/workflows/publish.yml`): static site;
 positions live only in the browser (localStorage); HOLD/SELL runs client-side (`pwa/js/engine`).
 Today shows the v0 + v7 lists from `data/daily.json` (= `signal_log/latest.json`, written daily by
-`paper_trading.py` via `signal_log.py`; every day's lists are kept in `signal_log/` for diagnosis).
+`paper_trading.py` via `signal_log.py`; `signal_log/` keeps every day's lists (`history.csv`), names that
+left a list with the reason (`list_exits.csv`) and the paper accounts' trades (`paper_trades.csv`)).
+The owner's own sold trades are journaled on the device and exported to `my_trades/`.
 Daily phone push: `notify.py` + `webpush.py` (secrets VAPID_PRIVATE_KEY, PUSH_SUBSCRIPTION).
 Price files use `pwa_format.py`'s compact format.
 

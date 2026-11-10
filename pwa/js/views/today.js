@@ -22,14 +22,25 @@ function v0Source(daily, signals) {
   return { date: signals.date, list, new: signals.new_today };
 }
 
+function chipRow(names) {
+  return h('div', { class: 'chips', style: 'margin-top:6px' }, names.slice(0, NEW_CHIPS_SHOWN).map(tickerLink),
+    names.length > NEW_CHIPS_SHOWN ? h('span', { class: 'chip muted', text: `+${names.length - NEW_CHIPS_SHOWN} more` }) : null);
+}
+
+/** Names that left a list since the previous logged day, each with its reason (older logs have none). */
+function droppedBlock(entry) {
+  if (!('dropped' in entry) || !entry.dropped.length) return null;
+  return h('details', { style: 'margin-top:6px' }, h('summary', { text: `${entry.dropped.length} left the list` }),
+    h('ul', { class: 'small' }, entry.dropped.map((d) => h('li', {}, h('strong', { text: d.ticker }), ` — ${d.reason}`))));
+}
+
 function newTodayCard(v0, daily) {
-  const line = (label, names) => h('div', { class: 'section' }, h('strong', { text: `${label} · ${names.length} new` }),
-    names.length ? h('div', { class: 'chips', style: 'margin-top:6px' }, names.slice(0, NEW_CHIPS_SHOWN).map(tickerLink),
-      names.length > NEW_CHIPS_SHOWN ? h('span', { class: 'chip muted', text: `+${names.length - NEW_CHIPS_SHOWN} more` }) : null)
-      : h('div', { class: 'muted small', text: 'No new names today.' }));
+  const line = (label, entry) => h('div', { class: 'section' }, h('strong', { text: `${label} · ${entry.new.length} new` }),
+    entry.new.length ? chipRow(entry.new) : h('div', { class: 'muted small', text: 'No new names today.' }),
+    droppedBlock(entry));
   return h('div', { class: 'card' }, h('h2', { text: 'New today' }),
-    line('v0 momentum', v0.new),
-    daily.available ? line('v7 earnings', daily.v7.new) : h('div', { class: 'section muted small', text: `v7: ${daily.reason}.` }));
+    line('v0 momentum', daily.available ? daily.v0 : v0),
+    daily.available ? line('v7 earnings', daily.v7) : h('div', { class: 'section muted small', text: `v7: ${daily.reason}.` }));
 }
 
 function v0Rows(v0, held, count) {

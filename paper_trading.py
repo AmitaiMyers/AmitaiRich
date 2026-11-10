@@ -18,6 +18,7 @@ from dataclasses import replace
 
 import pandas as pd
 
+import indicators
 import signal_log
 import strategy_lab as L
 from algo_versions import VERSIONS
@@ -69,7 +70,9 @@ def run():
             rows.append(account_summary(f"BENCH {bench}", curve, []))
         status = f"Day {rows[0]['days']} of paper trading (data to {last_date.date()})."
     write(status, rows, accounts, last_date)
-    signal_log.record(last_date, v0_list(), v7_list(data), rows, accounts, status)
+    v0_rows, v0_reason = v0_list()
+    v7_rows, v7_reason = v7_list(data)
+    signal_log.record(last_date, v0_rows, v7_rows, rows, accounts, status, {"v0": v0_reason, "v7": v7_reason})
 
 
 # ---------------------------------------------------------------------------
@@ -80,20 +83,42 @@ V7_FACTORS = ("beat_streak", "sue", "rev_accel", "eps_surprise")
 
 
 def v0_list():
-    """Production v0 scan, exactly as scan_today / the PWA run it (full ranked candidate list)."""
+    """Production v0 scan, exactly as scan_today / the PWA run it -> (full ranked list, why-dropped fn)."""
     import market_data
     import scan_today
 
     tickers, sources = scan_today.combined_universe()
     frames = market_data.load_prices(tickers)
-    report, _state = scan_today.daily_report(scan_today.production_algorithm(), {}, "log", frames=frames,
+    algorithm = scan_today.production_algorithm()
+    report, _state = scan_today.daily_report(algorithm, {}, "log", frames=frames,
                                              top_n=1000, scan_universe=(tickers, sources))
-    return [{"rank": c["rank"], "ticker": c["ticker"], "close": c["close"], "score": c["score"],
+    rows = [{"rank": c["rank"], "ticker": c["ticker"], "close": c["close"], "score": c["score"],
              "mom_pct": c["mom_%"], "vs_ma200_pct": c["pct_vs_200ma"]} for c in report["candidates"]]
+    return rows, v0_drop_reason(frames, algorithm.config)
+
+
+def v0_drop_reason(frames, config):
+    """Why a name is no longer on the v0 list: the rule it now fails, with today's numbers."""
+    trend, lookback, threshold = config["trend_ma"], config["mom_lookback"], config["mom_threshold"]
+
+    def reason(ticker):
+        if ticker not in frames:
+            return "left the scanned universe (no price data)"
+        close = frames[ticker]["Close"]
+        last = float(close.iloc[-1])
+        average = float(indicators.sma(close, trend).iloc[-1])
+        momentum = float(indicators.roc(close, lookback).iloc[-1])
+        if last < average:
+            return f"SELL signal: closed {(last / average - 1) * 100:+.1f}% below its {trend}-day MA"
+        if momentum <= threshold:
+            return f"6-month momentum fell to {momentum * 100:+.0f}% (needs > {threshold * 100:.0f}%)"
+        return "skipped by the scan (stale or missing data)"
+
+    return reason
 
 
 def v7_list(data):
-    """v7's current top-10 list (set at the last weekly rebalance) with its factor values today."""
+    """v7's current top-10 list (set at the last weekly rebalance) -> (rows with factors, why-dropped fn)."""
     strategy = L.RankedStrategy(VERSIONS["v7"], data)
     today = data.panel.dates[-1]
     listed = strategy.on_list.loc[today]
@@ -110,7 +135,27 @@ def v7_list(data):
     rows.sort(key=lambda r: -r["score"])
     for rank, row in enumerate(rows, start=1):
         row["rank"] = rank
-    return rows
+    return rows, v7_drop_reason(strategy, today)
+
+
+def v7_drop_reason(strategy, today):
+    """Why a name is no longer on the v7 top-10: it fails a buy filter, or its rank at the last rebalance."""
+    rebalance_day = strategy.rank.loc[:today].dropna(how="all").index[-1]
+    ranks = strategy.rank.loc[rebalance_day]
+    top = VERSIONS["v7"].max_positions
+
+    def reason(ticker):
+        if ticker not in ranks.index:
+            return "no longer in the data (left the S&P 500 history)"
+        if not bool(strategy.candidates.at[today, ticker]):
+            return "fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+        if ranks[ticker] != ranks[ticker]:
+            return f"failed a buy filter at the {rebalance_day.date()} rebalance"
+        return f"ranked {int(ranks[ticker])} at the {rebalance_day.date()} rebalance (list = top {top})"
+
+    return reason
+
+
 
 
 def write(status, rows, accounts, last_date):

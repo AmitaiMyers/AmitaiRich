@@ -4,7 +4,8 @@
 import { isoToDay, loadBars } from '../data.js';
 import { buildStrategy } from '../engine/strategies.js';
 import { holdingVerdict } from '../holdings.js';
-import { addPosition, listPositions, makePosition, parseCsv, removePosition, replaceAll, toCsv } from '../positions.js';
+import { addPosition, closePosition, closedReturnPct, journalCsv, listClosed, listPositions, makePosition, parseCsv,
+  removeClosed, removePosition, replaceAll, toCsv } from '../positions.js';
 import { downloadText, h, kpi, money, num, pct, signClass, table } from '../ui.js';
 
 function cushion(toExit) {
@@ -14,6 +15,33 @@ function cushion(toExit) {
     h('div', { class: 'cushion', title: 'Distance above the exit line' },
       h('div', { style: `width:${width}%;background:var(${toExit > 5 ? '--up' : toExit > 0 ? '--warn' : '--down'})` })),
     h('span', { class: `num ${signClass(toExit)}`, text: pct(toExit) }));
+}
+
+/** Ask for the sell date + price (defaults: latest data date, latest close) and journal the trade. */
+function sell(row, dataDate) {
+  const date = prompt(`${row.ticker}: sell date (YYYY-MM-DD)`, dataDate);
+  if (date === null) return false;
+  const price = prompt(`${row.ticker}: sell price per share`, String(row.result.lastClose));
+  if (price === null) return false;
+  closePosition(row, row.result, date.trim(), Number(price));
+  return true;
+}
+
+function closedTable(closed, rerender) {
+  if (!closed.length) return h('p', { class: 'muted small', text: 'No closed trades yet. Use "Sold" on a position when you sell it.' });
+  const newestFirst = [...closed].sort((a, b) => (a.exitDate < b.exitDate ? 1 : -1));
+  return table([
+    { label: 'Ticker', value: (t) => h('strong', { text: t.ticker }) },
+    { label: 'Bought', value: (t) => t.entryDate },
+    { label: 'Sold', value: (t) => t.exitDate },
+    { label: 'Entry', value: (t) => num(t.entryPrice), num: true },
+    { label: 'Exit', value: (t) => num(t.exitPrice), num: true },
+    { label: 'Return', value: (t) => pct(closedReturnPct(t)), num: true, cls: (t) => signClass(closedReturnPct(t)) },
+    { label: 'P&L', value: (t) => (t.shares === null ? '—' : money(t.shares * (t.exitPrice - t.entryPrice))), num: true },
+    { label: 'App said', value: (t) => h('span', { class: `badge ${t.appVerdict.toLowerCase()}`, text: t.appVerdict }) },
+    { label: '', value: (t) => h('button', { class: 'danger', type: 'button', text: 'Delete', 'aria-label': `Delete ${t.ticker} trade`,
+      onclick: async () => { if (confirm(`Delete the ${t.ticker} trade from your journal?`)) { removeClosed(t.id); await rerender(); } } }) },
+  ], newestFirst);
 }
 
 async function evaluate(positions, strategy, stopMode) {
@@ -32,6 +60,7 @@ export async function renderPositions(context) {
   const production = manifest.production;
   const strategy = buildStrategy(production.strategy, production.config);
   const positions = listPositions();
+  const closed = listClosed();
   const rows = await evaluate(positions, strategy, production.stop_mode);
   const ok = rows.filter((r) => r.result);
   const sells = ok.filter((r) => r.result.verdict === 'SELL');
@@ -90,6 +119,16 @@ export async function renderPositions(context) {
     { label: 'Stop', value: (r) => num(r.result.stopPrice), num: true },
     { label: '1-mo', value: (r) => pct(r.result.mom1m), num: true, cls: (r) => signClass(r.result.mom1m) },
     { label: 'Held', value: (r) => `${r.result.barsHeld}d`, num: true },
+    { label: '', value: (r) => h('button', { type: 'button', text: 'Sold', 'aria-label': `Record selling ${r.ticker}`,
+      onclick: async (event) => {
+        event.stopPropagation();
+        try {
+          if (sell(r, manifest.data_date)) await rerender();
+        } catch (error) {   // invalid date/price typed by the user: show it, keep the position
+          message.className = 'small down';
+          message.textContent = error.message;
+        }
+      } }) },
     { label: '', value: (r) => h('button', { class: 'danger', type: 'button', text: 'Remove', 'aria-label': `Remove ${r.ticker}`,
       onclick: async (event) => { event.stopPropagation(); if (confirm(`Remove ${r.ticker} (${r.entryDate})?`)) { removePosition(r.id); await rerender(); } } }) },
   ], ok) : h('div', { class: 'card empty', text: 'No positions yet. Add one below, or import your positions.csv.' });
@@ -102,6 +141,8 @@ export async function renderPositions(context) {
         h('button', { type: 'button', text: 'Import CSV', onclick: () => fileInput.click() }),
         h('button', { type: 'button', text: 'Export CSV', disabled: !positions.length,
           onclick: () => downloadText(`positions-${manifest.data_date}.csv`, toCsv(positions)) }),
+        h('button', { type: 'button', text: 'Export trade log', disabled: !(ok.length || closed.length),
+          onclick: () => downloadText(`my-trades-${manifest.data_date}.csv`, journalCsv(ok, closed)) }),
         fileInput)),
     h('div', { class: 'grid kpis' },
       kpi('Positions', String(positions.length), `target ~${production.target_positions}`),
@@ -112,6 +153,12 @@ export async function renderPositions(context) {
     h('div', { class: 'section' }, verdictTable),
     rows.filter((r) => r.error).map((r) => h('p', { class: 'small down',
       text: `${r.ticker} (${r.entryDate}): ${r.error}` })),
-    h('div', { class: 'section' }, h('h2', { text: 'Add a position' }), form, message),
+    message,
+    h('div', { class: 'section' }, h('h2', { text: 'Add a position' }), form),
+    h('div', { class: 'section' }, h('h2', { text: `Closed trades (${closed.length})` }),
+      h('p', { class: 'muted small', text: '"App said" = the HOLD/SELL verdict on the day you recorded the sale. '
+        + 'Export trade log saves open + closed trades as a CSV; keep it (e.g. upload to the repo\'s my_trades/ folder) '
+        + 'so your real results can be compared with the signals later.' }),
+      closedTable(closed, rerender)),
   );
 }
