@@ -100,4 +100,11 @@ V7 = Version(
     filters={"stock_above_ma": 200, "beat_last": True}, exits={"rank_drop": True},
     rebalance="weekly", max_positions=10, hold_buffer=3.0, atr_mult=8.0, parent="v6b")
 
-VERSIONS = {v.name: v for v in (V0, V1, V2, V3, V4, V5, V6, V6B, V7)}
+V0M = Version(
+    "v0m", "v0 that skips buys after an extreme run-up (6-month momentum above +200%). Owner's idea "
+           "(2026-11-10, MRNA at +425%): in development 6.5% vs 5.6% CAGR and validation 6.8% vs 5.6%, "
+           "same max DD; a cap on distance above the 200-MA instead LOST return. Paper-traded only.",
+    base_algorithm=V0.base_algorithm, base_config={**V0.base_config, "max_mom": 2.0},
+    sizing="risk_based", rebalance="daily", parent="v0")
+
+VERSIONS = {v.name: v for v in (V0, V0M, V1, V2, V3, V4, V5, V6, V6B, V7)}

@@ -69,7 +69,7 @@ function paperCard(daily) {
   const { accounts, orders, status } = daily.paper;
   const ordersLine = Object.entries(orders).map(([name, list]) =>
     h('div', { class: 'small' }, h('strong', { text: `${name} next open: ` }), list.length ? list.join(', ') : 'none'));
-  return h('details', { class: 'card section' }, h('summary', { text: 'Paper-trading scoreboard (v0 vs v7 vs SPY)' }),
+  return h('details', { class: 'card section' }, h('summary', { text: 'Paper-trading scoreboard (v0, v0m, v7 vs SPY)' }),
     h('p', { class: 'muted small', text: status }),
     accounts.length ? table([
       { label: 'Account', value: (r) => r.strategy },

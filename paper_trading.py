@@ -1,4 +1,4 @@
-"""Forward paper trading: v0 (production) vs v7 (earnings-led), side by side, on NEW data only.
+"""Forward paper trading: v0 (production), v0m (v0 + run-up cap) and v7 (earnings-led), on NEW data only.
 
     python paper_trading.py      # -> reports/paper/paper.md, research_results/paper.json
 
@@ -25,7 +25,7 @@ from engine import run_engine
 from portfolio import _AdjustedBuy, equity_metrics, longest_losing_streak, single_asset_benchmark
 
 PAPER_START = pd.Timestamp("2026-11-10")
-STRATEGIES = ("v0", "v7")
+STRATEGIES = ("v0", "v0m", "v7")
 OUT_DIR = os.path.join("reports", "paper")
 
 
@@ -115,7 +115,7 @@ def v7_list(data):
 
 def write(status, rows, accounts, last_date):
     os.makedirs(OUT_DIR, exist_ok=True)
-    lines = ["# Paper trading — v0 vs v7 (forward, out-of-sample)", "",
+    lines = ["# Paper trading — v0, v0m, v7 (forward, out-of-sample)", "",
              f"Start {PAPER_START.date()} with ${L.CAPITAL:,.0f} each; rules frozen; next-open fills; "
              f"{L.COST_BPS:.0f} bps/side. {status}", ""]
     tables = []
@@ -148,7 +148,7 @@ def write(status, rows, accounts, last_date):
 
     research_portfolio.write_report("paper", tables, verdict={
         "winner": "-", "promoted": [],
-        "summary": f"Forward paper trading of v0 vs v7 from {PAPER_START.date()}. {status} Judge after "
+        "summary": f"Forward paper trading of v0, v0m and v7 from {PAPER_START.date()}. {status} Judge after "
                    "at least 6-12 months; short windows are mostly noise."})
     print(f"Written {os.path.join(OUT_DIR, 'paper.md')}")
 

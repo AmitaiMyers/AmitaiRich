@@ -22,7 +22,8 @@ from tests.synthetic import make_universe
 FIXTURE_PATH = os.path.join("pwa", "tests", "fixtures", "parity.json")
 
 JS_STRATEGIES = {
-    "Momentum Rider (ROC + MA exit)": [{}, {"mom_threshold": 0.25, "atr_period": 20, "exit_confirm": 3}],
+    "Momentum Rider (ROC + MA exit)": [{}, {"mom_threshold": 0.25, "atr_period": 20, "exit_confirm": 3},
+                                       {"mom_threshold": 0.1, "max_mom": 0.5}],
     "Vol-Adjusted Momentum Rider": [{}, {"score_threshold": 3.0}],
     "Trend Rider (breakout + MA exit)": [{}],
     "Two-Speed Donchian": [{}],

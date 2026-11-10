@@ -72,6 +72,25 @@ frozen) — the only untouched out-of-sample test left. Daily results: reports/p
 the PWA Research page ("paper"). Production (scan_today.py) stays v0 until the paper results
 justify a change. Judge after 6-12 months at the earliest; shorter windows are mostly noise.
 
+## Owner's idea (2026-11-10): skip buys after an extreme run-up → v0m (paper only)
+
+Prompted by MRNA topping the v0 list at +425% 6-month momentum. v0 with entry caps, development /
+validation only (holdout untouched), CAGR / max DD:
+
+| variant | dev 2005-18 | val 2019-22 |
+|---|---|---|
+| v0 (no cap) | 5.6% / -43% | 5.6% / -27% |
+| <= 100% above 200-MA | 5.2% / -43% | 4.9% / -27% |
+| <= 75% above 200-MA | 5.6% / -43% | 3.7% / -27% |
+| <= 50% above 200-MA | 5.0% / -44% | 2.2% / -27% |
+| **6-mo momentum <= +200%** | **6.5% / -43%** | **6.8% / -28%** |
+| 6-mo momentum <= +100% | 7.2% / -43% | 6.1% / -27% |
+
+A cap on distance above the trend loses return (as in the June research); a cap on the run-up
+itself adds ~1pp/yr in BOTH periods with the same drawdown. Small effect, two cap levels tested.
+The milder +200% cap (`max_mom: 2.0`) became **v0m** and joins forward paper trading from
+2026-11-10 next to v0 and v7. Production stays v0 until paper results justify a change.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.

@@ -32,7 +32,7 @@ const MOMENTUM_RIDER = {
   name: 'Momentum Rider (ROC + MA exit)',
   short: 'Momentum Rider',
   description: 'Buy when 6-month momentum clears the threshold and price is above its 200-day MA; sell when it closes back below the MA (production strategy).',
-  DEFAULTS: { mom_lookback: 126, mom_threshold: 0.0, trend_ma: 200, max_ext: 9.99, exit_confirm: 1,
+  DEFAULTS: { mom_lookback: 126, mom_threshold: 0.0, trend_ma: 200, max_ext: 9.99, max_mom: 9.99, exit_confirm: 1,
               atr_period: 14, atr_mult: 4.0, swing_lookback: 20 },
   warmup: (c) => Math.max(c.mom_lookback, c.trend_ma, c.atr_period, c.swing_lookback) + 2,
   build(bars, c) {
@@ -41,7 +41,7 @@ const MOMENTUM_RIDER = {
     const average = sma(close, c.trend_ma);
     return signals({
       entry: boolArray(close.length, (i) => momentum[i] > c.mom_threshold && close[i] > average[i]
-        && close[i] <= (1.0 + c.max_ext) * average[i]),
+        && close[i] <= (1.0 + c.max_ext) * average[i] && momentum[i] <= c.max_mom),
       exit: heldForBars(below(close, average), c.exit_confirm),
       score: momentum,
       ...atrSwingStop(bars, c),

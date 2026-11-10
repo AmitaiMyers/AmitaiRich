@@ -130,6 +130,22 @@ class CausalityTest(unittest.TestCase):
                         np.testing.assert_array_equal(full_level[i], cut_level[-1])
 
 
+class MomentumCapTest(unittest.TestCase):
+    """max_mom (not in the frozen legacy engine): blocks exactly the buys whose momentum exceeds it."""
+
+    def test_cap_removes_only_overextended_entries(self):
+        df = make_ohlcv(3, n_bars=900)
+        base = _new("Momentum Rider (ROC + MA exit)", {"mom_threshold": 0.1})
+        capped = _new("Momentum Rider (ROC + MA exit)", {"mom_threshold": 0.1, "max_mom": 0.5})
+        free, cut = base.signals(df), capped.signals(df)
+        momentum = free.score
+        np.testing.assert_array_equal(cut.entry, free.entry & (momentum <= 0.5))
+        np.testing.assert_array_equal(cut.exit, free.exit)
+        self.assertTrue((free.entry & ~cut.entry).any(), "test data never exceeds the cap")
+        for i in range(capped.warmup_bars(), len(df), 37):
+            self.assertEqual(cut.entry[i], capped.signals(df.iloc[: i + 1]).entry[-1])   # causal
+
+
 def _ledger(module, df, buy, sell, **kwargs):
     """Run a module's run_simulation on `df` (fetch patched) -> (trades rows, equity)."""
     with tempfile.TemporaryDirectory() as tmp:

@@ -833,7 +833,8 @@ class MomentumRider(Algorithm):
     holds.
 
     ENTRY: trailing `mom_lookback` return > `mom_threshold` AND close > `trend_ma` SMA
-           (AND not more than `max_ext` above it; 9.99 = cap off).
+           (AND not more than `max_ext` above it; 9.99 = cap off)
+           (AND momentum <= `max_mom`, i.e. not after an extreme run-up; 9.99 = cap off).
     STOP:  widest/tightest of {recent swing low, entry - atr_mult*ATR}.
     EXIT:  close < `trend_ma` SMA on `exit_confirm` consecutive closes (1 = the
            classic single-close exit; 2-3 filters one-day whipsaws).
@@ -845,6 +846,7 @@ class MomentumRider(Algorithm):
         "mom_threshold": 0.0,
         "trend_ma": 200,
         "max_ext": 9.99,   # skip buys more than this fraction above trend_ma; 9.99 = off
+        "max_mom": 9.99,   # skip buys whose momentum already exceeds this (2.0 = +200%); 9.99 = off
         "exit_confirm": 1,
         "atr_period": 14,
         "atr_mult": 4.0,
@@ -867,7 +869,7 @@ class MomentumRider(Algorithm):
         sma_long = indicators.sma(close, c["trend_ma"])
         # The danger-zone cap: skip names already stretched far above their trend.
         entry = (momentum > c["mom_threshold"]) & (close > sma_long) \
-            & (close <= (1.0 + c["max_ext"]) * sma_long)
+            & (close <= (1.0 + c["max_ext"]) * sma_long) & (momentum <= c["max_mom"])
         exit_ = indicators.held_for_bars(close < sma_long, c["exit_confirm"])
         return Signals(entry=_bool(entry), exit=_bool(exit_), score=_float(momentum),
                        **_atr_swing_stop(c, history))
