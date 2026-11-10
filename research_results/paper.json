@@ -1,9 +1,9 @@
 {
  "phase": "paper",
- "generated": "2026-11-09T22:30:35",
+ "generated": "2026-11-10T03:47:59",
  "data": {
   "start": "2004-01-01",
-  "end": "2026-11-09"
+  "end": "2026-11-10"
  },
  "objective": "max CAGR with max drawdown within -40%",
  "tables": [],

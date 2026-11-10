@@ -1373,7 +1373,7 @@
    {
     "ticker": "MET",
     "close": 101.67,
-    "score": 0.8528,
+    "score": 0.8532,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.571,
@@ -1384,7 +1384,7 @@
    {
     "ticker": "REGN",
     "close": 919.96,
-    "score": 0.8283,
+    "score": 0.8287,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.134,
@@ -1395,7 +1395,7 @@
    {
     "ticker": "EXPD",
     "close": 189.59,
-    "score": 0.8255,
+    "score": 0.8259,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.371,
@@ -1406,7 +1406,7 @@
    {
     "ticker": "MPC",
     "close": 389.88,
-    "score": 0.8235,
+    "score": 0.8238,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.622,
@@ -1417,7 +1417,7 @@
    {
     "ticker": "XEL",
     "close": 80.17,
-    "score": 0.8207,
+    "score": 0.8212,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.757,
@@ -1428,7 +1428,7 @@
    {
     "ticker": "FTV",
     "close": 67.1,
-    "score": 0.8204,
+    "score": 0.8207,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 2.576,
@@ -1439,7 +1439,7 @@
    {
     "ticker": "NTAP",
     "close": 176.07,
-    "score": 0.8202,
+    "score": 0.8201,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.855,
@@ -1450,7 +1450,7 @@
    {
     "ticker": "APP",
     "close": 410.0,
-    "score": 0.8178,
+    "score": 0.8177,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 6.032,
@@ -1461,7 +1461,7 @@
    {
     "ticker": "UDR",
     "close": 36.71,
-    "score": 0.8099,
+    "score": 0.8094,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 2.136,
@@ -1472,7 +1472,7 @@
    {
     "ticker": "CFG",
     "close": 65.1,
-    "score": 0.8033,
+    "score": 0.8027,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 2.021,
