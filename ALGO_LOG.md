@@ -91,6 +91,47 @@ itself adds ~1pp/yr in BOTH periods with the same drawdown. Small effect, two ca
 The milder +200% cap (`max_mom: 2.0`) became **v0m** and joins forward paper trading from
 2026-11-10 next to v0 and v7. Production stays v0 until paper results justify a change.
 
+## Round 3 (2026-11-11): search for a 20-25 position algorithm that beats v0 and v7 — NO WINNER
+
+Owner's brief: higher CAGR than v0 and v7 in every test period, max DD <= 35%, 20-25 positions,
+full sells, per-position stop, optional market filter; design on 2005-2022, never touch 2023+.
+
+1. **Flaw found in the v7 record.** EDGAR fundamentals start in 2009-2010, so v7 (and every earn3
+   strategy) sat in CASH until July 2009: its development "-22% max DD vs SPY -55%" came from missing
+   2008 for lack of data. Fair windows from now on: crash 2005-2010 (price + Yahoo earnings only),
+   dev 2011-2018, val 2019-2022.
+
+   | | crash 2005-10 | dev 2011-18 | val 2019-22 |
+   |---|---|---|---|
+   | v0 | 3.9% / -43% | 5.4% / -25% | 5.6% / -27% |
+   | v0m | 5.1% / -43% | 6.0% / -25% | 6.8% / -28% |
+   | v7 (10 pos) | 5.0% / -17% (22% invested) | 13.0% / -21% | 16.1% / -33% |
+   | v7 at 20 pos | 4.7% / -19% | 10.8% / -23% | 12.5% / -32% |
+   | SPY | 2.8% / -55% | 11.1% / -19% | 13.0% / -34% |
+
+2. **New factors, all noise** (monthly rank IC, 2005-10 and 2011-18): earnings announcement return,
+   residual momentum, net-margin trend, EPS acceleration. beat_streak stays the only significant one
+   (t = 3.0 in 2011-18).
+3. **Search:** 600 configurations = 5 weight sets x 5 filters (incl. v0's momentum gate, with/without
+   the +200% cap) x 3 exits x {20,25} positions x {weekly,monthly} x market filter {off,on}. Rule fixed
+   before running: family score = median dev CAGR over its 8 neighbours; top 3 families go to
+   validation once, with the best-dev neighbour that keeps the 2005-10 drawdown within -35%.
+   v0's momentum gate lowered return in every family (median dev 7.9% vs 10.0% for a plain
+   above-200-MA filter).
+4. **Finalists (earn3 + low volatility, above 200-MA, rank-drop exit, market filter):**
+
+   | finalist | crash | dev | val | 40 random portfolios, same rules: val 5% / median / 95% |
+   |---|---|---|---|---|
+   | 20 pos, weekly | 4.6% / -22% | 14.6% / -14% | **5.4% / -16%** | 2.8% / 6.3% / 9.5% |
+   | +beat filter, 25 pos | 4.5% / -25% | 14.5% / -16% | **3.2% / -19%** | 2.5% / 6.2% / 9.7% |
+   | +MA200 exit, 25 pos | 4.3% / -17% | 11.9% / -13% | **4.7% / -17%** | 3.7% / 7.8% / 11.3% |
+
+   All three beat v7 in development and then fell BELOW the median random portfolio in validation.
+   None beats v7 (16.1%) or even v0 (5.6%) there. **No algorithm is promoted.** The validation
+   result is not used to re-tune (that would be fitting the validation period).
+5. Conclusion: with free data on S&P 500 members there is one weak real signal (beat streak);
+   more searching mostly finds development-period luck. v0, v0m and v7 stay in paper trading.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.
