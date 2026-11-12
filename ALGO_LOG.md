@@ -151,6 +151,27 @@ all three periods on both strategies, and neighbouring triggers (+20% / +30% / +
 sign — the +30% result is noise, not an edge. Locking in profit clearly hurts (it sells winners on
 normal pullbacks). Stops stay fixed.
 
+## Machine-learning ranker (2026-11-12): gradient-boosted trees, walk-forward — FAILS
+
+Pre-registered: 24 library factors as cross-sectional percentile ranks -> predict the percentile
+rank of the next-21-bar return; one LightGBM model per year 2008-2022, trained only on days whose
+outcome finished before that year (expanding from 2005); fixed settings (200 trees, depth 3,
+lr 0.05, >= 200 rows per leaf, 70% sampling, 3 seeds averaged), nothing tuned. Portfolio: top 20
+by model score above the 200-day MA, weekly, rank-drop exit (round-3 finalist structure).
+
+| | 2008-10 | 2011-18 | 2019-22 |
+|---|---|---|---|
+| rank IC of the model score (t) | -0.008 (-0.6) | -0.006 (-0.4) | +0.004 (+0.3) |
+| rank IC of beat_streak alone (t) | +0.014 (+0.7) | +0.026 (+3.0) | +0.009 (+0.7) |
+| ML top 20 + market filter: CAGR / max DD | 7.0% / -18% | 3.6% / -35% | 4.0% / -23% |
+| ML top 20, no market filter | -11.5% / -57% | 6.0% / -35% | 2.2% / -37% |
+| v7 (reference) | — | 13.0% / -21% | 16.1% / -33% |
+
+The model's out-of-sample score has NO predictive power (IC ~ 0 in all three periods) — worse than
+the single hand-picked beat_streak factor it was given. It spread its weight over noise factors
+(beat_streak 12% of gain, then momentum, low-vol, size ...). Below v0 in 2011-18 and 2019-22.
+Not adopted; more model capacity cannot add information the inputs do not carry.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.
