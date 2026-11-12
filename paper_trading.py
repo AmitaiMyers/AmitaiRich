@@ -23,6 +23,7 @@ import signal_log
 import strategy_lab as L
 from algo_versions import VERSIONS
 from engine import run_engine
+from errors import EmptyDataError
 from portfolio import _AdjustedBuy, equity_metrics, longest_losing_streak, single_asset_benchmark
 
 PAPER_START = pd.Timestamp("2026-11-10")
@@ -66,6 +67,9 @@ def run():
             accounts[name] = {"result": result, "trades": live_trades}
             rows.append(account_summary(name, equity, live_trades))
         for bench, close in data.benchmarks.items():
+            if close.index[-1] < last_date:
+                raise EmptyDataError(f"Benchmark {bench} ends {close.index[-1].date()} but the stock data reaches "
+                                     f"{last_date.date()} — its price refresh failed; rerun market_data.py update.")
             curve = single_asset_benchmark(close[close.index >= PAPER_START], L.portfolio_config(VERSIONS["v7"]))
             rows.append(account_summary(f"BENCH {bench}", curve, []))
         status = f"Day {rows[0]['days']} of paper trading (data to {last_date.date()})."

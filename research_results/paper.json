@@ -1,15 +1,456 @@
 {
  "phase": "paper",
- "generated": "2026-11-10T03:47:59",
+ "generated": "2026-11-12T05:35:51",
  "data": {
   "start": "2004-01-01",
-  "end": "2026-11-10"
+  "end": "2026-11-12"
  },
  "objective": "max CAGR with max drawdown within -40%",
- "tables": [],
+ "tables": [
+  {
+   "title": "Paper accounts since 2026-11-10 (data to 2026-11-11)",
+   "note": null,
+   "columns": [
+    "strategy",
+    "days",
+    "value",
+    "return",
+    "maxDD",
+    "trades"
+   ],
+   "rows": [
+    {
+     "strategy": "v0",
+     "days": 2,
+     "value": 31862.0,
+     "return": -0.43,
+     "maxDD": -0.4,
+     "trades": 0
+    },
+    {
+     "strategy": "v0m",
+     "days": 2,
+     "value": 31874.0,
+     "return": -0.39,
+     "maxDD": -0.4,
+     "trades": 0
+    },
+    {
+     "strategy": "v7",
+     "days": 2,
+     "value": 32320.0,
+     "return": 1.0,
+     "maxDD": 0.0,
+     "trades": 0
+    },
+    {
+     "strategy": "BENCH SPY",
+     "days": 2,
+     "value": 32384.0,
+     "return": 1.3,
+     "maxDD": 0.0,
+     "trades": 0
+    },
+    {
+     "strategy": "BENCH RSP",
+     "days": 2,
+     "value": 32223.0,
+     "return": 0.8,
+     "maxDD": 0.0,
+     "trades": 0
+    }
+   ]
+  },
+  {
+   "title": "v0 holdings \u2014 next-open orders: BUY FDS, BUY NTAP, BUY DELL",
+   "note": "Production Growth Momentum Rider (ROC126 > 25% & close > SMA200; exit close < SMA200), restricted to point-in-time S&P 500 members; 20 positions, 1% risk.",
+   "columns": [
+    "strategy",
+    "entry",
+    "shares",
+    "entry_price",
+    "last",
+    "pnl_pct"
+   ],
+   "rows": [
+    {
+     "strategy": "MRNA",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 252.78,
+     "last": 248.69,
+     "pnl_pct": -1.6
+    },
+    {
+     "strategy": "CRL",
+     "entry": "2026-11-11",
+     "shares": 4,
+     "entry_price": 347.38,
+     "last": 342.69,
+     "pnl_pct": -1.4
+    },
+    {
+     "strategy": "VEEV",
+     "entry": "2026-11-11",
+     "shares": 8,
+     "entry_price": 309.93,
+     "last": 304.77,
+     "pnl_pct": -1.7
+    },
+    {
+     "strategy": "BBY",
+     "entry": "2026-11-11",
+     "shares": 19,
+     "entry_price": 103.12,
+     "last": 105.16,
+     "pnl_pct": 2.0
+    },
+    {
+     "strategy": "CDW",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 171.86,
+     "last": 173.08,
+     "pnl_pct": 0.7
+    },
+    {
+     "strategy": "CRWD",
+     "entry": "2026-11-11",
+     "shares": 5,
+     "entry_price": 235.35,
+     "last": 229.06,
+     "pnl_pct": -2.7
+    },
+    {
+     "strategy": "MTD",
+     "entry": "2026-11-11",
+     "shares": 1,
+     "entry_price": 1761.8,
+     "last": 1749.01,
+     "pnl_pct": -0.7
+    },
+    {
+     "strategy": "RVTY",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 161.07,
+     "last": 158.25,
+     "pnl_pct": -1.8
+    },
+    {
+     "strategy": "HPE",
+     "entry": "2026-11-11",
+     "shares": 20,
+     "entry_price": 50.9,
+     "last": 50.25,
+     "pnl_pct": -1.3
+    },
+    {
+     "strategy": "WDAY",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 190.49,
+     "last": 191.16,
+     "pnl_pct": 0.4
+    },
+    {
+     "strategy": "DLTR",
+     "entry": "2026-11-11",
+     "shares": 13,
+     "entry_price": 139.88,
+     "last": 142.9,
+     "pnl_pct": 2.2
+    },
+    {
+     "strategy": "A",
+     "entry": "2026-11-11",
+     "shares": 14,
+     "entry_price": 178.99,
+     "last": 176.95,
+     "pnl_pct": -1.1
+    },
+    {
+     "strategy": "IQV",
+     "entry": "2026-11-11",
+     "shares": 8,
+     "entry_price": 276.89,
+     "last": 274.53,
+     "pnl_pct": -0.9
+    },
+    {
+     "strategy": "TMO",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 719.69,
+     "last": 717.71,
+     "pnl_pct": -0.3
+    },
+    {
+     "strategy": "MPC",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 395.95,
+     "last": 402.84,
+     "pnl_pct": 1.7
+    },
+    {
+     "strategy": "ACN",
+     "entry": "2026-11-11",
+     "shares": 7,
+     "entry_price": 255.18,
+     "last": 253.66,
+     "pnl_pct": -0.6
+    },
+    {
+     "strategy": "TECH",
+     "entry": "2026-11-11",
+     "shares": 62,
+     "entry_price": 72.83,
+     "last": 72.8,
+     "pnl_pct": -0.0
+    }
+   ]
+  },
+  {
+   "title": "v0m holdings \u2014 next-open orders: BUY FDS, BUY NTAP, BUY DELL, BUY WSM",
+   "note": "v0 that skips buys after an extreme run-up (6-month momentum above +200%). Owner's idea (2026-11-10, MRNA at +425%): in development 6.5% vs 5.6% CAGR and validation 6.8% vs 5.6%, same max DD; a cap on distance above the 200-MA instead LOST return. Paper-traded only.",
+   "columns": [
+    "strategy",
+    "entry",
+    "shares",
+    "entry_price",
+    "last",
+    "pnl_pct"
+   ],
+   "rows": [
+    {
+     "strategy": "CRL",
+     "entry": "2026-11-11",
+     "shares": 4,
+     "entry_price": 347.38,
+     "last": 342.69,
+     "pnl_pct": -1.4
+    },
+    {
+     "strategy": "VEEV",
+     "entry": "2026-11-11",
+     "shares": 8,
+     "entry_price": 309.93,
+     "last": 304.77,
+     "pnl_pct": -1.7
+    },
+    {
+     "strategy": "BBY",
+     "entry": "2026-11-11",
+     "shares": 19,
+     "entry_price": 103.12,
+     "last": 105.16,
+     "pnl_pct": 2.0
+    },
+    {
+     "strategy": "CDW",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 171.86,
+     "last": 173.08,
+     "pnl_pct": 0.7
+    },
+    {
+     "strategy": "CRWD",
+     "entry": "2026-11-11",
+     "shares": 5,
+     "entry_price": 235.35,
+     "last": 229.06,
+     "pnl_pct": -2.7
+    },
+    {
+     "strategy": "MTD",
+     "entry": "2026-11-11",
+     "shares": 1,
+     "entry_price": 1761.8,
+     "last": 1749.01,
+     "pnl_pct": -0.7
+    },
+    {
+     "strategy": "RVTY",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 161.07,
+     "last": 158.25,
+     "pnl_pct": -1.8
+    },
+    {
+     "strategy": "HPE",
+     "entry": "2026-11-11",
+     "shares": 20,
+     "entry_price": 50.9,
+     "last": 50.25,
+     "pnl_pct": -1.3
+    },
+    {
+     "strategy": "WDAY",
+     "entry": "2026-11-11",
+     "shares": 10,
+     "entry_price": 190.49,
+     "last": 191.16,
+     "pnl_pct": 0.4
+    },
+    {
+     "strategy": "DLTR",
+     "entry": "2026-11-11",
+     "shares": 13,
+     "entry_price": 139.88,
+     "last": 142.9,
+     "pnl_pct": 2.2
+    },
+    {
+     "strategy": "A",
+     "entry": "2026-11-11",
+     "shares": 14,
+     "entry_price": 178.99,
+     "last": 176.95,
+     "pnl_pct": -1.1
+    },
+    {
+     "strategy": "IQV",
+     "entry": "2026-11-11",
+     "shares": 8,
+     "entry_price": 276.89,
+     "last": 274.53,
+     "pnl_pct": -0.9
+    },
+    {
+     "strategy": "TMO",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 719.69,
+     "last": 717.71,
+     "pnl_pct": -0.3
+    },
+    {
+     "strategy": "MPC",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 395.95,
+     "last": 402.84,
+     "pnl_pct": 1.7
+    },
+    {
+     "strategy": "ACN",
+     "entry": "2026-11-11",
+     "shares": 7,
+     "entry_price": 255.18,
+     "last": 253.66,
+     "pnl_pct": -0.6
+    },
+    {
+     "strategy": "TECH",
+     "entry": "2026-11-11",
+     "shares": 72,
+     "entry_price": 72.83,
+     "last": 72.8,
+     "pnl_pct": -0.0
+    }
+   ]
+  },
+  {
+   "title": "v7 holdings \u2014 next-open orders: none",
+   "note": "Earnings-led, concentrated: beat streak + SUE + revenue acceleration; buy only stocks in an uptrend that beat last quarter; top 10, checked weekly; sell when a holding drops out of the top 30. Chosen from a 767-config search as the centre of a robust plateau (24 neighbours: dev 7.6-10.0% CAGR, -20% to -26% max DD).",
+   "columns": [
+    "strategy",
+    "entry",
+    "shares",
+    "entry_price",
+    "last",
+    "pnl_pct"
+   ],
+   "rows": [
+    {
+     "strategy": "MET",
+     "entry": "2026-11-11",
+     "shares": 31,
+     "entry_price": 102.44,
+     "last": 102.94,
+     "pnl_pct": 0.5
+    },
+    {
+     "strategy": "REGN",
+     "entry": "2026-11-11",
+     "shares": 3,
+     "entry_price": 904.99,
+     "last": 959.41,
+     "pnl_pct": 6.0
+    },
+    {
+     "strategy": "EXPD",
+     "entry": "2026-11-11",
+     "shares": 16,
+     "entry_price": 190.25,
+     "last": 194.59,
+     "pnl_pct": 2.3
+    },
+    {
+     "strategy": "MPC",
+     "entry": "2026-11-11",
+     "shares": 8,
+     "entry_price": 395.95,
+     "last": 402.84,
+     "pnl_pct": 1.7
+    },
+    {
+     "strategy": "XEL",
+     "entry": "2026-11-11",
+     "shares": 39,
+     "entry_price": 80.14,
+     "last": 81.1,
+     "pnl_pct": 1.2
+    },
+    {
+     "strategy": "FTV",
+     "entry": "2026-11-11",
+     "shares": 47,
+     "entry_price": 67.79,
+     "last": 67.89,
+     "pnl_pct": 0.1
+    },
+    {
+     "strategy": "NTAP",
+     "entry": "2026-11-11",
+     "shares": 17,
+     "entry_price": 183.89,
+     "last": 183.12,
+     "pnl_pct": -0.4
+    },
+    {
+     "strategy": "UDR",
+     "entry": "2026-11-11",
+     "shares": 87,
+     "entry_price": 36.3,
+     "last": 36.56,
+     "pnl_pct": 0.7
+    },
+    {
+     "strategy": "OXY",
+     "entry": "2026-11-11",
+     "shares": 55,
+     "entry_price": 57.26,
+     "last": 57.24,
+     "pnl_pct": -0.0
+    },
+    {
+     "strategy": "FRT",
+     "entry": "2026-11-11",
+     "shares": 28,
+     "entry_price": 113.2,
+     "last": 113.1,
+     "pnl_pct": -0.1
+    }
+   ]
+  }
+ ],
  "verdict": {
   "winner": "-",
   "promoted": [],
-  "summary": "Forward paper trading of v0 vs v7 from 2026-11-10. Paper trading starts 2026-11-10; latest data is 2026-11-09. Judge after at least 6-12 months; short windows are mostly noise."
+  "summary": "Forward paper trading of v0, v0m and v7 from 2026-11-10. Day 2 of paper trading (data to 2026-11-11). Judge after at least 6-12 months; short windows are mostly noise."
  }
 }

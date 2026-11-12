@@ -102,7 +102,14 @@ def clean_bulk_frame(raw_one):
     df.index.name = "Date"
     absent = df[["Open", "High", "Low", "Close"]].isna().all(axis=1)
     df = df[~absent]
-    if df.empty or bool(df.isna().any().any()):
+    # Yahoo can publish the newest bar(s) with a field still blank (e.g. an ETF's volume shortly
+    # after the close). Drop such incomplete TRAILING bars — they arrive complete on the next
+    # refresh — instead of rejecting the whole history; a gap in the middle is still unusable.
+    complete = df.notna().all(axis=1).to_numpy()
+    if not complete.any():
+        return None
+    df = df.iloc[: len(complete) - int(complete[::-1].argmax())]
+    if bool(df.isna().any().any()):
         return None
     return df
 

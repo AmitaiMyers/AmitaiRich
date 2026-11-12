@@ -93,5 +93,31 @@ class ScannerTest(unittest.TestCase):
                 scan_today.load_positions(path)
 
 
+
+
+class CleanBulkFrameTest(unittest.TestCase):
+    """A newest bar with a blank field is dropped; a blank in the middle rejects the ticker."""
+
+    @staticmethod
+    def _frame(volumes):
+        import pandas as pd
+        index = pd.date_range("2026-11-02", periods=len(volumes), freq="B")
+        return pd.DataFrame({"Open": 1.0, "High": 2.0, "Low": 0.5, "Close": 1.5, "Volume": volumes}, index=index)
+
+    def test_incomplete_trailing_bar_is_dropped(self):
+        from data_engine import clean_bulk_frame
+        cleaned = clean_bulk_frame(self._frame([10.0, 11.0, 12.0, float("nan")]))
+        self.assertEqual(len(cleaned), 3)
+        self.assertFalse(cleaned.isna().any().any())
+
+    def test_gap_in_the_middle_rejects_the_ticker(self):
+        from data_engine import clean_bulk_frame
+        self.assertIsNone(clean_bulk_frame(self._frame([10.0, float("nan"), 12.0, 13.0])))
+
+    def test_complete_frame_is_unchanged(self):
+        from data_engine import clean_bulk_frame
+        self.assertEqual(len(clean_bulk_frame(self._frame([10.0, 11.0, 12.0]))), 3)
+
+
 if __name__ == "__main__":
     unittest.main()

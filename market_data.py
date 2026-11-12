@@ -46,7 +46,7 @@ def _save_manifest(manifest):
         json.dump(manifest, fh, indent=0, sort_keys=True)
 
 
-def update_prices(tickers, max_age_days=1):
+def update_prices(tickers, max_age_days=0):
     """Download (in bulk) every ticker whose cached history is missing or older than max_age_days.
 
     Returns {"updated": [...], "missing": [...]} — `missing` = Yahoo returned no usable
