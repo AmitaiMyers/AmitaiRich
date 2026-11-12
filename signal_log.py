@@ -62,10 +62,11 @@ def _paper_section(rows, accounts):
     }
 
 
-def record(last_date, v0_rows, v7_rows, paper_rows, accounts, status, drop_reasons):
+def record(last_date, v0_rows, v7_rows, paper_rows, accounts, status, drop_reasons, magic):
     """Write today's record, refresh latest.json and the CSV logs. Returns the record.
 
-    drop_reasons: {"v0": fn(ticker) -> str, "v7": fn(ticker) -> str} explaining why a name left a list."""
+    drop_reasons: {"v0": fn(ticker) -> str, "v7": fn(ticker) -> str} explaining why a name left a list.
+    magic: magic_formula.daily_section(...) — the Magic Formula top list + every ranked ticker's position."""
     date = last_date.strftime("%Y-%m-%d")
     previous = _previous_record(date)
     entry = {
@@ -78,6 +79,7 @@ def record(last_date, v0_rows, v7_rows, paper_rows, accounts, status, drop_reaso
                "new": _new_names(v7_rows, previous, "v7"),
                "dropped": _dropped(v7_rows, previous, "v7", drop_reasons["v7"])},
         "paper": {**_paper_section(paper_rows, accounts), "status": status},
+        "magic": magic,
     }
     os.makedirs(LOG_DIR, exist_ok=True)
     for name in (f"{date}.json", "latest.json"):

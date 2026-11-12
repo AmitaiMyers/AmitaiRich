@@ -19,6 +19,8 @@ from dataclasses import replace
 import pandas as pd
 
 import indicators
+import magic_formula
+import scan_today
 import signal_log
 import strategy_lab as L
 from algo_versions import VERSIONS
@@ -76,7 +78,9 @@ def run():
     write(status, rows, accounts, last_date)
     v0_rows, v0_reason = v0_list()
     v7_rows, v7_reason = v7_list(data)
-    signal_log.record(last_date, v0_rows, v7_rows, rows, accounts, status, {"v0": v0_reason, "v7": v7_reason})
+    scan_tickers, _sources = scan_today.combined_universe()
+    signal_log.record(last_date, v0_rows, v7_rows, rows, accounts, status, {"v0": v0_reason, "v7": v7_reason},
+                      magic_formula.daily_section(scan_tickers))
 
 
 # ---------------------------------------------------------------------------

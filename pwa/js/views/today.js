@@ -1,4 +1,5 @@
-// Today: what is new on the v0 and v7 lists, both lists, the paper scoreboard and notifications.
+// Today: what is new on the v0 and v7 lists, both lists (each stock with its Magic Formula rank),
+// the Magic Formula top list, the paper scoreboard and notifications.
 // Source: data/daily.json (the Paper trading job's signal-log record). Before that job has run,
 // v0 falls back to signals.json (published by every build) and v7 says it is not available yet.
 
@@ -45,18 +46,52 @@ function newTodayCard(v0, daily) {
     daily.available ? line('v7 earnings', daily.v7) : h('div', { class: 'section muted small', text: `v7: ${daily.reason}.` }));
 }
 
-function v0Rows(v0, held, count) {
+/** Magic Formula ranks by ticker ({} before the first record that carries them). */
+const magicRanks = (daily) => (daily.available && 'magic' in daily ? daily.magic.ranks : {});
+
+/** A table column showing each stock's Magic Formula rank (gold badge inside the top list, '—' if unranked). */
+function magicColumn(daily) {
+  const ranks = magicRanks(daily);
+  const topSize = daily.available && 'magic' in daily ? daily.magic.top.length : 0;
+  return { label: 'Magic', num: true, value: (r) => {
+    if (!(r.ticker in ranks)) return '—';
+    const rank = ranks[r.ticker];
+    return rank <= topSize ? h('span', { class: 'badge new', text: `#${rank}` }) : `#${rank}`;
+  } };
+}
+
+function magicTable(daily, held) {
+  if (!daily.available || !('magic' in daily)) return null;
+  const magic = daily.magic;
+  return h('details', { class: 'card section' },
+    h('summary', { text: `Magic Formula — top ${magic.top.length} of ${magic.n_ranked} ranked` }),
+    h('p', { class: 'muted small', text: 'Greenblatt: good businesses (high return on capital) at cheap prices (high earnings yield). '
+      + 'Financials, utilities, non-U.S. companies and tiny caps are excluded. '
+      + `Fundamentals as of ${magic.as_of} (refreshed weekly). A live screen: it cannot be backtested with our data.` }),
+    table([
+      { label: '#', value: (r) => r.rank, num: true },
+      { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
+      { label: 'Score', value: (r) => r.magic_score, num: true },
+      { label: 'ROC', value: (r) => `${num(r.roc_pct, 0)}%`, num: true },
+      { label: 'Earn. yield', value: (r) => `${num(r.ey_pct, 1)}%`, num: true },
+      { label: 'Sector', value: (r) => h('span', { class: 'muted small', text: r.sector }) },
+      { label: '', value: heldBadge(held) },
+    ], magic.top, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
+}
+
+function v0Rows(v0, held, count, daily) {
   return table([
     { label: '#', value: (r) => r.rank, num: true },
     { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
     { label: 'Close', value: (r) => num(r.close), num: true },
     { label: '6-mo momentum', value: (r) => pct(r.mom_pct), num: true, cls: (r) => signClass(r.mom_pct) },
     { label: 'vs 200-MA', value: (r) => pct(r.vs_ma200_pct), num: true },
+    magicColumn(daily),
     { label: '', value: heldBadge(held) },
   ], v0.list.slice(0, rowsShown(count, v0.list)), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
 }
 
-function v0Table(v0, held) {
+function v0Table(v0, held, daily) {
   let count = store.read(V0_COUNT_KEY, V0_COUNTS[0]);
   const title = h('h2');
   const host = h('div');
@@ -64,7 +99,7 @@ function v0Table(v0, held) {
     title.textContent = rowsShown(count, v0.list) === v0.list.length
       ? `v0 — momentum rider (production) · all ${v0.list.length} that pass`
       : `v0 — momentum rider (production) · top ${count} of ${v0.list.length}`;
-    host.replaceChildren(v0Rows(v0, held, count));
+    host.replaceChildren(v0Rows(v0, held, count, daily));
   };
   const picker = h('div', { class: 'segmented', role: 'group', 'aria-label': 'How many v0 stocks to show' },
     V0_COUNTS.map((n) => h('button', {
@@ -97,6 +132,7 @@ function v7Table(daily, held) {
       { label: 'Beat streak', value: (r) => num(r.beat_streak, 0), num: true },
       { label: 'EPS surprise', value: (r) => pct(r.eps_surprise), num: true, cls: (r) => signClass(r.eps_surprise) },
       { label: 'Buyable', value: (r) => (r.buyable_today ? 'yes' : 'no') },
+      magicColumn(daily),
       { label: '', value: heldBadge(held) },
     ], daily.v7.list, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
 }
@@ -132,8 +168,9 @@ export function renderToday({ signals, daily }) {
       kpi('Breadth', m['breadth_above_ma200_%'] === null ? '—' : `${m['breadth_above_ma200_%']}%`,
         `of ${m.breadth_universe} stocks above their 200-MA`)),
     h('div', { class: 'section' }, newTodayCard(v0, daily)),
-    v0Table(v0, held),
+    v0Table(v0, held, daily),
     v7Table(daily, held),
+    magicTable(daily, held),
     paperCard(daily),
     notificationsCard(),
   );

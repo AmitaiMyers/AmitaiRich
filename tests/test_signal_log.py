@@ -22,6 +22,8 @@ def _account(trades, open_positions):
     return {"result": result, "trades": trades}
 
 
+MAGIC = {"as_of": "2026-11-10", "status": "up to date", "n_scanned": 3, "n_ranked": 2, "n_excluded": 1,
+         "top": [{"rank": 1, "ticker": "AAA"}], "ranks": {"AAA": 1, "BBB": 2}}
 REASONS = {"v0": lambda t: f"v0 reason {t}", "v7": lambda t: f"v7 reason {t}"}
 
 
@@ -38,7 +40,7 @@ class SignalLogTest(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
 
     def _record(self, date, v0, v7, accounts=None):
-        return signal_log.record(pd.Timestamp(date), _rows(*v0), _rows(*v7), [], accounts or {}, "ok", REASONS)
+        return signal_log.record(pd.Timestamp(date), _rows(*v0), _rows(*v7), [], accounts or {}, "ok", REASONS, MAGIC)
 
     def test_first_day_has_no_exits_and_later_days_report_them_with_reasons(self):
         first = self._record("2026-11-10", ["AAA", "BBB"], ["XXX"])

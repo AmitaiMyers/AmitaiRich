@@ -2,20 +2,25 @@
 
     python magic_formula.py                    # top 30 of the app's universe ('all')
     python magic_formula.py --scope sp500 --top 50 --refresh
+    python magic_formula.py --update-only      # refresh the weekly fundamentals cache (daily job)
 
 Two layers, kept apart so the ranking can be tested and reused without the network:
 
   * `magic_formula_pool(stocks)` / `magic_formula_rank(stocks, top_n=30)` — PURE. Take a
     DataFrame (or list of dicts) with the REQUIRED_COLUMNS and return the ranked stocks.
   * `fetch_fundamentals(tickers)` — the data source (yfinance), cached for a week in
-    fundamentals_cache/magic_formula.json. Produces exactly the REQUIRED_COLUMNS.
+    market_data/fundamentals/magic_formula.json. Produces exactly the REQUIRED_COLUMNS.
 
 Rules (in this order):
   1. Exclude financials, utilities, non-U.S. companies (ADRs) and market caps under $50M.
   2. Return on Capital = EBIT / (Net Working Capital + Net Fixed Assets),
-     Net Working Capital = Current Assets - Current Liabilities.
+     Net Working Capital = max(0, (Current Assets - Excess Cash) - (Current Liabilities - Short-Term Debt))
+                           — Greenblatt's definition: cash is not operating capital and interest-bearing
+                           debt is financing, not a working liability; a negative result counts as 0.
      Earnings Yield      = EBIT / Enterprise Value,
      Enterprise Value    = Market Cap + Total Debt - Cash and Cash Equivalents.
+     EBIT here is OPERATING income (trailing 4 quarters): Yahoo's "EBIT" line includes one-off
+     non-operating gains, which put loss-making companies at the top of the list.
   3. Rank by ROC and by EY (highest = rank 1); Magic_Score = ROC rank + EY rank; lowest is best.
 
 Fail-closed on data: a stock is ranked only when every input is known. Missing fields, an
@@ -36,10 +41,12 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
+import market_data
 from errors import ConfigurationError
 
 REQUIRED_COLUMNS = ("ticker", "sector", "country", "market_cap", "ebit", "current_assets",
-                    "current_liabilities", "net_fixed_assets", "total_debt", "cash")
+                    "current_liabilities", "net_fixed_assets", "total_debt", "cash",
+                    "excess_cash", "short_term_debt")
 NUMERIC_COLUMNS = REQUIRED_COLUMNS[3:]
 EXCLUDED_SECTORS = {"financial services": "financial sector", "financials": "financial sector",
                     "financial": "financial sector", "utilities": "utility sector"}
@@ -49,9 +56,10 @@ DEFAULT_TOP_N = 30
 RANKED_COLUMNS = ["ticker", "magic_score", "roc_rank", "ey_rank", "roc", "earnings_yield", "ebit",
                   "capital", "enterprise_value", "market_cap", "sector"]
 
-CACHE_PATH = os.path.join("fundamentals_cache", "magic_formula.json")
+CACHE_PATH = os.path.join(market_data.DATA_DIR, "fundamentals", "magic_formula.json")   # cached by CI with the prices
 CACHE_MAX_AGE_DAYS = 7
-MAX_WORKERS = 8
+MAX_WORKERS = 4
+SAVE_EVERY = 40
 REPORT_PATH = os.path.join("reports", "magic_formula", "latest.csv")
 
 
@@ -89,7 +97,7 @@ def _exclusion_reason(row):
     if row["market_cap"] < MIN_MARKET_CAP:
         return f"market cap below ${MIN_MARKET_CAP / 1e6:.0f}M"
     if row["capital"] <= 0:
-        return "capital (net working capital + net fixed assets) is not positive"
+        return "capital (net working capital + net fixed assets) is zero"
     if row["enterprise_value"] <= 0:
         return "enterprise value is not positive"
     return None
@@ -98,7 +106,10 @@ def _exclusion_reason(row):
 def magic_formula_pool(stocks):
     """(ranked, excluded): every rankable stock, best first, and every dropped stock with its reason."""
     frame = _validated_frame(stocks)
-    frame["capital"] = frame["current_assets"] - frame["current_liabilities"] + frame["net_fixed_assets"]
+    operating_assets = frame["current_assets"] - frame["excess_cash"]
+    operating_liabilities = frame["current_liabilities"] - frame["short_term_debt"]
+    frame["net_working_capital"] = (operating_assets - operating_liabilities).clip(lower=0.0)
+    frame["capital"] = frame["net_working_capital"] + frame["net_fixed_assets"]
     frame["enterprise_value"] = frame["market_cap"] + frame["total_debt"] - frame["cash"]
     frame["reason"] = frame.apply(_exclusion_reason, axis=1) if len(frame) else pd.Series(dtype=object)
     pool = frame[frame["reason"].isna()].copy()
@@ -133,13 +144,25 @@ def _latest(statement, row):
     return None if values.empty else float(values.iloc[0])
 
 
-def _trailing_ebit(quarterly, annual):
-    """EBIT of the last 4 reported quarters; the latest fiscal year when 4 quarters are not available."""
-    if quarterly is not None and not quarterly.empty and "EBIT" in quarterly.index:
-        last_four = quarterly.loc["EBIT"].iloc[:4]
+EARNINGS_ROW = "Operating Income"
+
+
+def _trailing_operating_income(quarterly, annual):
+    """Operating income of the last 4 reported quarters; the latest fiscal year when 4 are not available."""
+    if quarterly is not None and not quarterly.empty and EARNINGS_ROW in quarterly.index:
+        last_four = quarterly.loc[EARNINGS_ROW].iloc[:4]
         if len(last_four) == 4 and last_four.notna().all():
             return float(last_four.sum())
-    return _latest(annual, "EBIT")
+    return _latest(annual, EARNINGS_ROW)
+
+
+def _debt(balance, row):
+    """A debt line of the balance sheet. A company with no borrowings has NO such line on Yahoo,
+    so when the balance sheet itself is present an absent line means 0 (not 'unknown')."""
+    if balance is None or balance.empty:
+        return None
+    value = _latest(balance, row)
+    return 0.0 if value is None else value
 
 
 def _info_value(info, key):
@@ -157,12 +180,14 @@ def _fetch_one(ticker):
         "sector": _info_value(info, "sector"),
         "country": _info_value(info, "country"),
         "market_cap": _info_value(info, "marketCap"),
-        "ebit": _trailing_ebit(source.quarterly_income_stmt, source.income_stmt),
+        "ebit": _trailing_operating_income(source.quarterly_income_stmt, source.income_stmt),
         "current_assets": _latest(balance, "Current Assets"),
         "current_liabilities": _latest(balance, "Current Liabilities"),
         "net_fixed_assets": _latest(balance, "Net PPE"),
-        "total_debt": _latest(balance, "Total Debt"),
+        "total_debt": _debt(balance, "Total Debt"),
         "cash": _latest(balance, "Cash And Cash Equivalents"),
+        "excess_cash": _latest(balance, "Cash Cash Equivalents And Short Term Investments"),
+        "short_term_debt": _debt(balance, "Current Debt"),
     }
 
 
@@ -174,22 +199,76 @@ def _load_cache(cache_path):
 
 
 def _is_fresh(entry, today):
-    return (today - date.fromisoformat(entry["fetched"])).days <= CACHE_MAX_AGE_DAYS
+    """Fetched within the week AND holding every column this version needs (older cache rows are refetched)."""
+    return ((today - date.fromisoformat(entry["fetched"])).days <= CACHE_MAX_AGE_DAYS
+            and set(entry["row"]) == set(REQUIRED_COLUMNS))
 
 
-def fetch_fundamentals(tickers, cache_path=CACHE_PATH, refresh=False):
-    """DataFrame with REQUIRED_COLUMNS for `tickers` (cached per ticker for CACHE_MAX_AGE_DAYS)."""
+def _save_cache(cache, cache_path):
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    with open(cache_path, "w") as fh:
+        json.dump(cache, fh, indent=0, sort_keys=True)
+
+
+def refresh_cache(tickers, cache_path=CACHE_PATH, refresh=False):
+    """Fetch every ticker whose cached row is missing / older than a week; returns how the refresh ended.
+
+    Rows are saved in batches, so an interrupted run keeps its progress and the next run resumes.
+    Yahoo rate-limits bulk fundamentals: when it does, the refresh STOPS (status "rate limited")
+    and the rows fetched so far are kept — this is the one failure handled here, at the
+    orchestration boundary, because retrying immediately only prolongs the block.
+    """
+    from yfinance.exceptions import YFRateLimitError
+
     today = date.today()
     cache = _load_cache(cache_path)
     stale = [t for t in tickers if refresh or t not in cache or not _is_fresh(cache[t], today)]
-    if stale:
-        with ThreadPoolExecutor(MAX_WORKERS) as pool:
-            for row in pool.map(_fetch_one, stale):
-                cache[row["ticker"]] = {"fetched": today.isoformat(), "row": row}
-        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-        with open(cache_path, "w") as fh:
-            json.dump(cache, fh, indent=0, sort_keys=True)
-    return pd.DataFrame([cache[t]["row"] for t in tickers], columns=list(REQUIRED_COLUMNS))
+    status = "up to date"
+    for first in range(0, len(stale), SAVE_EVERY):
+        batch = stale[first:first + SAVE_EVERY]
+        try:
+            with ThreadPoolExecutor(MAX_WORKERS) as pool:
+                rows = list(pool.map(_fetch_one, batch))
+        except YFRateLimitError:
+            status = f"rate limited after {first} of {len(stale)} tickers; the rest keep their older data"
+            break
+        for row in rows:
+            cache[row["ticker"]] = {"fetched": today.isoformat(), "row": row}
+        _save_cache(cache, cache_path)
+        status = "refreshed"
+    return status
+
+
+def cached_fundamentals(tickers, cache_path=CACHE_PATH):
+    """(DataFrame with REQUIRED_COLUMNS, as_of) for the tickers that have a cached row in this
+    version's layout; as_of = the OLDEST fetch date among them (how stale the list can be)."""
+    cache = _load_cache(cache_path)
+    known = [t for t in tickers if t in cache and set(cache[t]["row"]) == set(REQUIRED_COLUMNS)]
+    frame = pd.DataFrame([cache[t]["row"] for t in known], columns=list(REQUIRED_COLUMNS))
+    as_of = min((cache[t]["fetched"] for t in known), default=None)
+    return frame, as_of
+
+
+def fetch_fundamentals(tickers, cache_path=CACHE_PATH, refresh=False):
+    """DataFrame with REQUIRED_COLUMNS for `tickers` (refreshing rows older than a week)."""
+    refresh_cache(tickers, cache_path, refresh)
+    return cached_fundamentals(tickers, cache_path)[0]
+
+
+def daily_section(tickers, top_n=DEFAULT_TOP_N, cache_path=CACHE_PATH):
+    """The Magic Formula block of the daily record (signal log / app): the top list and every
+    ranked ticker's position, from the weekly-refreshed fundamentals."""
+    status = refresh_cache(tickers, cache_path)
+    frame, as_of = cached_fundamentals(tickers, cache_path)
+    ranked, excluded = magic_formula_pool(frame)
+    top = [{"rank": position, "ticker": row["ticker"], "magic_score": int(row["magic_score"]),
+            "roc_rank": int(row["roc_rank"]), "ey_rank": int(row["ey_rank"]),
+            "roc_pct": round(row["roc"] * 100, 1), "ey_pct": round(row["earnings_yield"] * 100, 1),
+            "sector": row["sector"]}
+           for position, (_, row) in enumerate(ranked.head(top_n).iterrows(), start=1)]
+    return {"as_of": as_of, "status": status, "n_scanned": len(tickers), "n_ranked": len(ranked),
+            "n_excluded": len(excluded) + len(tickers) - len(frame), "top": top,
+            "ranks": {ticker: position for position, ticker in enumerate(ranked["ticker"], start=1)}}
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +279,10 @@ def run(scope, top_n, refresh):
     import universe
 
     tickers = universe.get_universe(scope)
-    ranked, excluded = magic_formula_pool(fetch_fundamentals(tickers, refresh=refresh))
+    print(f"fundamentals: {refresh_cache(tickers, refresh=refresh)}")
+    frame, as_of = cached_fundamentals(tickers)
+    print(f"{len(frame)} of {len(tickers)} tickers have fundamentals (oldest fetched {as_of})")
+    ranked, excluded = magic_formula_pool(frame)
     top = ranked.head(top_n)
     os.makedirs(os.path.dirname(REPORT_PATH), exist_ok=True)
     ranked.to_csv(REPORT_PATH, index=False)
@@ -220,7 +302,15 @@ def main(argv=None):
     parser.add_argument("--scope", default="all", help="universe scope (see universe.get_universe)")
     parser.add_argument("--top", type=int, default=DEFAULT_TOP_N)
     parser.add_argument("--refresh", action="store_true", help="ignore the weekly fundamentals cache")
+    parser.add_argument("--update-only", action="store_true",
+                        help="only refresh the fundamentals cache for the daily scan universe (used by CI)")
     args = parser.parse_args(argv)
+    if args.update_only:
+        import scan_today
+
+        tickers, _sources = scan_today.combined_universe()
+        print(f"fundamentals: {refresh_cache(tickers, refresh=args.refresh)}")
+        return
     run(args.scope, args.top, args.refresh)
 
 

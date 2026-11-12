@@ -1,13 +1,14 @@
 ticker,reason
+MMM,sector or country unknown
+AOS,sector or country unknown
+ABT,sector or country unknown
+ABBV,sector or country unknown
 ACN,non-U.S. company
-ADBE,capital (net working capital + net fixed assets) is not positive
 AES,utility sector
 AFL,financial sector
-ARE,capital (net working capital + net fixed assets) is not positive
 ALLE,non-U.S. company
 LNT,utility sector
 ALL,financial sector
-MO,capital (net working capital + net fixed assets) is not positive
 AMCR,non-U.S. company
 AEE,utility sector
 AEP,utility sector
@@ -20,12 +21,9 @@ APO,financial sector
 APTV,non-U.S. company
 ACGL,financial sector
 ARES,financial sector
-ANET,missing total_debt
 AJG,financial sector
 AIZ,financial sector
 ATO,utility sector
-ADSK,capital (net working capital + net fixed assets) is not positive
-AVB,capital (net working capital + net fixed assets) is not positive
 BAC,financial sector
 BRK-B,financial sector
 BLK,financial sector
@@ -35,15 +33,11 @@ BRO,financial sector
 BXP,missing net_fixed_assets
 CPT,missing net_fixed_assets
 COF,financial sector
-CAH,capital (net working capital + net fixed assets) is not positive
 CBOE,financial sector
-COR,capital (net working capital + net fixed assets) is not positive
 CNP,utility sector
 SCHW,financial sector
 CB,financial sector
-CI,capital (net working capital + net fixed assets) is not positive
 CINF,financial sector
-CSCO,capital (net working capital + net fixed assets) is not positive
 C,financial sector
 CFG,financial sector
 CME,financial sector
@@ -51,54 +45,36 @@ CMS,utility sector
 COIN,financial sector
 ED,utility sector
 CEG,utility sector
-CPAY,capital (net working capital + net fixed assets) is not positive
 CRH,non-U.S. company
-DLR,capital (net working capital + net fixed assets) is not positive
 D,utility sector
-DPZ,capital (net working capital + net fixed assets) is not positive
 DTE,utility sector
 DUK,utility sector
 ETN,non-U.S. company
 SATS,financial sector
 EIX,utility sector
-ELV,"missing current_assets, current_liabilities"
+ELV,"missing ebit, current_assets, current_liabilities"
 ETR,utility sector
-EQR,capital (net working capital + net fixed assets) is not positive
 ERIE,financial sector
-ESS,capital (net working capital + net fixed assets) is not positive
 EG,financial sector
 EVRG,utility sector
 ES,utility sector
 EXC,utility sector
-EXPE,capital (net working capital + net fixed assets) is not positive
 FDS,financial sector
-FIS,capital (net working capital + net fixed assets) is not positive
 FITB,financial sector
 FE,utility sector
 FISV,sector or country unknown
 BEN,financial sector
 GRMN,non-U.S. company
-GEV,capital (net working capital + net fixed assets) is not positive
-GEN,capital (net working capital + net fixed assets) is not positive
-GPN,capital (net working capital + net fixed assets) is not positive
 GL,financial sector
-GDDY,capital (net working capital + net fixed assets) is not positive
 GS,financial sector
 HIG,financial sector
-DOC,capital (net working capital + net fixed assets) is not positive
-HLT,capital (net working capital + net fixed assets) is not positive
-HPQ,capital (net working capital + net fixed assets) is not positive
-HUM,"missing current_assets, current_liabilities"
+HUM,"missing ebit, current_assets, current_liabilities"
 HBAN,financial sector
 IBKR,financial sector
 ICE,financial sector
-ISRG,missing total_debt
 IVZ,financial sector
-INVH,capital (net working capital + net fixed assets) is not positive
-IQV,capital (net working capital + net fixed assets) is not positive
 JCI,non-U.S. company
 JPM,financial sector
-KDP,capital (net working capital + net fixed assets) is not positive
 KEY,financial sector
 KKR,financial sector
 LIN,non-U.S. company
@@ -106,10 +82,8 @@ L,financial sector
 LULU,non-U.S. company
 LYB,non-U.S. company
 MTB,financial sector
-MAR,capital (net working capital + net fixed assets) is not positive
 MRSH,financial sector
 MA,financial sector
-MCK,capital (net working capital + net fixed assets) is not positive
 MDT,non-U.S. company
 MET,financial sector
 MTD,non-U.S. company
@@ -123,113 +97,3 @@ NI,utility sector
 NTRS,financial sector
 NRG,utility sector
 NXPI,non-U.S. company
-OMC,capital (net working capital + net fixed assets) is not positive
-PANW,capital (net working capital + net fixed assets) is not positive
-PYPL,financial sector
-PNR,non-U.S. company
-PCG,utility sector
-PNW,utility sector
-PNC,financial sector
-PPL,utility sector
-PFG,financial sector
-PGR,financial sector
-PRU,financial sector
-PEG,utility sector
-PSA,capital (net working capital + net fixed assets) is not positive
-RJF,financial sector
-O,capital (net working capital + net fixed assets) is not positive
-RF,financial sector
-HOOD,financial sector
-ROP,capital (net working capital + net fixed assets) is not positive
-SPGI,financial sector
-STX,non-U.S. company
-SRE,utility sector
-NOW,capital (net working capital + net fixed assets) is not positive
-SPG,capital (net working capital + net fixed assets) is not positive
-SW,non-U.S. company
-SO,utility sector
-STT,financial sector
-SYF,financial sector
-TROW,financial sector
-TEL,non-U.S. company
-TT,non-U.S. company
-TRV,financial sector
-TFC,financial sector
-USB,financial sector
-UDR,capital (net working capital + net fixed assets) is not positive
-UNH,capital (net working capital + net fixed assets) is not positive
-VTR,missing net_fixed_assets
-VRSN,capital (net working capital + net fixed assets) is not positive
-V,financial sector
-VST,utility sector
-WRB,financial sector
-WEC,utility sector
-WFC,financial sector
-WTW,financial sector
-XEL,utility sector
-ZBRA,capital (net working capital + net fixed assets) is not positive
-AFMJF,non-U.S. company
-ANPMF,non-U.S. company
-BLKB,capital (net working capital + net fixed assets) is not positive
-EDVMF,non-U.S. company
-EGHSF,non-U.S. company
-GIB,non-U.S. company
-LUGDF,non-U.S. company
-OTEX,non-U.S. company
-PBI,capital (net working capital + net fixed assets) is not positive
-PLTK,non-U.S. company
-QTTB,enterprise value is not positive
-SIRI,capital (net working capital + net fixed assets) is not positive
-SSTK,capital (net working capital + net fixed assets) is not positive
-WDOFF,non-U.S. company
-WLY,capital (net working capital + net fixed assets) is not positive
-XPOF,capital (net working capital + net fixed assets) is not positive
-ARM,non-U.S. company
-ASML,non-U.S. company
-CCEP,non-U.S. company
-FER,non-U.S. company
-MELI,non-U.S. company
-PDD,non-U.S. company
-SHOP,non-U.S. company
-TRI,non-U.S. company
-SOFI,financial sector
-AFRM,financial sector
-UPST,financial sector
-DOCU,capital (net working capital + net fixed assets) is not positive
-NIO,non-U.S. company
-BABA,non-U.S. company
-SE,non-U.S. company
-NU,financial sector
-OSCR,"missing current_assets, current_liabilities"
-GRAB,non-U.S. company
-LI,non-U.S. company
-XPEV,non-U.S. company
-BIDU,non-U.S. company
-JD,non-U.S. company
-RIOT,financial sector
-MARA,financial sector
-CLSK,financial sector
-NBIS,non-U.S. company
-PSTG,sector or country unknown
-ESTC,non-U.S. company
-CFLT,sector or country unknown
-MNDY,non-U.S. company
-LMND,financial sector
-ROOT,financial sector
-BTBT,financial sector
-HUT,financial sector
-BITF,sector or country unknown
-WULF,financial sector
-IREN,financial sector
-SEDG,non-U.S. company
-STEM,utility sector
-OKLO,utility sector
-CRSP,non-U.S. company
-CRBU,market cap below $50M
-DVAX,sector or country unknown
-SAVA,sector or country unknown
-DJT,capital (net working capital + net fixed assets) is not positive
-RKT,financial sector
-POWI,missing total_debt
-CRDO,non-U.S. company
-CAMT,non-U.S. company
