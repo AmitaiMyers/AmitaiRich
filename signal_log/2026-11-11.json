@@ -1353,7 +1353,7 @@
    {
     "ticker": "REGN",
     "close": 959.41,
-    "score": 0.8281,
+    "score": 0.8285,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.134,
@@ -1364,7 +1364,7 @@
    {
     "ticker": "EXPD",
     "close": 194.59,
-    "score": 0.8252,
+    "score": 0.8257,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.371,
@@ -1375,7 +1375,7 @@
    {
     "ticker": "MPC",
     "close": 402.84,
-    "score": 0.8232,
+    "score": 0.8236,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.622,
@@ -1408,7 +1408,7 @@
    {
     "ticker": "NTAP",
     "close": 183.12,
-    "score": 0.8195,
+    "score": 0.8199,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 3.855,
@@ -1419,7 +1419,7 @@
    {
     "ticker": "UDR",
     "close": 36.56,
-    "score": 0.8083,
+    "score": 0.8091,
     "buyable_today": true,
     "beat_streak": 4.0,
     "sue": 2.136,
@@ -1428,29 +1428,24 @@
     "rank": 9
    },
    {
-    "ticker": "OXY",
-    "close": 57.24,
-    "score": 0.8033,
+    "ticker": "CFG",
+    "close": 65.38,
+    "score": 0.8024,
     "buyable_today": true,
     "beat_streak": 4.0,
-    "sue": 2.26,
-    "rev_accel": 0.294,
-    "eps_surprise": 28.99,
+    "sue": 2.021,
+    "rev_accel": 4.916,
+    "eps_surprise": 1.74,
     "rank": 10
    }
   ],
   "new": [
-   "MU",
-   "OXY"
+   "MU"
   ],
   "dropped": [
    {
     "ticker": "APP",
     "reason": "fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
-   },
-   {
-    "ticker": "CFG",
-    "reason": "ranked 11 at the 2026-11-11 rebalance (list = top 10)"
    }
   ]
  },
@@ -1509,7 +1504,9 @@
     "BUY DELL",
     "BUY WSM"
    ],
-   "v7": []
+   "v7": [
+    "SELL OXY"
+   ]
   },
   "holdings": {
    "v0": [

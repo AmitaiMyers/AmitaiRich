@@ -63,7 +63,7 @@ Closed trades: 0, longest losing streak 0.
 
 ## v7 — Earnings-led, concentrated: beat streak + SUE + revenue acceleration; buy only stocks in an uptrend that beat last quarter; top 10, checked weekly; sell when a holding drops out of the top 30. Chosen from a 767-config search as the centre of a robust plateau (24 neighbours: dev 7.6-10.0% CAGR, -20% to -26% max DD).
 
-**Orders for the next open:** none
+**Orders for the next open:** SELL OXY
 
 | Holding | Entry | Shares | Entry price | Last | P&L |
 |---|---|---|---|---|---|

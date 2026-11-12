@@ -7,4 +7,3 @@ date,strategy,ticker,reason
 2026-11-11,v0,RSG,6-month momentum fell to +23% (needs > 25%)
 2026-11-11,v0,TSCO,SELL signal: closed -0.9% below its 200-day MA
 2026-11-11,v7,APP,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
-2026-11-11,v7,CFG,ranked 11 at the 2026-11-11 rebalance (list = top 10)
