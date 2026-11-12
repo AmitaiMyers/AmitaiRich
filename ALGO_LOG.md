@@ -132,6 +132,25 @@ full sells, per-position stop, optional market filter; design on 2005-2022, neve
 5. Conclusion: with free data on S&P 500 members there is one weak real signal (beat streak);
    more searching mostly finds development-period luck. v0, v0m and v7 stay in paper trading.
 
+## Owner's question (2026-11-12): move the stop up once a position is in profit — NOT adopted
+
+v0's stop is fixed at entry; the rising 200-day MA is its only trailing exit. Tested a stop that is
+raised after the position's highest high reaches a trigger (effective from the next day), CAGR:
+
+| rule | v0 2005-10 / 2011-18 / 2019-22 | v0m 2005-10 / 2011-18 / 2019-22 |
+|---|---|---|
+| no change | 3.5% / 5.0% / 6.1% | 4.7% / 5.6% / 6.1% |
+| break-even after +20% | 2.9% / 6.4% / 3.3% | 3.1% / 7.1% / 5.1% |
+| break-even after +30% | 3.6% / 7.8% / 5.3% | 3.9% / 7.9% / 9.1% |
+| break-even after +50% | 3.5% / 6.2% / 5.7% | 4.7% / 6.6% / 7.3% |
+| lock +20% after +50% | 1.9% / 4.5% / 5.3% | 2.6% / 5.0% / 6.1% |
+| lock +50% after +100% | 2.3% / 6.1% / 6.2% | 2.6% / 7.2% / 6.8% |
+
+Max drawdown is unchanged or slightly worse everywhere (-43% to -47% in 2005-10). No rule helps in
+all three periods on both strategies, and neighbouring triggers (+20% / +30% / +50%) disagree in
+sign — the +30% result is noise, not an edge. Locking in profit clearly hurts (it sells winners on
+normal pullbacks). Stops stay fixed.
+
 ## Holdout openings
 
 - 2026-11-09: holdout opened for **v6b** — Owner approved testing v6b (2026-11-09) after round 1; criteria 1 and 3 not met in development/validation.
