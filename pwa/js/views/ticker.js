@@ -8,6 +8,7 @@ import { buildStrategy } from '../engine/strategies.js';
 import { exitMaPeriod, scoreStock } from '../holdings.js';
 import { addPosition, heldTickers, makePosition } from '../positions.js';
 import { h, kpi, num, pct, signClass } from '../ui.js';
+import { valuationCard } from '../valuation.js';
 
 const RANGES = { '3M': 92, '6M': 183, '1Y': 365, '3Y': 3 * 365, All: null };
 const DEFAULT_RANGE = '6M';
@@ -66,7 +67,9 @@ export async function renderTicker(context, [symbol]) {
     h('div', { class: 'page-head' },
       h('div', {}, h('h1', {}, `${symbol} `, h('span', { class: `badge ${verdict.isBuy ? 'buy' : ''}`, text: verdict.isBuy ? 'BUY' : 'NO BUY' })),
         h('div', { class: 'muted', text: `Close ${num(verdict.close)} on ${dayToIso(verdict.date)} · ${verdict.reason}` })),
-      addButton),
+      h('div', { class: 'row' }, addButton,
+        h('a', { class: 'chip', href: `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`, target: '_blank',
+                 rel: 'noopener', text: 'Open in Yahoo Finance ↗' }))),
     h('div', { class: 'grid kpis' },
       kpi('6-month momentum', pct(verdict.momentum), `threshold ${Math.round(strategy.config.mom_threshold * 100)}%`, signClass(verdict.momentum)),
       kpi(`vs ${production.config.trend_ma ?? 200}-day MA`, pct(verdict.vsMa), verdict.vsMa > 0 ? 'uptrend' : 'below trend', signClass(verdict.vsMa))),
@@ -76,5 +79,6 @@ export async function renderTicker(context, [symbol]) {
       chartHost,
       h('p', { class: 'muted small', text: 'v0 buys while the price is above the dashed 200-day MA (with 6-month momentum above '
         + `${Math.round(strategy.config.mom_threshold * 100)}%) and sells on a close below it. Long ranges merge candles into weeks/months.` })),
+    valuationCard(context.daily, symbol),
   );
 }

@@ -13,7 +13,9 @@ def stock(ticker, **overrides):
     row = {"ticker": ticker, "sector": "Industrials", "country": "United States", "market_cap": 900.0e6,
            "ebit": 100.0e6, "current_assets": 400.0e6, "current_liabilities": 200.0e6,
            "net_fixed_assets": 300.0e6, "total_debt": 200.0e6, "cash": 100.0e6,
-           "excess_cash": 150.0e6, "short_term_debt": 50.0e6}
+           "excess_cash": 150.0e6, "short_term_debt": 50.0e6,
+           "price": 50.0, "forward_pe": 12.0, "trailing_pe": 15.0, "peg": 1.2, "price_to_sales": 2.0,
+           "target_price": 60.0}
     row.update(overrides)
     return row
 
@@ -151,6 +153,37 @@ class DailySectionTest(unittest.TestCase):
         self.assertEqual(section["ranks"], {"BEST": 1, "POOR": 2})
         self.assertEqual((section["n_scanned"], section["n_ranked"], section["n_excluded"]), (3, 2, 1))
         self.assertEqual(section["as_of"], date.today().isoformat())
+
+
+class ValuationCheckTest(unittest.TestCase):
+    def setUp(self):
+        self.check = MF.valuation_check([
+            stock("CHEAP", ebit=300.0e6),                    # EY 30%
+            stock("MID", ebit=100.0e6),                      # EY 10%
+            stock("PRICEY", ebit=10.0e6),                    # EY 1%
+            stock("LOSS", ebit=-5.0e6),
+            stock("BANK", sector="Financial Services"),
+            stock("BLANK", ebit=None, forward_pe=None),
+        ])
+
+    def test_labels_are_thirds_of_the_profitable_stocks(self):
+        labels = {ticker: facts["label"] for ticker, facts in self.check.items()}
+        self.assertEqual(labels, {"CHEAP": "cheap", "MID": "fair", "PRICEY": "expensive", "LOSS": "no profits",
+                                  "BANK": None, "BLANK": None})
+
+    def test_result_is_valid_json_without_nan(self):
+        import json
+        blank = {**stock("NOSECTOR"), "sector": float("nan"), "ebit": float("nan")}
+        text = json.dumps(MF.valuation_check([stock("AAA"), blank]), allow_nan=False)   # raises on NaN
+        self.assertIn('"NOSECTOR": {"label": null', text)
+
+    def test_context_numbers(self):
+        mid = self.check["MID"]
+        self.assertAlmostEqual(mid["ey_pct"], 10.0)
+        self.assertAlmostEqual(mid["target_upside_pct"], 20.0)      # 60 / 50 - 1
+        self.assertEqual((mid["forward_pe"], mid["peg"], mid["price_to_sales"]), (12.0, 1.2, 2.0))
+        self.assertIsNone(self.check["BLANK"]["forward_pe"])
+        self.assertIsNone(self.check["BLANK"]["ey_pct"])
 
 
 if __name__ == "__main__":

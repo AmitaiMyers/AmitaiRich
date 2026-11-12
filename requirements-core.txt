@@ -1,6 +1,7 @@
 # Core engine, scanner, research and PWA publisher (what CI and the GitHub Actions install).
 # sqlite3 is part of the Python standard library (no entry needed).
 yfinance>=0.2.40
+curl_cffi>=0.7          # yfinance's HTTP client; magic_formula catches its network errors
 pandas>=2.0
 numpy>=1.24
 requests>=2.31

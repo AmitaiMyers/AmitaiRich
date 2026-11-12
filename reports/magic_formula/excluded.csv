@@ -1,8 +1,4 @@
 ticker,reason
-MMM,sector or country unknown
-AOS,sector or country unknown
-ABT,sector or country unknown
-ABBV,sector or country unknown
 ACN,non-U.S. company
 AES,utility sector
 AFL,financial sector
@@ -97,3 +93,93 @@ NI,utility sector
 NTRS,financial sector
 NRG,utility sector
 NXPI,non-U.S. company
+PYPL,financial sector
+PNR,non-U.S. company
+PCG,utility sector
+PNW,utility sector
+PNC,financial sector
+PPL,utility sector
+PFG,financial sector
+PGR,financial sector
+PRU,financial sector
+PEG,utility sector
+RJF,financial sector
+RF,financial sector
+HOOD,financial sector
+SPGI,financial sector
+STX,non-U.S. company
+SRE,utility sector
+SW,non-U.S. company
+SO,utility sector
+STT,financial sector
+SYF,financial sector
+TROW,financial sector
+TEL,non-U.S. company
+TT,non-U.S. company
+TRV,financial sector
+TFC,financial sector
+USB,financial sector
+VTR,missing net_fixed_assets
+V,financial sector
+VST,utility sector
+WRB,financial sector
+WEC,utility sector
+WFC,financial sector
+WTW,financial sector
+XEL,utility sector
+AFMJF,non-U.S. company
+ANPMF,non-U.S. company
+EDVMF,non-U.S. company
+EGHSF,non-U.S. company
+GIB,non-U.S. company
+LUGDF,non-U.S. company
+OTEX,non-U.S. company
+PLTK,non-U.S. company
+QTTB,enterprise value is not positive
+WDOFF,non-U.S. company
+ARM,non-U.S. company
+ASML,non-U.S. company
+CCEP,non-U.S. company
+FER,non-U.S. company
+MELI,non-U.S. company
+PDD,non-U.S. company
+SHOP,non-U.S. company
+TRI,non-U.S. company
+SOFI,financial sector
+AFRM,financial sector
+UPST,financial sector
+NIO,non-U.S. company
+BABA,non-U.S. company
+SE,non-U.S. company
+NU,financial sector
+OSCR,"missing ebit, current_assets, current_liabilities"
+GRAB,non-U.S. company
+LI,non-U.S. company
+XPEV,non-U.S. company
+BIDU,non-U.S. company
+JD,non-U.S. company
+RIOT,financial sector
+MARA,financial sector
+CLSK,financial sector
+NBIS,non-U.S. company
+PSTG,sector or country unknown
+ESTC,non-U.S. company
+CFLT,sector or country unknown
+MNDY,non-U.S. company
+LMND,financial sector
+ROOT,financial sector
+BTBT,financial sector
+HUT,financial sector
+BITF,sector or country unknown
+WULF,financial sector
+IREN,financial sector
+SEDG,non-U.S. company
+STEM,utility sector
+OKLO,utility sector
+CRSP,non-U.S. company
+CRBU,market cap below $50M
+DVAX,sector or country unknown
+SAVA,sector or country unknown
+RKT,financial sector
+CRDO,non-U.S. company
+CAMT,non-U.S. company

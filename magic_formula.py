@@ -48,6 +48,13 @@ REQUIRED_COLUMNS = ("ticker", "sector", "country", "market_cap", "ebit", "curren
                     "current_liabilities", "net_fixed_assets", "total_debt", "cash",
                     "excess_cash", "short_term_debt")
 NUMERIC_COLUMNS = REQUIRED_COLUMNS[3:]
+# Extra per-stock valuation facts fetched in the same request (for the "is it overpriced?" check).
+VALUATION_COLUMNS = ("price", "forward_pe", "trailing_pe", "peg", "price_to_sales", "target_price")
+FETCHED_COLUMNS = REQUIRED_COLUMNS + VALUATION_COLUMNS
+VALUATION_INFO_KEYS = {"price": "currentPrice", "forward_pe": "forwardPE", "trailing_pe": "trailingPE",
+                       "peg": "trailingPegRatio", "price_to_sales": "priceToSalesTrailing12Months",
+                       "target_price": "targetMeanPrice"}
+CHEAP, FAIR, EXPENSIVE, NO_PROFITS = "cheap", "fair", "expensive", "no profits"
 EXCLUDED_SECTORS = {"financial services": "financial sector", "financials": "financial sector",
                     "financial": "financial sector", "utilities": "utility sector"}
 HOME_COUNTRIES = ("united states", "usa", "us")
@@ -124,6 +131,47 @@ def magic_formula_pool(stocks):
     return ranked[RANKED_COLUMNS].reset_index(drop=True), excluded
 
 
+def _number(value):
+    """A finite float rounded for display, or None (JSON has no NaN)."""
+    return None if value is None or not np.isfinite(value) else round(float(value), 2)
+
+
+def valuation_check(stocks):
+    """{ticker: valuation facts + a label} — is the stock expensive RIGHT NOW, whatever its momentum?
+
+    The label comes from the earnings yield (operating income / enterprise value: the profit the
+    whole business earns per dollar it costs to buy, debt included), compared with the other
+    stocks in `stocks`: the highest-yield third is "cheap", the middle "fair", the lowest
+    "expensive"; a company with no operating profit is "no profits". Financials are not labelled
+    (enterprise value is meaningless for a bank's balance sheet), nor is anything missing data.
+    The other numbers (forward P/E, PEG, price/sales, analysts' target) are shown as context.
+    """
+    frame = pd.DataFrame(stocks).copy()
+    missing = [c for c in FETCHED_COLUMNS if c not in frame.columns]
+    if missing:
+        raise ConfigurationError(f"valuation_check input is missing columns {missing}")
+    for column in NUMERIC_COLUMNS + VALUATION_COLUMNS:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce").astype(float)
+    enterprise_value = frame["market_cap"] + frame["total_debt"] - frame["cash"]
+    financial = frame["sector"].astype(str).str.strip().str.lower().map(
+        lambda sector: sector in EXCLUDED_SECTORS and EXCLUDED_SECTORS[sector] == "financial sector")
+    usable = frame["ebit"].notna() & (enterprise_value > 0) & ~financial
+    frame["earnings_yield"] = (frame["ebit"] / enterprise_value).where(usable)
+    profitable = frame["earnings_yield"] > 0
+    percentile = frame.loc[profitable, "earnings_yield"].rank(pct=True)
+    labels = pd.Series([None] * len(frame), index=frame.index, dtype=object)   # None = not labelled
+    labels[usable & ~profitable] = NO_PROFITS
+    labels[percentile.index] = np.where(percentile > 2 / 3, CHEAP, np.where(percentile > 1 / 3, FAIR, EXPENSIVE))
+    frame["label"] = labels
+    target_upside = (frame["target_price"] / frame["price"] - 1.0).where(frame["price"] > 0) * 100
+    return {row["ticker"]: {"label": labels[index],
+                            "ey_pct": _number(row["earnings_yield"] * 100),
+                            "forward_pe": _number(row["forward_pe"]), "trailing_pe": _number(row["trailing_pe"]),
+                            "peg": _number(row["peg"]), "price_to_sales": _number(row["price_to_sales"]),
+                            "target_upside_pct": _number(target_upside[index])}
+            for index, row in frame.iterrows()}
+
+
 def magic_formula_rank(stocks, top_n=DEFAULT_TOP_N):
     """The top `top_n` stocks by Magic_Score (lowest = best) from a DataFrame / list of dicts."""
     if top_n < 1:
@@ -188,6 +236,7 @@ def _fetch_one(ticker):
         "cash": _latest(balance, "Cash And Cash Equivalents"),
         "excess_cash": _latest(balance, "Cash Cash Equivalents And Short Term Investments"),
         "short_term_debt": _debt(balance, "Current Debt"),
+        **{column: _info_value(info, key) for column, key in VALUATION_INFO_KEYS.items()},
     }
 
 
@@ -201,7 +250,7 @@ def _load_cache(cache_path):
 def _is_fresh(entry, today):
     """Fetched within the week AND holding every column this version needs (older cache rows are refetched)."""
     return ((today - date.fromisoformat(entry["fetched"])).days <= CACHE_MAX_AGE_DAYS
-            and set(entry["row"]) == set(REQUIRED_COLUMNS))
+            and set(entry["row"]) == set(FETCHED_COLUMNS))
 
 
 def _save_cache(cache, cache_path):
@@ -214,10 +263,13 @@ def refresh_cache(tickers, cache_path=CACHE_PATH, refresh=False):
     """Fetch every ticker whose cached row is missing / older than a week; returns how the refresh ended.
 
     Rows are saved in batches, so an interrupted run keeps its progress and the next run resumes.
-    Yahoo rate-limits bulk fundamentals: when it does, the refresh STOPS (status "rate limited")
-    and the rows fetched so far are kept — this is the one failure handled here, at the
-    orchestration boundary, because retrying immediately only prolongs the block.
+    Yahoo throttles bulk fundamentals, either with a rate-limit reply or by letting requests
+    time out. When that happens the refresh STOPS (status "interrupted ...") and the rows fetched
+    so far are kept — the one failure handled here, at the orchestration boundary: these numbers
+    change weekly, so the daily job must not fail (or lose its other outputs) over them, and
+    retrying immediately only prolongs the block.
     """
+    from curl_cffi.requests.exceptions import RequestException
     from yfinance.exceptions import YFRateLimitError
 
     today = date.today()
@@ -229,8 +281,9 @@ def refresh_cache(tickers, cache_path=CACHE_PATH, refresh=False):
         try:
             with ThreadPoolExecutor(MAX_WORKERS) as pool:
                 rows = list(pool.map(_fetch_one, batch))
-        except YFRateLimitError:
-            status = f"rate limited after {first} of {len(stale)} tickers; the rest keep their older data"
+        except (YFRateLimitError, RequestException) as error:
+            status = (f"interrupted by Yahoo ({type(error).__name__}) after {first} of {len(stale)} tickers; "
+                      "the rest keep their older data")
             break
         for row in rows:
             cache[row["ticker"]] = {"fetched": today.isoformat(), "row": row}
@@ -240,17 +293,17 @@ def refresh_cache(tickers, cache_path=CACHE_PATH, refresh=False):
 
 
 def cached_fundamentals(tickers, cache_path=CACHE_PATH):
-    """(DataFrame with REQUIRED_COLUMNS, as_of) for the tickers that have a cached row in this
+    """(DataFrame with FETCHED_COLUMNS, as_of) for the tickers that have a cached row in this
     version's layout; as_of = the OLDEST fetch date among them (how stale the list can be)."""
     cache = _load_cache(cache_path)
-    known = [t for t in tickers if t in cache and set(cache[t]["row"]) == set(REQUIRED_COLUMNS)]
-    frame = pd.DataFrame([cache[t]["row"] for t in known], columns=list(REQUIRED_COLUMNS))
+    known = [t for t in tickers if t in cache and set(cache[t]["row"]) == set(FETCHED_COLUMNS)]
+    frame = pd.DataFrame([cache[t]["row"] for t in known], columns=list(FETCHED_COLUMNS))
     as_of = min((cache[t]["fetched"] for t in known), default=None)
     return frame, as_of
 
 
 def fetch_fundamentals(tickers, cache_path=CACHE_PATH, refresh=False):
-    """DataFrame with REQUIRED_COLUMNS for `tickers` (refreshing rows older than a week)."""
+    """DataFrame with FETCHED_COLUMNS for `tickers` (refreshing rows older than a week)."""
     refresh_cache(tickers, cache_path, refresh)
     return cached_fundamentals(tickers, cache_path)[0]
 
@@ -268,7 +321,8 @@ def daily_section(tickers, top_n=DEFAULT_TOP_N, cache_path=CACHE_PATH):
            for position, (_, row) in enumerate(ranked.head(top_n).iterrows(), start=1)]
     return {"as_of": as_of, "status": status, "n_scanned": len(tickers), "n_ranked": len(ranked),
             "n_excluded": len(excluded) + len(tickers) - len(frame), "top": top,
-            "ranks": {ticker: position for position, ticker in enumerate(ranked["ticker"], start=1)}}
+            "ranks": {ticker: position for position, ticker in enumerate(ranked["ticker"], start=1)},
+            "valuation": valuation_check(frame) if len(frame) else {}}
 
 
 # ---------------------------------------------------------------------------

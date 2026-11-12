@@ -96,7 +96,9 @@ left a list with the reason (`list_exits.csv`) and the paper accounts' trades (`
 The owner's own sold trades are journaled on the device and exported to `my_trades/`.
 **Magic Formula** (`magic_formula.py`): Greenblatt filter + rank (pure `magic_formula_rank(stocks, top_n)`), fed by
 Yahoo fundamentals cached weekly in `market_data/fundamentals/magic_formula.json` (`--update-only` in the
-daily job). Its top 30 and every stock's rank go into the daily record (`magic`) and the Today page.
+daily job). Its top 30, every stock's rank and a valuation check (`valuation_check`: cheap / fair / expensive by
+earnings yield, plus forward P/E, PEG, price/sales, analyst target) go into the daily record (`magic`), the
+Today page and each stock page (`pwa/js/valuation.js`).
 Live screen only — it is not a backtested strategy.
 Daily phone push: `notify.py` + `webpush.py` (secrets VAPID_PRIVATE_KEY, PUSH_SUBSCRIPTION).
 Price files use `pwa_format.py`'s compact format.

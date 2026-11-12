@@ -6,6 +6,7 @@
 import { heldTickers } from '../positions.js';
 import { notificationsCard } from '../push.js';
 import { h, kpi, money, num, pct, signClass, store, table } from '../ui.js';
+import { valuationBadge, valuationOf } from '../valuation.js';
 
 const V0_COUNTS = [20, 40, 'all'];   // 'all' = every stock that passes v0's rules
 const countLabel = (n) => (n === 'all' ? 'All' : `Top ${n}`);
@@ -60,6 +61,11 @@ function magicColumn(daily) {
   } };
 }
 
+/** A column with the valuation label (cheap / fair / expensive / no profits) — see valuation.js. */
+function priceColumn(daily) {
+  return { label: 'Price', value: (r) => valuationBadge(valuationOf(daily, r.ticker)) };
+}
+
 function magicTable(daily, held) {
   if (!daily.available || !('magic' in daily)) return null;
   const magic = daily.magic;
@@ -86,6 +92,7 @@ function v0Rows(v0, held, count, daily) {
     { label: 'Close', value: (r) => num(r.close), num: true },
     { label: '6-mo momentum', value: (r) => pct(r.mom_pct), num: true, cls: (r) => signClass(r.mom_pct) },
     { label: 'vs 200-MA', value: (r) => pct(r.vs_ma200_pct), num: true },
+    priceColumn(daily),
     magicColumn(daily),
     { label: '', value: heldBadge(held) },
   ], v0.list.slice(0, rowsShown(count, v0.list)), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
@@ -132,6 +139,7 @@ function v7Table(daily, held) {
       { label: 'Beat streak', value: (r) => num(r.beat_streak, 0), num: true },
       { label: 'EPS surprise', value: (r) => pct(r.eps_surprise), num: true, cls: (r) => signClass(r.eps_surprise) },
       { label: 'Buyable', value: (r) => (r.buyable_today ? 'yes' : 'no') },
+      priceColumn(daily),
       magicColumn(daily),
       { label: '', value: heldBadge(held) },
     ], daily.v7.list, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
