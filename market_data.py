@@ -36,14 +36,34 @@ def _manifest_path():
 
 def load_manifest():
     if not os.path.exists(_manifest_path()):
-        return {"downloaded": {}, "missing": {}}
+        return {"downloaded": {}, "missing": {}, "last_bar": {}}
     with open(_manifest_path()) as fh:
-        return json.load(fh)
+        manifest = json.load(fh)
+    if "last_bar" not in manifest:          # manifests written before last-bar tracking
+        manifest["last_bar"] = {}
+    return manifest
 
 
 def _save_manifest(manifest):
     with open(_manifest_path(), "w") as fh:
         json.dump(manifest, fh, indent=0, sort_keys=True)
+
+
+RECENTLY_ACTIVE_DAYS = 10
+
+
+def _behind(manifest, ticker, wanted):
+    """True when a still-trading ticker's history ends before the newest bar of the others.
+
+    A download can succeed yet end a day early (Yahoo had not finalized yesterday's bar), and
+    "downloaded today" alone would then keep the short history all day. Long-delisted tickers
+    (last bar more than RECENTLY_ACTIVE_DAYS behind) are not refetched for this."""
+    if ticker not in manifest["last_bar"]:
+        return ticker in manifest["downloaded"]           # unknown end (older manifest): refetch once
+    bars = [manifest["last_bar"][t] for t in wanted if t in manifest["last_bar"]]
+    newest = date.fromisoformat(max(bars))
+    last = date.fromisoformat(manifest["last_bar"][ticker])
+    return newest - timedelta(days=RECENTLY_ACTIVE_DAYS) < last < newest
 
 
 def update_prices(tickers, max_age_days=0):
@@ -60,7 +80,8 @@ def update_prices(tickers, max_age_days=0):
     wanted = list(dict.fromkeys(normalize_ticker(t) if not t.startswith("^") else t for t in tickers))
     stale = [t for t in wanted
              if t not in manifest["downloaded"]
-             or (today - date.fromisoformat(manifest["downloaded"][t])).days > max_age_days]
+             or (today - date.fromisoformat(manifest["downloaded"][t])).days > max_age_days
+             or _behind(manifest, t, wanted)]
     end = (today + timedelta(days=1)).isoformat()
     updated = []
     for first in range(0, len(stale), CHUNK):
@@ -75,6 +96,7 @@ def update_prices(tickers, max_age_days=0):
                 continue
             frame.to_parquet(price_path(ticker))
             manifest["downloaded"][ticker] = today.isoformat()
+            manifest["last_bar"][ticker] = frame.index[-1].strftime("%Y-%m-%d")
             manifest["missing"].pop(ticker, None)
             updated.append(ticker)
         _save_manifest(manifest)

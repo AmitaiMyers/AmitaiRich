@@ -149,5 +149,19 @@ class UnfinishedSessionTest(unittest.TestCase):
         self.assertEqual(list(cleaned.index.strftime("%Y-%m-%d")), ["2026-11-11"])
 
 
+class BehindTest(unittest.TestCase):
+    """market_data refetches a recently-trading ticker whose history ends before the others."""
+
+    def test_behind_rules(self):
+        from market_data import _behind
+        manifest = {"downloaded": {"SPY": "2026-11-13", "AAPL": "2026-11-13", "OLD": "2026-11-13", "NEW": "2026-11-13"},
+                    "last_bar": {"SPY": "2026-11-11", "AAPL": "2026-11-12", "OLD": "2019-05-01"}}
+        wanted = ["SPY", "AAPL", "OLD", "NEW"]
+        self.assertTrue(_behind(manifest, "SPY", wanted))       # one day short
+        self.assertFalse(_behind(manifest, "AAPL", wanted))     # newest
+        self.assertFalse(_behind(manifest, "OLD", wanted))      # delisted long ago
+        self.assertTrue(_behind(manifest, "NEW", wanted))       # end unknown: refetch once
+
+
 if __name__ == "__main__":
     unittest.main()
