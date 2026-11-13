@@ -93,8 +93,9 @@ class CompanyPagesTest(unittest.TestCase):
                 json.dump({"AAA": {"fetched": date.today().isoformat(), "row": stock("AAA")}}, fh)
             profiles = magic_formula.company_profiles(["AAA", "BBB", "CCC"], fundamentals)
             news = {"BBB": {"fetched": "2026-11-12", "items": [{"title": "Hi", "url": "u"}]}}
-            written = publish.write_company_pages(tmp, profiles, news)
-            self.assertEqual(written, ["AAA", "BBB"])
+            moves = {"CCC": {"stock": {"1m": -10.0}}}
+            written = publish.write_company_pages(tmp, profiles, news, moves)
+            self.assertEqual(written, ["AAA", "BBB", "CCC"])
             with open(os.path.join(tmp, "company", "AAA.json")) as fh:
                 aaa = json.load(fh)
             self.assertEqual(aaa["profile"]["name"], "AAA Inc.")
@@ -103,6 +104,7 @@ class CompanyPagesTest(unittest.TestCase):
             with open(os.path.join(tmp, "company", "BBB.json")) as fh:
                 bbb = json.load(fh)
             self.assertIsNone(bbb["profile"])
+            self.assertIsNone(bbb["move"])
             self.assertEqual(bbb["news_as_of"], "2026-11-12")
 
 

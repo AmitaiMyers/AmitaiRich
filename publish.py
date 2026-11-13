@@ -25,7 +25,9 @@ import pandas as pd
 
 import indicators
 import company_news
+import earnings_pit
 import magic_formula
+import stock_moves
 import universe
 from batch import PER_TICKER_ERRORS
 from data_engine import fetch_data, prefetch
@@ -40,6 +42,7 @@ LISTS = {"S&P 500": "sp500", "Nasdaq-100": "nasdaq100", "Watchlist": "watchlist"
          "Magic Formula": "magic_formula"}
 PUBLISHED_CANDIDATES = 100   # the PWA hides your holdings itself, so publish a deep list
 PWA_DIR = "pwa"
+EARNINGS_TABLE = os.path.join(earnings_pit.FUND_DIR, "earnings.parquet")
 
 
 def load_universe_frames(end):
@@ -125,20 +128,31 @@ def write_daily(data_dir, data_date, demo):
     _write_json(os.path.join(data_dir, "daily.json"), daily)
 
 
-def write_company_pages(data_dir, profiles, news):
-    """data/company/<T>.json for each ticker with a profile or headlines -> the tickers written.
+def write_company_pages(data_dir, profiles, news, moves):
+    """data/company/<T>.json for each ticker with a profile, headlines or move facts -> the tickers written.
 
-    profiles: magic_formula.company_profiles(...); news: company_news.news_for(...). Both caches
-    live in market_data/ (filled by the Paper trading job, restored here from the Actions cache);
-    a ticker with neither simply has no file and its page says so."""
-    written = sorted(set(profiles) | set(news))
+    profiles: magic_formula.company_profiles(...); news: company_news.news_for(...);
+    moves: stock_moves.moves_for(...). The profile + news caches live in market_data/ (filled by
+    the Paper trading job, restored here from the Actions cache); a ticker with none of the three
+    has no file and its page says so."""
+    written = sorted(set(profiles) | set(news) | set(moves))
     for ticker in written:
         _write_json(os.path.join(data_dir, "company", f"{ticker}.json"), {
             "profile": profiles[ticker] if ticker in profiles else None,
             "news": news[ticker]["items"] if ticker in news else [],
             "news_as_of": news[ticker]["fetched"] if ticker in news else None,
+            "move": moves[ticker] if ticker in moves else None,
         })
     return written
+
+
+def company_moves(frames, profiles):
+    """stock_moves for every stock (benchmarks excluded); earnings reactions only when the
+    earnings table is in the restored market_data cache (it is filled by the Paper trading job)."""
+    earnings = (earnings_pit.load_earnings() if os.path.exists(EARNINGS_TABLE)
+                else pd.DataFrame(columns=["ticker", "available", "surprise_pct"]))
+    closes = {t: f["Close"] for t, f in frames.items() if t not in BENCHMARKS}
+    return stock_moves.moves_for(closes, frames["SPY"]["Close"], profiles, earnings)
 
 
 def publish(out_dir, demo, state_path):
@@ -164,8 +178,12 @@ def publish(out_dir, demo, state_path):
 
     for ticker, df in frames.items():
         _write_json(os.path.join(data_dir, "prices", f"{ticker}.json"), encode_bars(ticker, df))
-    company = [] if demo else write_company_pages(data_dir, magic_formula.company_profiles(sorted(frames)),
-                                                    company_news.news_for(sorted(frames)))
+    if demo:
+        company = []
+    else:
+        profiles = magic_formula.company_profiles(sorted(frames))
+        company = write_company_pages(data_dir, profiles, company_news.news_for(sorted(frames)),
+                                      company_moves(frames, profiles))
 
     _write_json(os.path.join(data_dir, "manifest.json"), {
         "build": build_id, "data_date": data_date, "demo": demo,

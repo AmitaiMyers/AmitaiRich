@@ -104,6 +104,9 @@ Live screen only — it is not a backtested strategy.
 with the fundamentals) + `company_news.py` (Yahoo headlines, refreshed daily in the Paper trading job, cached in
 `market_data/news.json`); `publish.py` writes `data/company/<T>.json` (the publish job restores the market-data
 cache) and the stock page shows them (`pwa/js/company.js`). Yahoo throttling is handled in `yahoo_batches.py`.
+"Why is it moving?": `stock_moves.py` (1w/1m/3m return vs SPY and the median of industry peers, distance from
+the 52-week high, last 3 earnings surprises + price reaction) -> `move` in the company file; `moveSentences` in
+`company.js` turns it into plain sentences (tested in `pwa/tests/company.test.mjs`).
 Daily phone push: `notify.py` + `webpush.py` (secrets VAPID_PRIVATE_KEY, PUSH_SUBSCRIPTION).
 Price files use `pwa_format.py`'s compact format.
 
