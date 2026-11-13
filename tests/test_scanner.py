@@ -119,5 +119,35 @@ class CleanBulkFrameTest(unittest.TestCase):
         self.assertEqual(len(clean_bulk_frame(self._frame([10.0, 11.0, 12.0]))), 3)
 
 
+class UnfinishedSessionTest(unittest.TestCase):
+    """Today's daily bar is dropped until the US market has closed (16:30 New York)."""
+
+    @staticmethod
+    def frame():
+        import pandas as pd
+        index = pd.to_datetime(["2026-11-11", "2026-11-12", "2026-11-13"])
+        return pd.DataFrame({"Open": 1.0, "High": 2.0, "Low": 0.5, "Close": 1.5, "Volume": 10.0}, index=index)
+
+    def test_during_and_after_the_session(self):
+        import pandas as pd
+        from data_engine import clean_bulk_frame, drop_unfinished_session
+        during = pd.Timestamp("2026-11-13 14:40", tz="UTC")          # 09:40 in New York
+        after = pd.Timestamp("2026-11-13 21:45", tz="UTC")           # 16:45 in New York
+        next_morning = pd.Timestamp("2026-11-14 13:00", tz="UTC")
+        self.assertEqual(len(drop_unfinished_session(self.frame(), during)), 2)
+        self.assertEqual(len(drop_unfinished_session(self.frame(), after)), 3)
+        self.assertEqual(len(drop_unfinished_session(self.frame(), next_morning)), 3)
+        self.assertEqual(len(clean_bulk_frame(self.frame(), now=during)), 2)
+        self.assertEqual(len(clean_bulk_frame(self.frame(), daily=False, now=during)), 3)
+
+    def test_blank_in_yesterdays_bar_is_trimmed_not_a_gap_while_today_is_open(self):
+        import pandas as pd
+        from data_engine import clean_bulk_frame
+        frame = self.frame()
+        frame.loc[pd.Timestamp("2026-11-12"), "Volume"] = float("nan")   # yesterday's volume not final yet
+        cleaned = clean_bulk_frame(frame, now=pd.Timestamp("2026-11-13 13:41", tz="UTC"))
+        self.assertEqual(list(cleaned.index.strftime("%Y-%m-%d")), ["2026-11-11"])
+
+
 if __name__ == "__main__":
     unittest.main()

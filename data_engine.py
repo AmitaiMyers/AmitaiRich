@@ -85,7 +85,7 @@ def prefetch(tickers, start_date, end_date, interval="1d", chunk_size=100):
         for ticker in chunk:
             if ticker not in present:
                 continue
-            frame = clean_bulk_frame(raw[ticker])
+            frame = clean_bulk_frame(raw[ticker], daily=interval == "1d")
             if frame is None:
                 continue
             _save_to_cache(frame, _cache_path(ticker, start_date, end_date, interval))
@@ -93,8 +93,11 @@ def prefetch(tickers, start_date, end_date, interval="1d", chunk_size=100):
     return cached
 
 
-def clean_bulk_frame(raw_one):
-    """One ticker's slice of a bulk download -> validated OHLCV frame, or None if unusable."""
+def clean_bulk_frame(raw_one, daily=True, now=None):
+    """One ticker's slice of a bulk download -> validated OHLCV frame, or None if unusable.
+
+    daily: the bars are daily candles, so a bar for a session that has not closed yet is dropped
+    (see drop_unfinished_session). `now` is for tests (default: the current time)."""
     if any(column not in raw_one.columns for column in REQUIRED_COLUMNS):
         return None
     df = raw_one[REQUIRED_COLUMNS].copy()
@@ -102,6 +105,8 @@ def clean_bulk_frame(raw_one):
     df.index.name = "Date"
     absent = df[["Open", "High", "Low", "Close"]].isna().all(axis=1)
     df = df[~absent]
+    if daily:
+        df = drop_unfinished_session(df, now)      # first: today's partial bar must not hide a blank behind it
     # Yahoo can publish the newest bar(s) with a field still blank (e.g. an ETF's volume shortly
     # after the close). Drop such incomplete TRAILING bars — they arrive complete on the next
     # refresh — instead of rejecting the whole history; a gap in the middle is still unusable.
@@ -112,6 +117,24 @@ def clean_bulk_frame(raw_one):
     if bool(df.isna().any().any()):
         return None
     return df
+
+
+MARKET_TZ = "America/New_York"
+SESSION_SETTLED = pd.Timedelta(hours=16, minutes=30)   # 4 pm close + time for the final prints
+
+
+def drop_unfinished_session(df, now=None):
+    """Drop the last daily bar when it is TODAY's session and the US market has not closed yet.
+
+    Downloaded while the market is open (or pre-market), Yahoo's newest daily bar is a partial,
+    still-changing session. Treated as a close it would put intraday prices into the signals,
+    the paper accounts and the app; the complete bar arrives on the next refresh after the close."""
+    if df.empty:
+        return df
+    local = pd.Timestamp.now(tz=MARKET_TZ) if now is None else pd.Timestamp(now).tz_convert(MARKET_TZ)
+    today = local.normalize().tz_localize(None)
+    unfinished = df.index[-1].normalize() == today and local - local.normalize() < SESSION_SETTLED
+    return df.iloc[:-1] if unfinished else df
 
 
 def _validate_interval(interval):
@@ -152,7 +175,8 @@ def _download_and_prepare(ticker, start_date, end_date, interval):
     df = df[REQUIRED_COLUMNS].copy()
     df.index = pd.to_datetime(df.index)
     df.index.name = "Date"
-    return _drop_forming_bar(df)
+    df = _drop_forming_bar(df)
+    return drop_unfinished_session(df) if interval == "1d" else df
 
 
 def _flatten_columns(df, ticker):
