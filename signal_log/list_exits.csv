@@ -7,3 +7,13 @@ date,strategy,ticker,reason
 2026-11-11,v0,RSG,6-month momentum fell to +23% (needs > 25%)
 2026-11-11,v0,TSCO,SELL signal: closed -0.9% below its 200-day MA
 2026-11-11,v7,APP,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-12,v0,ZBRA,6-month momentum fell to +23% (needs > 25%)
+2026-11-12,v0,KDP,6-month momentum fell to +23% (needs > 25%)
+2026-11-12,v0,DAL,6-month momentum fell to +22% (needs > 25%)
+2026-11-12,v0,RCL,6-month momentum fell to +23% (needs > 25%)
+2026-11-12,v0,GRMN,6-month momentum fell to +23% (needs > 25%)
+2026-11-12,v0,APH,6-month momentum fell to +24% (needs > 25%)
+2026-11-12,v0,HSIC,6-month momentum fell to +19% (needs > 25%)
+2026-11-12,v0,RBLX,6-month momentum fell to +18% (needs > 25%)
+2026-11-12,v0,HST,6-month momentum fell to +24% (needs > 25%)
+2026-11-12,v7,UDR,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
