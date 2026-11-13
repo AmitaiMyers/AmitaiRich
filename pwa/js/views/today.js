@@ -85,6 +85,28 @@ function magicTable(daily, held) {
     ], magic.top, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
 }
 
+const CHEAP_ONLY_KEY = 'roof.cheapOnly.v1';
+
+/** The rows to show: all, or only those labelled "cheap" by the valuation check (valuation.js). */
+function cheapFilter(rows, daily, cheapOnly) {
+  if (!cheapOnly) return rows;
+  return rows.filter((r) => {
+    const facts = valuationOf(daily, r.ticker);
+    return facts !== null && facts.label === 'cheap';
+  });
+}
+
+/** The "All / Cheap only" switch; changing it redraws the whole Today page. */
+function cheapSwitch(cheapOnly, redraw) {
+  return h('div', { class: 'segmented', role: 'group', 'aria-label': 'Valuation filter' },
+    [['All stocks', false], ['Cheap only', true]].map(([text, value]) => h('button', {
+      type: 'button', class: value === cheapOnly ? 'active' : null, text,
+      onclick: () => { store.write(CHEAP_ONLY_KEY, value); redraw(); },
+    })));
+}
+
+const noneCheap = () => h('div', { class: 'card empty', text: 'No stock in this list is labelled Cheap today.' });
+
 function v0Rows(v0, held, count, daily) {
   return table([
     { label: '#', value: (r) => r.rank, num: true },
@@ -98,15 +120,20 @@ function v0Rows(v0, held, count, daily) {
   ], v0.list.slice(0, rowsShown(count, v0.list)), { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') });
 }
 
-function v0Table(v0, held, daily) {
+/** v0's list after the valuation filter (ranks are kept: they are v0's own ranks). */
+const filteredV0 = (v0, daily, cheapOnly) => ({ ...v0, list: cheapFilter(v0.list, daily, cheapOnly) });
+
+function v0Table(allV0, held, daily, cheapOnly) {
   let count = store.read(V0_COUNT_KEY, V0_COUNTS[0]);
+  const v0 = filteredV0(allV0, daily, cheapOnly);
+  const what = cheapOnly ? `cheap ones of the ${allV0.list.length} that pass` : 'that pass';
   const title = h('h2');
   const host = h('div');
   const draw = () => {
     title.textContent = rowsShown(count, v0.list) === v0.list.length
-      ? `v0 — momentum rider (production) · all ${v0.list.length} that pass`
-      : `v0 — momentum rider (production) · top ${count} of ${v0.list.length}`;
-    host.replaceChildren(v0Rows(v0, held, count, daily));
+      ? `v0 — momentum rider (production) · all ${v0.list.length} ${what}`
+      : `v0 — momentum rider (production) · top ${count} of ${v0.list.length} ${what}`;
+    host.replaceChildren(v0.list.length ? v0Rows(v0, held, count, daily) : noneCheap());
   };
   const picker = h('div', { class: 'segmented', role: 'group', 'aria-label': 'How many v0 stocks to show' },
     V0_COUNTS.map((n) => h('button', {
@@ -126,13 +153,15 @@ function v0Table(v0, held, daily) {
     host);
 }
 
-function v7Table(daily, held) {
+function v7Table(daily, held, cheapOnly) {
   if (!daily.available) return null;
+  const rows = cheapFilter(daily.v7.list, daily, cheapOnly);
   return h('div', { class: 'section' },
-    h('h2', { text: `v7 — earnings-led · ${daily.v7.list.length} names` }),
+    h('h2', { text: cheapOnly ? `v7 — earnings-led · ${rows.length} cheap of ${daily.v7.list.length} names`
+      : `v7 — earnings-led · ${daily.v7.list.length} names` }),
     h('p', { class: 'muted small', text: 'Ranked on beat streak, earnings surprise (SUE) and revenue acceleration; '
       + 'rebalanced weekly. Research only: it beat SPY before 2023 but lagged it on the 2023+ holdout.' }),
-    table([
+    rows.length ? table([
       { label: '#', value: (r) => r.rank, num: true },
       { label: 'Ticker', value: (r) => h('strong', { text: r.ticker }) },
       { label: 'Close', value: (r) => num(r.close), num: true },
@@ -142,7 +171,7 @@ function v7Table(daily, held) {
       priceColumn(daily),
       magicColumn(daily),
       { label: '', value: heldBadge(held) },
-    ], daily.v7.list, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }));
+    ], rows, { onRow: openTicker, rowClass: (r) => (held.has(r.ticker) ? 'held' : '') }) : noneCheap());
 }
 
 function paperCard(daily) {
@@ -162,22 +191,27 @@ function paperCard(daily) {
     ordersLine);
 }
 
-export function renderToday({ signals, daily }) {
+export function renderToday(context) {
+  const { signals, daily } = context;
+  const cheapOnly = store.read(CHEAP_ONLY_KEY, false);
+  const redraw = () => document.getElementById('view').replaceChildren(renderToday(context));
   const held = heldTickers();
   const m = signals.market;
   const v0 = v0Source(daily, signals);
   return h('div', {},
     h('div', { class: 'page-head' },
       h('div', {}, h('h1', { text: `Signals for ${v0.date}` }),
-        h('div', { class: 'muted', text: 'Act at the next open. Tap a ticker for its chart.' })),
+        h('div', { class: 'muted', text: 'Act at the next open. Tap any stock for its chart, why it moved, its news and what the company does.' })),
       h('a', { href: '#/positions', class: 'chip', text: `${held.size} held → HOLD/SELL status` })),
     h('div', { class: 'grid kpis' },
       kpi('Market (SPY)', m.risk_on ? 'Risk-on' : 'Risk-off', `${pct(m['spy_vs_ma200_%'])} vs 200-day MA`, m.risk_on ? 'up' : 'down'),
       kpi('Breadth', m['breadth_above_ma200_%'] === null ? '—' : `${m['breadth_above_ma200_%']}%`,
         `of ${m.breadth_universe} stocks above their 200-MA`)),
     h('div', { class: 'section' }, newTodayCard(v0, daily)),
-    v0Table(v0, held, daily),
-    v7Table(daily, held),
+    h('div', { class: 'section row' },
+      h('span', { class: 'muted small', text: 'Show in the v0 and v7 lists:' }), cheapSwitch(cheapOnly, redraw)),
+    v0Table(v0, held, daily, cheapOnly),
+    v7Table(daily, held, cheapOnly),
     magicTable(daily, held),
     paperCard(daily),
     notificationsCard(),
