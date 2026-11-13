@@ -9,7 +9,7 @@ const DATA_CACHE = 'data-v1';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
-  'js/app.js', 'js/chart.js', 'js/data.js', 'js/holdings.js', 'js/positions.js', 'js/push.js', 'js/push-config.js', 'js/ui.js', 'js/valuation.js',
+  'js/app.js', 'js/chart.js', 'js/data.js', 'js/holdings.js', 'js/positions.js', 'js/company.js', 'js/push.js', 'js/push-config.js', 'js/ui.js', 'js/valuation.js',
   'js/engine/engine.js', 'js/engine/indicators.js', 'js/engine/strategies.js',
   'js/views/positions.js', 'js/views/ticker.js', 'js/views/today.js',
 ];

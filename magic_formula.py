@@ -35,13 +35,13 @@ cannot be backtested point-in-time with the project's data.
 import argparse
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 
 import numpy as np
 import pandas as pd
 
 import market_data
+import yahoo_batches
 from errors import ConfigurationError
 
 REQUIRED_COLUMNS = ("ticker", "sector", "country", "market_cap", "ebit", "current_assets",
@@ -50,7 +50,12 @@ REQUIRED_COLUMNS = ("ticker", "sector", "country", "market_cap", "ebit", "curren
 NUMERIC_COLUMNS = REQUIRED_COLUMNS[3:]
 # Extra per-stock valuation facts fetched in the same request (for the "is it overpriced?" check).
 VALUATION_COLUMNS = ("price", "forward_pe", "trailing_pe", "peg", "price_to_sales", "target_price")
-FETCHED_COLUMNS = REQUIRED_COLUMNS + VALUATION_COLUMNS
+# The company profile, fetched in the same request and published on each stock page.
+PROFILE_COLUMNS = ("name", "industry", "summary", "website", "employees")
+PROFILE_INFO_KEYS = {"name": "longName", "industry": "industry", "summary": "longBusinessSummary",
+                     "website": "website", "employees": "fullTimeEmployees"}
+RANKING_COLUMNS = REQUIRED_COLUMNS + VALUATION_COLUMNS
+FETCHED_COLUMNS = RANKING_COLUMNS + PROFILE_COLUMNS
 VALUATION_INFO_KEYS = {"price": "currentPrice", "forward_pe": "forwardPE", "trailing_pe": "trailingPE",
                        "peg": "trailingPegRatio", "price_to_sales": "priceToSalesTrailing12Months",
                        "target_price": "targetMeanPrice"}
@@ -65,8 +70,6 @@ RANKED_COLUMNS = ["ticker", "magic_score", "roc_rank", "ey_rank", "roc", "earnin
 
 CACHE_PATH = os.path.join(market_data.DATA_DIR, "fundamentals", "magic_formula.json")   # cached by CI with the prices
 CACHE_MAX_AGE_DAYS = 7
-MAX_WORKERS = 4
-SAVE_EVERY = 40
 REPORT_PATH = os.path.join("reports", "magic_formula", "latest.csv")
 
 
@@ -147,7 +150,7 @@ def valuation_check(stocks):
     The other numbers (forward P/E, PEG, price/sales, analysts' target) are shown as context.
     """
     frame = pd.DataFrame(stocks).copy()
-    missing = [c for c in FETCHED_COLUMNS if c not in frame.columns]
+    missing = [c for c in RANKING_COLUMNS if c not in frame.columns]
     if missing:
         raise ConfigurationError(f"valuation_check input is missing columns {missing}")
     for column in NUMERIC_COLUMNS + VALUATION_COLUMNS:
@@ -237,6 +240,7 @@ def _fetch_one(ticker):
         "excess_cash": _latest(balance, "Cash Cash Equivalents And Short Term Investments"),
         "short_term_debt": _debt(balance, "Current Debt"),
         **{column: _info_value(info, key) for column, key in VALUATION_INFO_KEYS.items()},
+        **{column: _info_value(info, key) for column, key in PROFILE_INFO_KEYS.items()},
     }
 
 
@@ -247,10 +251,16 @@ def _load_cache(cache_path):
         return json.load(fh)
 
 
+def _has_columns(entry, columns):
+    return set(columns) <= set(entry["row"])
+
+
 def _is_fresh(entry, today):
-    """Fetched within the week AND holding every column this version needs (older cache rows are refetched)."""
+    """Fetched within the week AND holding every column this version fetches. A row from an older
+    version is refetched, but stays usable meanwhile for whatever columns it does have (so adding
+    a field never empties the app while Yahoo's throttling spreads the refetch over several days)."""
     return ((today - date.fromisoformat(entry["fetched"])).days <= CACHE_MAX_AGE_DAYS
-            and set(entry["row"]) == set(FETCHED_COLUMNS))
+            and _has_columns(entry, FETCHED_COLUMNS))
 
 
 def _save_cache(cache, cache_path):
@@ -260,50 +270,39 @@ def _save_cache(cache, cache_path):
 
 
 def refresh_cache(tickers, cache_path=CACHE_PATH, refresh=False):
-    """Fetch every ticker whose cached row is missing / older than a week; returns how the refresh ended.
-
-    Rows are saved in batches, so an interrupted run keeps its progress and the next run resumes.
-    Yahoo throttles bulk fundamentals, either with a rate-limit reply or by letting requests
-    time out. When that happens the refresh STOPS (status "interrupted ...") and the rows fetched
-    so far are kept — the one failure handled here, at the orchestration boundary: these numbers
-    change weekly, so the daily job must not fail (or lose its other outputs) over them, and
-    retrying immediately only prolongs the block.
-    """
-    from curl_cffi.requests.exceptions import RequestException
-    from yfinance.exceptions import YFRateLimitError
-
+    """Fetch every ticker whose cached row is missing / older than a week (see yahoo_batches);
+    returns how the refresh ended ('up to date' / 'refreshed' / 'interrupted ...')."""
     today = date.today()
     cache = _load_cache(cache_path)
     stale = [t for t in tickers if refresh or t not in cache or not _is_fresh(cache[t], today)]
-    status = "up to date"
-    for first in range(0, len(stale), SAVE_EVERY):
-        batch = stale[first:first + SAVE_EVERY]
-        try:
-            with ThreadPoolExecutor(MAX_WORKERS) as pool:
-                rows = list(pool.map(_fetch_one, batch))
-        except (YFRateLimitError, RequestException) as error:
-            status = (f"interrupted by Yahoo ({type(error).__name__}) after {first} of {len(stale)} tickers; "
-                      "the rest keep their older data")
-            break
+
+    def save(rows):
         for row in rows:
             cache[row["ticker"]] = {"fetched": today.isoformat(), "row": row}
         _save_cache(cache, cache_path)
-        status = "refreshed"
-    return status
+
+    return yahoo_batches.fetch_in_batches(stale, _fetch_one, save)
+
+
+def company_profiles(tickers, cache_path=CACHE_PATH):
+    """{ticker: profile} (name, sector, industry, business summary, website, employees) from the cache."""
+    cache = _load_cache(cache_path)
+    return {t: {"sector": cache[t]["row"]["sector"], **{c: cache[t]["row"][c] for c in PROFILE_COLUMNS}}
+            for t in tickers if t in cache and _has_columns(cache[t], FETCHED_COLUMNS)}
 
 
 def cached_fundamentals(tickers, cache_path=CACHE_PATH):
-    """(DataFrame with FETCHED_COLUMNS, as_of) for the tickers that have a cached row in this
-    version's layout; as_of = the OLDEST fetch date among them (how stale the list can be)."""
+    """(DataFrame with RANKING_COLUMNS, as_of) for the tickers whose cached row has them;
+    as_of = the OLDEST fetch date among them (how stale the list can be)."""
     cache = _load_cache(cache_path)
-    known = [t for t in tickers if t in cache and set(cache[t]["row"]) == set(FETCHED_COLUMNS)]
-    frame = pd.DataFrame([cache[t]["row"] for t in known], columns=list(FETCHED_COLUMNS))
+    known = [t for t in tickers if t in cache and _has_columns(cache[t], RANKING_COLUMNS)]
+    frame = pd.DataFrame([{c: cache[t]["row"][c] for c in RANKING_COLUMNS} for t in known], columns=list(RANKING_COLUMNS))
     as_of = min((cache[t]["fetched"] for t in known), default=None)
     return frame, as_of
 
 
 def fetch_fundamentals(tickers, cache_path=CACHE_PATH, refresh=False):
-    """DataFrame with FETCHED_COLUMNS for `tickers` (refreshing rows older than a week)."""
+    """DataFrame with RANKING_COLUMNS for `tickers` (refreshing rows older than a week)."""
     refresh_cache(tickers, cache_path, refresh)
     return cached_fundamentals(tickers, cache_path)[0]
 

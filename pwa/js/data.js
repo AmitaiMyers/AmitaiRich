@@ -45,6 +45,7 @@ async function getJson(path) {
 export const loadManifest = () => getJson('data/manifest.json');
 export const loadSignals = () => getJson('data/signals.json');
 export const loadDaily = () => getJson('data/daily.json');
+export const loadCompany = (ticker) => getJson(`data/company/${encodeURIComponent(ticker)}.json`);
 
 /** One ticker's full daily history (memoized for the session; the service worker caches it offline). */
 export async function loadBars(ticker) {

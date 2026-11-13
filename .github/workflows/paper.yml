@@ -46,6 +46,7 @@ jobs:
           python fundamentals_pit.py update
           python earnings_pit.py update
           python magic_formula.py --update-only
+          python company_news.py update
       - name: Save market data
         uses: actions/cache/save@v4
         with:

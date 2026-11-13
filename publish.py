@@ -9,6 +9,7 @@ Writes:
     site/data/signals.json    today's ranked BUY list + market regime + breadth
     site/data/prices/<T>.json full daily history per ticker (compact format, pwa_format.py)
     site/data/research/       research_results/*.json (the published research reports)
+    site/data/company/<T>.json business profile + recent headlines (from the market_data caches)
 
 Your positions are NOT here: the PWA keeps them on your device and computes
 HOLD/SELL locally from these price files.
@@ -23,6 +24,8 @@ from datetime import date, timedelta
 import pandas as pd
 
 import indicators
+import company_news
+import magic_formula
 import universe
 from batch import PER_TICKER_ERRORS
 from data_engine import fetch_data, prefetch
@@ -122,6 +125,22 @@ def write_daily(data_dir, data_date, demo):
     _write_json(os.path.join(data_dir, "daily.json"), daily)
 
 
+def write_company_pages(data_dir, profiles, news):
+    """data/company/<T>.json for each ticker with a profile or headlines -> the tickers written.
+
+    profiles: magic_formula.company_profiles(...); news: company_news.news_for(...). Both caches
+    live in market_data/ (filled by the Paper trading job, restored here from the Actions cache);
+    a ticker with neither simply has no file and its page says so."""
+    written = sorted(set(profiles) | set(news))
+    for ticker in written:
+        _write_json(os.path.join(data_dir, "company", f"{ticker}.json"), {
+            "profile": profiles[ticker] if ticker in profiles else None,
+            "news": news[ticker]["items"] if ticker in news else [],
+            "news_as_of": news[ticker]["fetched"] if ticker in news else None,
+        })
+    return written
+
+
 def publish(out_dir, demo, state_path):
     end = (date.today() + timedelta(days=1)).isoformat()   # yfinance's end is exclusive
     frames, lists, failed = demo_frames() if demo else load_universe_frames(end)
@@ -145,11 +164,13 @@ def publish(out_dir, demo, state_path):
 
     for ticker, df in frames.items():
         _write_json(os.path.join(data_dir, "prices", f"{ticker}.json"), encode_bars(ticker, df))
+    company = [] if demo else write_company_pages(data_dir, magic_formula.company_profiles(sorted(frames)),
+                                                    company_news.news_for(sorted(frames)))
 
     _write_json(os.path.join(data_dir, "manifest.json"), {
         "build": build_id, "data_date": data_date, "demo": demo,
         "tickers": sorted(frames), "lists": lists, "benchmarks": list(BENCHMARKS),
-        "failed": failed,
+        "failed": failed, "company": company,
         "production": {"strategy": algorithm.name, "config": algorithm.config,
                        "stop_mode": DEFAULT_STOP_MODE, "target_positions": TARGET_POSITIONS},
     })

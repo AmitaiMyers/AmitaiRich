@@ -48,6 +48,14 @@ jobs:
           key: scan-state-${{ github.run_id }}
           restore-keys: scan-state-
 
+      # Company profiles + headlines come from the Paper trading job's market-data cache (read only).
+      - name: Restore market data
+        uses: actions/cache/restore@v4
+        with:
+          path: market_data
+          key: market-data-${{ github.run_id }}
+          restore-keys: market-data-
+
       - name: Build site with fresh data
         run: python publish.py --out site --state scan_state.json
 

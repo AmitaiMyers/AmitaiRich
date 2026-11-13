@@ -100,6 +100,10 @@ daily job). Its top 30, every stock's rank and a valuation check (`valuation_che
 earnings yield, plus forward P/E, PEG, price/sales, analyst target) go into the daily record (`magic`), the
 Today page and each stock page (`pwa/js/valuation.js`).
 Live screen only — it is not a backtested strategy.
+**Company pages**: `magic_formula.company_profiles` (name, sector, industry, business summary, website — fetched
+with the fundamentals) + `company_news.py` (Yahoo headlines, refreshed daily in the Paper trading job, cached in
+`market_data/news.json`); `publish.py` writes `data/company/<T>.json` (the publish job restores the market-data
+cache) and the stock page shows them (`pwa/js/company.js`). Yahoo throttling is handled in `yahoo_batches.py`.
 Daily phone push: `notify.py` + `webpush.py` (secrets VAPID_PRIVATE_KEY, PUSH_SUBSCRIPTION).
 Price files use `pwa_format.py`'s compact format.
 

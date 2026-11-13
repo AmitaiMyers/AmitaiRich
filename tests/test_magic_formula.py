@@ -15,7 +15,8 @@ def stock(ticker, **overrides):
            "net_fixed_assets": 300.0e6, "total_debt": 200.0e6, "cash": 100.0e6,
            "excess_cash": 150.0e6, "short_term_debt": 50.0e6,
            "price": 50.0, "forward_pe": 12.0, "trailing_pe": 15.0, "peg": 1.2, "price_to_sales": 2.0,
-           "target_price": 60.0}
+           "target_price": 60.0, "name": f"{ticker} Inc.", "industry": "Machinery",
+           "summary": "Makes machines.", "website": "https://example.com", "employees": 1200}
     row.update(overrides)
     return row
 

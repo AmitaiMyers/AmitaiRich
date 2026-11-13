@@ -9,6 +9,7 @@ import { exitMaPeriod, scoreStock } from '../holdings.js';
 import { addPosition, heldTickers, makePosition } from '../positions.js';
 import { h, kpi, num, pct, signClass } from '../ui.js';
 import { valuationCard } from '../valuation.js';
+import { companySection } from '../company.js';
 
 const RANGES = { '3M': 92, '6M': 183, '1Y': 365, '3Y': 3 * 365, All: null };
 const DEFAULT_RANGE = '6M';
@@ -80,5 +81,6 @@ export async function renderTicker(context, [symbol]) {
       h('p', { class: 'muted small', text: 'v0 buys while the price is above the dashed 200-day MA (with 6-month momentum above '
         + `${Math.round(strategy.config.mom_threshold * 100)}%) and sells on a close below it. Long ranges merge candles into weeks/months.` })),
     valuationCard(context.daily, symbol),
+    await companySection(manifest, symbol),
   );
 }
