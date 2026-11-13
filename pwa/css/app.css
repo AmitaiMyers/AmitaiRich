@@ -76,7 +76,8 @@ h3 { font-size: .95rem; margin: 0 0 8px; color: var(--muted); font-weight: 600; 
 .tabs a { padding: 6px 12px; border-radius: 8px; }
 .tabs a:hover { background: var(--surface-2); text-decoration: none; }
 .tabs a.active { color: var(--text); background: var(--surface-2); }
-.search { margin-left: auto; }
+.search { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.search-go { padding: 7px 10px; }
 .search input { width: 140px; text-transform: uppercase; }
 
 .bottom-tabs {

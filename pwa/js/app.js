@@ -51,14 +51,28 @@ async function route() {
   }
 }
 
+const searchInput = document.getElementById('search-input');
+const normalizeSymbol = (text) => text.trim().toUpperCase().replace(/\./g, '-');
+
+function openSymbol(symbol) {
+  searchInput.value = '';
+  searchInput.blur();
+  location.hash = `#/t/${encodeURIComponent(symbol)}`;
+}
+
 document.getElementById('search').addEventListener('submit', (event) => {
   event.preventDefault();
-  const input = document.getElementById('search-input');
-  const symbol = input.value.trim().toUpperCase().replace(/\./g, '-');
-  if (!symbol) return;
-  input.value = '';
-  input.blur();
-  location.hash = `#/t/${encodeURIComponent(symbol)}`;
+  const symbol = normalizeSymbol(searchInput.value);
+  if (symbol) openSymbol(symbol);
+});
+
+// Picking a ticker from the suggestion list opens it at once (phones show no Enter for that).
+// A pick arrives as an input event that is not plain typing: no inputType (Safari) or
+// 'insertReplacementText' (Chrome). Typing "A" on the way to "AAPL" must not jump to A.
+searchInput.addEventListener('input', (event) => {
+  const picked = !event.inputType || event.inputType === 'insertReplacementText';
+  const symbol = normalizeSymbol(searchInput.value);
+  if (picked && context !== null && context.tickers.has(symbol)) openSymbol(symbol);
 });
 
 async function registerServiceWorker() {
