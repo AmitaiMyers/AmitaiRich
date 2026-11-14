@@ -17,3 +17,7 @@ date,strategy,ticker,reason
 2026-11-12,v0,RBLX,6-month momentum fell to +18% (needs > 25%)
 2026-11-12,v0,HST,6-month momentum fell to +24% (needs > 25%)
 2026-11-12,v7,UDR,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-13,v0,MSFT,6-month momentum fell to +25% (needs > 25%)
+2026-11-13,v0,ZBH,6-month momentum fell to +24% (needs > 25%)
+2026-11-13,v7,FTV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-13,v7,CFG,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
