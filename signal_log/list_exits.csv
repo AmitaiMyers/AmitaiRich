@@ -21,3 +21,35 @@ date,strategy,ticker,reason
 2026-11-13,v0,ZBH,6-month momentum fell to +24% (needs > 25%)
 2026-11-13,v7,FTV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-13,v7,CFG,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-16,v0,DELL,SELL signal: closed -6.7% below its 200-day MA
+2026-11-16,v0,OSCR,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,CTSH,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,PATH,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,TRI,6-month momentum fell to +22% (needs > 25%)
+2026-11-16,v0,AI,6-month momentum fell to +22% (needs > 25%)
+2026-11-16,v0,SWKS,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,GDDY,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,IT,6-month momentum fell to +21% (needs > 25%)
+2026-11-16,v0,DNA,SELL signal: closed -1.6% below its 200-day MA
+2026-11-16,v0,ABT,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,VRSK,6-month momentum fell to +25% (needs > 25%)
+2026-11-16,v0,PLTR,6-month momentum fell to +19% (needs > 25%)
+2026-11-16,v0,BBWI,SELL signal: closed -1.4% below its 200-day MA
+2026-11-16,v0,KDP,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,JNJ,6-month momentum fell to +25% (needs > 25%)
+2026-11-16,v0,MMM,6-month momentum fell to +21% (needs > 25%)
+2026-11-16,v0,WLY,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,OMC,6-month momentum fell to +23% (needs > 25%)
+2026-11-16,v0,GRMN,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,CRM,6-month momentum fell to +20% (needs > 25%)
+2026-11-16,v0,AMD,6-month momentum fell to +20% (needs > 25%)
+2026-11-16,v0,EMR,6-month momentum fell to +22% (needs > 25%)
+2026-11-16,v0,APA,6-month momentum fell to +19% (needs > 25%)
+2026-11-16,v0,ZS,6-month momentum fell to +9% (needs > 25%)
+2026-11-16,v0,ECL,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,APH,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v0,SIRI,6-month momentum fell to +25% (needs > 25%)
+2026-11-16,v0,STE,6-month momentum fell to +24% (needs > 25%)
+2026-11-16,v7,MU,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-16,v7,FRT,ranked 11 at the 2026-11-16 rebalance (list = top 10)
+2026-11-16,v7,AME,ranked 12 at the 2026-11-16 rebalance (list = top 10)
