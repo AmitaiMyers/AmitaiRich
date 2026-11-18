@@ -53,3 +53,16 @@ date,strategy,ticker,reason
 2026-11-16,v7,MU,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-16,v7,FRT,ranked 11 at the 2026-11-16 rebalance (list = top 10)
 2026-11-16,v7,AME,ranked 12 at the 2026-11-16 rebalance (list = top 10)
+2026-11-17,v0,HAS,6-month momentum fell to +24% (needs > 25%)
+2026-11-17,v0,CNC,6-month momentum fell to +23% (needs > 25%)
+2026-11-17,v0,PAYX,6-month momentum fell to +23% (needs > 25%)
+2026-11-17,v0,INCY,6-month momentum fell to +25% (needs > 25%)
+2026-11-17,v0,ERIE,6-month momentum fell to +24% (needs > 25%)
+2026-11-17,v0,GEN,6-month momentum fell to +22% (needs > 25%)
+2026-11-17,v0,BRO,6-month momentum fell to +25% (needs > 25%)
+2026-11-17,v0,DXCM,6-month momentum fell to +23% (needs > 25%)
+2026-11-17,v0,GIB,6-month momentum fell to +25% (needs > 25%)
+2026-11-17,v0,EXPD,6-month momentum fell to +22% (needs > 25%)
+2026-11-17,v0,S,6-month momentum fell to +20% (needs > 25%)
+2026-11-17,v7,APP,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-17,v7,UDR,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
