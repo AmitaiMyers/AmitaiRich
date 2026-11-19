@@ -66,3 +66,12 @@ date,strategy,ticker,reason
 2026-11-17,v0,S,6-month momentum fell to +20% (needs > 25%)
 2026-11-17,v7,APP,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-17,v7,UDR,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-18,v0,APH,6-month momentum fell to +24% (needs > 25%)
+2026-11-18,v0,VTRS,6-month momentum fell to +24% (needs > 25%)
+2026-11-18,v0,MRK,6-month momentum fell to +24% (needs > 25%)
+2026-11-18,v0,MET,6-month momentum fell to +22% (needs > 25%)
+2026-11-18,v0,GPN,6-month momentum fell to +22% (needs > 25%)
+2026-11-18,v0,HRB,6-month momentum fell to +23% (needs > 25%)
+2026-11-18,v0,FAST,6-month momentum fell to +25% (needs > 25%)
+2026-11-18,v0,TSCO,6-month momentum fell to +25% (needs > 25%)
+2026-11-18,v0,DAL,6-month momentum fell to +15% (needs > 25%)
