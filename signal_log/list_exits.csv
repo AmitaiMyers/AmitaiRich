@@ -75,3 +75,22 @@ date,strategy,ticker,reason
 2026-11-18,v0,FAST,6-month momentum fell to +25% (needs > 25%)
 2026-11-18,v0,TSCO,6-month momentum fell to +25% (needs > 25%)
 2026-11-18,v0,DAL,6-month momentum fell to +15% (needs > 25%)
+2026-11-19,v0,WSM,6-month momentum fell to +16% (needs > 25%)
+2026-11-19,v0,ULTA,6-month momentum fell to +25% (needs > 25%)
+2026-11-19,v0,CPAY,6-month momentum fell to +25% (needs > 25%)
+2026-11-19,v0,MAS,6-month momentum fell to +25% (needs > 25%)
+2026-11-19,v0,RCL,6-month momentum fell to +18% (needs > 25%)
+2026-11-19,v0,BRO,6-month momentum fell to +24% (needs > 25%)
+2026-11-19,v0,CCEP,6-month momentum fell to +23% (needs > 25%)
+2026-11-19,v0,EW,6-month momentum fell to +25% (needs > 25%)
+2026-11-19,v0,IDXX,6-month momentum fell to +25% (needs > 25%)
+2026-11-19,v0,V,6-month momentum fell to +22% (needs > 25%)
+2026-11-19,v0,ERIE,6-month momentum fell to +21% (needs > 25%)
+2026-11-19,v0,JKHY,6-month momentum fell to +23% (needs > 25%)
+2026-11-19,v0,BR,6-month momentum fell to +23% (needs > 25%)
+2026-11-19,v0,AIZ,6-month momentum fell to +24% (needs > 25%)
+2026-11-19,v0,OMC,6-month momentum fell to +18% (needs > 25%)
+2026-11-19,v7,FTV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-19,v7,VEEV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-19,v7,FRT,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-19,v7,AME,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
