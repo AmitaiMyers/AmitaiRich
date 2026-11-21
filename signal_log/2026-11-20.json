@@ -1,0 +1,8432 @@
+{
+ "date": "2026-11-20",
+ "previous_date": "2026-11-19",
+ "v0": {
+  "name": "v0 \u2014 momentum rider (production)",
+  "list": [
+   {
+    "rank": 1,
+    "ticker": "MRNA",
+    "close": 195.0,
+    "score": 3.1596,
+    "mom_pct": 316.0,
+    "vs_ma200_pct": 94.2
+   },
+   {
+    "rank": 2,
+    "ticker": "APPN",
+    "close": 51.79,
+    "score": 1.4235,
+    "mom_pct": 142.3,
+    "vs_ma200_pct": 68.5
+   },
+   {
+    "rank": 3,
+    "ticker": "PD",
+    "close": 14.63,
+    "score": 1.0319,
+    "mom_pct": 103.2,
+    "vs_ma200_pct": 38.8
+   },
+   {
+    "rank": 4,
+    "ticker": "CRL",
+    "close": 314.32,
+    "score": 0.9608,
+    "mom_pct": 96.1,
+    "vs_ma200_pct": 36.1
+   },
+   {
+    "rank": 5,
+    "ticker": "BMBL",
+    "close": 5.97,
+    "score": 0.9196,
+    "mom_pct": 92.0,
+    "vs_ma200_pct": 68.4
+   },
+   {
+    "rank": 6,
+    "ticker": "BRZE",
+    "close": 46.28,
+    "score": 0.9006,
+    "mom_pct": 90.1,
+    "vs_ma200_pct": 75.5
+   },
+   {
+    "rank": 7,
+    "ticker": "ANF",
+    "close": 137.92,
+    "score": 0.7851,
+    "mom_pct": 78.5,
+    "vs_ma200_pct": 27.0
+   },
+   {
+    "rank": 8,
+    "ticker": "U",
+    "close": 44.75,
+    "score": 0.7501,
+    "mom_pct": 75.0,
+    "vs_ma200_pct": 37.7
+   },
+   {
+    "rank": 9,
+    "ticker": "SDGR",
+    "close": 22.93,
+    "score": 0.7241,
+    "mom_pct": 72.4,
+    "vs_ma200_pct": 29.1
+   },
+   {
+    "rank": 10,
+    "ticker": "AMC",
+    "close": 2.57,
+    "score": 0.702,
+    "mom_pct": 70.2,
+    "vs_ma200_pct": 22.2
+   },
+   {
+    "rank": 11,
+    "ticker": "BILL",
+    "close": 61.44,
+    "score": 0.7001,
+    "mom_pct": 70.0,
+    "vs_ma200_pct": 41.5
+   },
+   {
+    "rank": 12,
+    "ticker": "SBC",
+    "close": 5.17,
+    "score": 0.684,
+    "mom_pct": 68.4,
+    "vs_ma200_pct": 29.3
+   },
+   {
+    "rank": 13,
+    "ticker": "IOVA",
+    "close": 6.9,
+    "score": 0.6788,
+    "mom_pct": 67.9,
+    "vs_ma200_pct": 10.7
+   },
+   {
+    "rank": 14,
+    "ticker": "VEEV",
+    "close": 266.22,
+    "score": 0.6621,
+    "mom_pct": 66.2,
+    "vs_ma200_pct": 23.5
+   },
+   {
+    "rank": 15,
+    "ticker": "BLKB",
+    "close": 48.83,
+    "score": 0.6513,
+    "mom_pct": 65.1,
+    "vs_ma200_pct": 18.4
+   },
+   {
+    "rank": 16,
+    "ticker": "TGTX",
+    "close": 63.34,
+    "score": 0.6295,
+    "mom_pct": 63.0,
+    "vs_ma200_pct": 36.9
+   },
+   {
+    "rank": 17,
+    "ticker": "BBY",
+    "close": 97.95,
+    "score": 0.6274,
+    "mom_pct": 62.7,
+    "vs_ma200_pct": 27.7
+   },
+   {
+    "rank": 18,
+    "ticker": "GTLB",
+    "close": 43.17,
+    "score": 0.615,
+    "mom_pct": 61.5,
+    "vs_ma200_pct": 23.3
+   },
+   {
+    "rank": 19,
+    "ticker": "EVER",
+    "close": 29.0,
+    "score": 0.536,
+    "mom_pct": 53.6,
+    "vs_ma200_pct": 39.0
+   },
+   {
+    "rank": 20,
+    "ticker": "PCOR",
+    "close": 71.76,
+    "score": 0.5317,
+    "mom_pct": 53.2,
+    "vs_ma200_pct": 32.1
+   },
+   {
+    "rank": 21,
+    "ticker": "GCT",
+    "close": 57.82,
+    "score": 0.514,
+    "mom_pct": 51.4,
+    "vs_ma200_pct": 27.0
+   },
+   {
+    "rank": 22,
+    "ticker": "MTD",
+    "close": 1666.88,
+    "score": 0.5111,
+    "mom_pct": 51.1,
+    "vs_ma200_pct": 22.5
+   },
+   {
+    "rank": 23,
+    "ticker": "TECH",
+    "close": 72.67,
+    "score": 0.5107,
+    "mom_pct": 51.1,
+    "vs_ma200_pct": 14.6
+   },
+   {
+    "rank": 24,
+    "ticker": "DOCU",
+    "close": 74.56,
+    "score": 0.5054,
+    "mom_pct": 50.5,
+    "vs_ma200_pct": 32.1
+   },
+   {
+    "rank": 25,
+    "ticker": "RVTY",
+    "close": 145.22,
+    "score": 0.4995,
+    "mom_pct": 49.9,
+    "vs_ma200_pct": 26.2
+   },
+   {
+    "rank": 26,
+    "ticker": "TMO",
+    "close": 669.54,
+    "score": 0.4962,
+    "mom_pct": 49.6,
+    "vs_ma200_pct": 20.0
+   },
+   {
+    "rank": 27,
+    "ticker": "EPAM",
+    "close": 153.24,
+    "score": 0.4923,
+    "mom_pct": 49.2,
+    "vs_ma200_pct": 29.8
+   },
+   {
+    "rank": 28,
+    "ticker": "TNET",
+    "close": 63.06,
+    "score": 0.4896,
+    "mom_pct": 49.0,
+    "vs_ma200_pct": 18.1
+   },
+   {
+    "rank": 29,
+    "ticker": "A",
+    "close": 170.38,
+    "score": 0.4871,
+    "mom_pct": 48.7,
+    "vs_ma200_pct": 22.9
+   },
+   {
+    "rank": 30,
+    "ticker": "SNOW",
+    "close": 254.82,
+    "score": 0.4798,
+    "mom_pct": 48.0,
+    "vs_ma200_pct": 3.8
+   },
+   {
+    "rank": 31,
+    "ticker": "ABSI",
+    "close": 7.51,
+    "score": 0.4725,
+    "mom_pct": 47.3,
+    "vs_ma200_pct": 8.0
+   },
+   {
+    "rank": 32,
+    "ticker": "CDW",
+    "close": 161.78,
+    "score": 0.4668,
+    "mom_pct": 46.7,
+    "vs_ma200_pct": 19.8
+   },
+   {
+    "rank": 33,
+    "ticker": "IQV",
+    "close": 245.82,
+    "score": 0.4641,
+    "mom_pct": 46.4,
+    "vs_ma200_pct": 15.9
+   },
+   {
+    "rank": 34,
+    "ticker": "BDX",
+    "close": 212.78,
+    "score": 0.46,
+    "mom_pct": 46.0,
+    "vs_ma200_pct": 26.2
+   },
+   {
+    "rank": 35,
+    "ticker": "DLTR",
+    "close": 137.96,
+    "score": 0.4525,
+    "mom_pct": 45.3,
+    "vs_ma200_pct": 17.2
+   },
+   {
+    "rank": 36,
+    "ticker": "MPC",
+    "close": 367.19,
+    "score": 0.4499,
+    "mom_pct": 45.0,
+    "vs_ma200_pct": 20.4
+   },
+   {
+    "rank": 37,
+    "ticker": "REGN",
+    "close": 920.69,
+    "score": 0.4443,
+    "mom_pct": 44.4,
+    "vs_ma200_pct": 22.8
+   },
+   {
+    "rank": 38,
+    "ticker": "DOCS",
+    "close": 28.73,
+    "score": 0.4408,
+    "mom_pct": 44.1,
+    "vs_ma200_pct": 14.6
+   },
+   {
+    "rank": 39,
+    "ticker": "SWK",
+    "close": 106.62,
+    "score": 0.4216,
+    "mom_pct": 42.2,
+    "vs_ma200_pct": 22.8
+   },
+   {
+    "rank": 40,
+    "ticker": "MD",
+    "close": 30.22,
+    "score": 0.4214,
+    "mom_pct": 42.1,
+    "vs_ma200_pct": 22.8
+   },
+   {
+    "rank": 41,
+    "ticker": "W",
+    "close": 95.29,
+    "score": 0.4208,
+    "mom_pct": 42.1,
+    "vs_ma200_pct": 7.1
+   },
+   {
+    "rank": 42,
+    "ticker": "LH",
+    "close": 367.13,
+    "score": 0.4193,
+    "mom_pct": 41.9,
+    "vs_ma200_pct": 24.9
+   },
+   {
+    "rank": 43,
+    "ticker": "ALLE",
+    "close": 183.61,
+    "score": 0.4186,
+    "mom_pct": 41.9,
+    "vs_ma200_pct": 21.2
+   },
+   {
+    "rank": 44,
+    "ticker": "ROP",
+    "close": 459.83,
+    "score": 0.4135,
+    "mom_pct": 41.4,
+    "vs_ma200_pct": 24.1
+   },
+   {
+    "rank": 45,
+    "ticker": "CROX",
+    "close": 154.67,
+    "score": 0.4005,
+    "mom_pct": 40.0,
+    "vs_ma200_pct": 34.0
+   },
+   {
+    "rank": 46,
+    "ticker": "MCK",
+    "close": 1069.43,
+    "score": 0.399,
+    "mom_pct": 39.9,
+    "vs_ma200_pct": 21.7
+   },
+   {
+    "rank": 47,
+    "ticker": "IDT",
+    "close": 73.72,
+    "score": 0.3966,
+    "mom_pct": 39.7,
+    "vs_ma200_pct": 19.4
+   },
+   {
+    "rank": 48,
+    "ticker": "CART",
+    "close": 57.31,
+    "score": 0.3903,
+    "mom_pct": 39.0,
+    "vs_ma200_pct": 27.8
+   },
+   {
+    "rank": 49,
+    "ticker": "CRWD",
+    "close": 229.44,
+    "score": 0.3833,
+    "mom_pct": 38.3,
+    "vs_ma200_pct": 30.2
+   },
+   {
+    "rank": 50,
+    "ticker": "RIGL",
+    "close": 40.09,
+    "score": 0.3819,
+    "mom_pct": 38.2,
+    "vs_ma200_pct": 6.2
+   },
+   {
+    "rank": 51,
+    "ticker": "AJG",
+    "close": 279.26,
+    "score": 0.3721,
+    "mom_pct": 37.2,
+    "vs_ma200_pct": 19.5
+   },
+   {
+    "rank": 52,
+    "ticker": "CAH",
+    "close": 272.81,
+    "score": 0.3656,
+    "mom_pct": 36.6,
+    "vs_ma200_pct": 20.8
+   },
+   {
+    "rank": 53,
+    "ticker": "FROG",
+    "close": 100.96,
+    "score": 0.3646,
+    "mom_pct": 36.5,
+    "vs_ma200_pct": 34.3
+   },
+   {
+    "rank": 54,
+    "ticker": "ESTC",
+    "close": 74.79,
+    "score": 0.3645,
+    "mom_pct": 36.5,
+    "vs_ma200_pct": 9.1
+   },
+   {
+    "rank": 55,
+    "ticker": "WDAY",
+    "close": 174.52,
+    "score": 0.3619,
+    "mom_pct": 36.2,
+    "vs_ma200_pct": 11.6
+   },
+   {
+    "rank": 56,
+    "ticker": "PSX",
+    "close": 239.33,
+    "score": 0.361,
+    "mom_pct": 36.1,
+    "vs_ma200_pct": 16.6
+   },
+   {
+    "rank": 57,
+    "ticker": "DUOL",
+    "close": 145.02,
+    "score": 0.3603,
+    "mom_pct": 36.0,
+    "vs_ma200_pct": 16.0
+   },
+   {
+    "rank": 58,
+    "ticker": "VLO",
+    "close": 334.18,
+    "score": 0.3584,
+    "mom_pct": 35.8,
+    "vs_ma200_pct": 12.2
+   },
+   {
+    "rank": 59,
+    "ticker": "ADP",
+    "close": 301.71,
+    "score": 0.3579,
+    "mom_pct": 35.8,
+    "vs_ma200_pct": 24.4
+   },
+   {
+    "rank": 60,
+    "ticker": "TOST",
+    "close": 31.42,
+    "score": 0.3566,
+    "mom_pct": 35.7,
+    "vs_ma200_pct": 6.5
+   },
+   {
+    "rank": 61,
+    "ticker": "FDS",
+    "close": 311.93,
+    "score": 0.3562,
+    "mom_pct": 35.6,
+    "vs_ma200_pct": 22.8
+   },
+   {
+    "rank": 62,
+    "ticker": "VLTO",
+    "close": 116.63,
+    "score": 0.3475,
+    "mom_pct": 34.7,
+    "vs_ma200_pct": 23.9
+   },
+   {
+    "rank": 63,
+    "ticker": "ABBV",
+    "close": 286.2,
+    "score": 0.3445,
+    "mom_pct": 34.4,
+    "vs_ma200_pct": 19.3
+   },
+   {
+    "rank": 64,
+    "ticker": "TGT",
+    "close": 165.83,
+    "score": 0.3398,
+    "mom_pct": 34.0,
+    "vs_ma200_pct": 21.8
+   },
+   {
+    "rank": 65,
+    "ticker": "TTEK",
+    "close": 36.95,
+    "score": 0.3391,
+    "mom_pct": 33.9,
+    "vs_ma200_pct": 11.6
+   },
+   {
+    "rank": 66,
+    "ticker": "HALO",
+    "close": 91.35,
+    "score": 0.3371,
+    "mom_pct": 33.7,
+    "vs_ma200_pct": 6.4
+   },
+   {
+    "rank": 67,
+    "ticker": "DGX",
+    "close": 258.28,
+    "score": 0.3334,
+    "mom_pct": 33.3,
+    "vs_ma200_pct": 19.4
+   },
+   {
+    "rank": 68,
+    "ticker": "ASAN",
+    "close": 8.82,
+    "score": 0.3323,
+    "mom_pct": 33.2,
+    "vs_ma200_pct": 9.2
+   },
+   {
+    "rank": 69,
+    "ticker": "INSM",
+    "close": 141.33,
+    "score": 0.3303,
+    "mom_pct": 33.0,
+    "vs_ma200_pct": 15.3
+   },
+   {
+    "rank": 70,
+    "ticker": "BAX",
+    "close": 25.39,
+    "score": 0.325,
+    "mom_pct": 32.5,
+    "vs_ma200_pct": 16.7
+   },
+   {
+    "rank": 71,
+    "ticker": "PANW",
+    "close": 343.32,
+    "score": 0.3175,
+    "mom_pct": 31.8,
+    "vs_ma200_pct": 22.0
+   },
+   {
+    "rank": 72,
+    "ticker": "SJM",
+    "close": 133.68,
+    "score": 0.3167,
+    "mom_pct": 31.7,
+    "vs_ma200_pct": 20.1
+   },
+   {
+    "rank": 73,
+    "ticker": "J",
+    "close": 150.62,
+    "score": 0.3165,
+    "mom_pct": 31.6,
+    "vs_ma200_pct": 11.7
+   },
+   {
+    "rank": 74,
+    "ticker": "PTC",
+    "close": 195.1,
+    "score": 0.3162,
+    "mom_pct": 31.6,
+    "vs_ma200_pct": 30.3
+   },
+   {
+    "rank": 75,
+    "ticker": "HAS",
+    "close": 112.41,
+    "score": 0.3038,
+    "mom_pct": 30.4,
+    "vs_ma200_pct": 20.5
+   },
+   {
+    "rank": 76,
+    "ticker": "AMGN",
+    "close": 435.64,
+    "score": 0.2989,
+    "mom_pct": 29.9,
+    "vs_ma200_pct": 15.0
+   },
+   {
+    "rank": 77,
+    "ticker": "WTW",
+    "close": 331.01,
+    "score": 0.295,
+    "mom_pct": 29.5,
+    "vs_ma200_pct": 11.9
+   },
+   {
+    "rank": 78,
+    "ticker": "MSI",
+    "close": 520.21,
+    "score": 0.2946,
+    "mom_pct": 29.5,
+    "vs_ma200_pct": 16.5
+   },
+   {
+    "rank": 79,
+    "ticker": "MDT",
+    "close": 99.94,
+    "score": 0.2935,
+    "mom_pct": 29.3,
+    "vs_ma200_pct": 14.6
+   },
+   {
+    "rank": 80,
+    "ticker": "TRV",
+    "close": 393.24,
+    "score": 0.2929,
+    "mom_pct": 29.3,
+    "vs_ma200_pct": 16.6
+   },
+   {
+    "rank": 81,
+    "ticker": "TYL",
+    "close": 404.44,
+    "score": 0.2911,
+    "mom_pct": 29.1,
+    "vs_ma200_pct": 19.9
+   },
+   {
+    "rank": 82,
+    "ticker": "BIIB",
+    "close": 249.59,
+    "score": 0.2881,
+    "mom_pct": 28.8,
+    "vs_ma200_pct": 20.6
+   },
+   {
+    "rank": 83,
+    "ticker": "ABNB",
+    "close": 170.36,
+    "score": 0.2872,
+    "mom_pct": 28.7,
+    "vs_ma200_pct": 13.3
+   },
+   {
+    "rank": 84,
+    "ticker": "WAT",
+    "close": 440.45,
+    "score": 0.2865,
+    "mom_pct": 28.6,
+    "vs_ma200_pct": 17.4
+   },
+   {
+    "rank": 85,
+    "ticker": "DHR",
+    "close": 220.36,
+    "score": 0.2861,
+    "mom_pct": 28.6,
+    "vs_ma200_pct": 9.8
+   },
+   {
+    "rank": 86,
+    "ticker": "VERX",
+    "close": 17.23,
+    "score": 0.282,
+    "mom_pct": 28.2,
+    "vs_ma200_pct": 30.6
+   },
+   {
+    "rank": 87,
+    "ticker": "CTAS",
+    "close": 220.01,
+    "score": 0.2785,
+    "mom_pct": 27.8,
+    "vs_ma200_pct": 14.8
+   },
+   {
+    "rank": 88,
+    "ticker": "HUM",
+    "close": 390.0,
+    "score": 0.2721,
+    "mom_pct": 27.2,
+    "vs_ma200_pct": 21.2
+   },
+   {
+    "rank": 89,
+    "ticker": "NET",
+    "close": 274.96,
+    "score": 0.272,
+    "mom_pct": 27.2,
+    "vs_ma200_pct": 7.3
+   },
+   {
+    "rank": 90,
+    "ticker": "MRSH",
+    "close": 206.22,
+    "score": 0.2711,
+    "mom_pct": 27.1,
+    "vs_ma200_pct": 16.3
+   },
+   {
+    "rank": 91,
+    "ticker": "BRO",
+    "close": 73.07,
+    "score": 0.2699,
+    "mom_pct": 27.0,
+    "vs_ma200_pct": 10.6
+   },
+   {
+    "rank": 92,
+    "ticker": "LLY",
+    "close": 1347.11,
+    "score": 0.2682,
+    "mom_pct": 26.8,
+    "vs_ma200_pct": 20.8
+   },
+   {
+    "rank": 93,
+    "ticker": "GPN",
+    "close": 91.83,
+    "score": 0.2619,
+    "mom_pct": 26.2,
+    "vs_ma200_pct": 17.5
+   },
+   {
+    "rank": 94,
+    "ticker": "MA",
+    "close": 625.59,
+    "score": 0.2589,
+    "mom_pct": 25.9,
+    "vs_ma200_pct": 15.2
+   },
+   {
+    "rank": 95,
+    "ticker": "ACN",
+    "close": 221.17,
+    "score": 0.2588,
+    "mom_pct": 25.9,
+    "vs_ma200_pct": 18.2
+   },
+   {
+    "rank": 96,
+    "ticker": "GEHC",
+    "close": 80.64,
+    "score": 0.2569,
+    "mom_pct": 25.7,
+    "vs_ma200_pct": 15.3
+   },
+   {
+    "rank": 97,
+    "ticker": "GILD",
+    "close": 166.43,
+    "score": 0.2539,
+    "mom_pct": 25.4,
+    "vs_ma200_pct": 17.8
+   },
+   {
+    "rank": 98,
+    "ticker": "AIZ",
+    "close": 316.65,
+    "score": 0.2508,
+    "mom_pct": 25.1,
+    "vs_ma200_pct": 22.1
+   }
+  ],
+  "new": [
+   "BRO",
+   "GPN",
+   "AIZ"
+  ],
+  "dropped": [
+   {
+    "ticker": "CHPT",
+    "reason": "6-month momentum fell to +24% (needs > 25%)"
+   },
+   {
+    "ticker": "ETSY",
+    "reason": "6-month momentum fell to +23% (needs > 25%)"
+   },
+   {
+    "ticker": "TEM",
+    "reason": "SELL signal: closed -6.1% below its 200-day MA"
+   },
+   {
+    "ticker": "ANET",
+    "reason": "SELL signal: closed -0.6% below its 200-day MA"
+   },
+   {
+    "ticker": "NTAP",
+    "reason": "6-month momentum fell to +14% (needs > 25%)"
+   },
+   {
+    "ticker": "HPE",
+    "reason": "SELL signal: closed -3.9% below its 200-day MA"
+   },
+   {
+    "ticker": "SHOP",
+    "reason": "SELL signal: closed -5.2% below its 200-day MA"
+   },
+   {
+    "ticker": "PYPL",
+    "reason": "6-month momentum fell to +21% (needs > 25%)"
+   },
+   {
+    "ticker": "EL",
+    "reason": "6-month momentum fell to +13% (needs > 25%)"
+   },
+   {
+    "ticker": "S",
+    "reason": "6-month momentum fell to +22% (needs > 25%)"
+   },
+   {
+    "ticker": "HPQ",
+    "reason": "6-month momentum fell to +13% (needs > 25%)"
+   },
+   {
+    "ticker": "COR",
+    "reason": "6-month momentum fell to +24% (needs > 25%)"
+   },
+   {
+    "ticker": "ZBRA",
+    "reason": "6-month momentum fell to +18% (needs > 25%)"
+   },
+   {
+    "ticker": "DG",
+    "reason": "6-month momentum fell to +25% (needs > 25%)"
+   },
+   {
+    "ticker": "GPC",
+    "reason": "6-month momentum fell to +23% (needs > 25%)"
+   },
+   {
+    "ticker": "WST",
+    "reason": "6-month momentum fell to +24% (needs > 25%)"
+   },
+   {
+    "ticker": "ALL",
+    "reason": "6-month momentum fell to +24% (needs > 25%)"
+   },
+   {
+    "ticker": "HRB",
+    "reason": "6-month momentum fell to +21% (needs > 25%)"
+   }
+  ]
+ },
+ "v7": {
+  "name": "v7 \u2014 earnings-led (beat streak + SUE + revenue acceleration)",
+  "list": [
+   {
+    "ticker": "MET",
+    "close": 95.67,
+    "score": 0.8527,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.571,
+    "rev_accel": 31.942,
+    "eps_surprise": 0.42,
+    "rank": 1
+   },
+   {
+    "ticker": "REGN",
+    "close": 920.69,
+    "score": 0.8288,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.134,
+    "rev_accel": 0.195,
+    "eps_surprise": 23.54,
+    "rank": 2
+   },
+   {
+    "ticker": "EXPD",
+    "close": 192.56,
+    "score": 0.8259,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.371,
+    "rev_accel": 0.098,
+    "eps_surprise": 18.94,
+    "rank": 3
+   },
+   {
+    "ticker": "MPC",
+    "close": 367.19,
+    "score": 0.8221,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.622,
+    "rev_accel": 0.071,
+    "eps_surprise": 3.56,
+    "rank": 4
+   },
+   {
+    "ticker": "XEL",
+    "close": 79.3,
+    "score": 0.8207,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.757,
+    "rev_accel": null,
+    "eps_surprise": 9.14,
+    "rank": 5
+   },
+   {
+    "ticker": "FTV",
+    "close": 64.16,
+    "score": 0.8201,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 2.576,
+    "rev_accel": 0.356,
+    "eps_surprise": 9.38,
+    "rank": 6
+   },
+   {
+    "ticker": "NTAP",
+    "close": 157.65,
+    "score": 0.8188,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 3.855,
+    "rev_accel": 0.042,
+    "eps_surprise": 7.22,
+    "rank": 7
+   },
+   {
+    "ticker": "VEEV",
+    "close": 266.22,
+    "score": 0.7986,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 5.977,
+    "rev_accel": 0.013,
+    "eps_surprise": 5.77,
+    "rank": 8
+   },
+   {
+    "ticker": "TRGP",
+    "close": 278.3,
+    "score": 0.7664,
+    "buyable_today": true,
+    "beat_streak": 4.0,
+    "sue": 1.397,
+    "rev_accel": 0.306,
+    "eps_surprise": 3.6,
+    "rank": 9
+   },
+   {
+    "ticker": "MDT",
+    "close": 99.94,
+    "score": 0.7659,
+    "buyable_today": false,
+    "beat_streak": 4.0,
+    "sue": 2.115,
+    "rev_accel": 0.039,
+    "eps_surprise": 4.51,
+    "rank": 10
+   }
+  ],
+  "new": [
+   "FTV",
+   "VEEV"
+  ],
+  "dropped": [
+   {
+    "ticker": "ADI",
+    "reason": "fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+   },
+   {
+    "ticker": "DGX",
+    "reason": "ranked 12 at the 2026-11-20 rebalance (list = top 10)"
+   }
+  ]
+ },
+ "paper": {
+  "accounts": [
+   {
+    "strategy": "v0",
+    "days": 9,
+    "value": 29689.0,
+    "return": -7.22,
+    "maxDD": -7.2,
+    "trades": 1
+   },
+   {
+    "strategy": "v0m",
+    "days": 9,
+    "value": 29861.0,
+    "return": -6.68,
+    "maxDD": -6.7,
+    "trades": 1
+   },
+   {
+    "strategy": "v7",
+    "days": 9,
+    "value": 30066.0,
+    "return": -6.04,
+    "maxDD": -7.1,
+    "trades": 1
+   },
+   {
+    "strategy": "BENCH SPY",
+    "days": 9,
+    "value": 29444.0,
+    "return": -7.9,
+    "maxDD": -9.1,
+    "trades": 0
+   },
+   {
+    "strategy": "BENCH RSP",
+    "days": 9,
+    "value": 30033.0,
+    "return": -6.05,
+    "maxDD": -6.8,
+    "trades": 0
+   }
+  ],
+  "orders": {
+   "v0": [
+    "SELL HPE",
+    "BUY REGN"
+   ],
+   "v0m": [
+    "SELL HPE",
+    "BUY REGN",
+    "BUY LH"
+   ],
+   "v7": []
+  },
+  "holdings": {
+   "v0": [
+    "MRNA",
+    "CRL",
+    "BBY",
+    "CDW",
+    "CRWD",
+    "MTD",
+    "RVTY",
+    "HPE",
+    "WDAY",
+    "DLTR",
+    "A",
+    "IQV",
+    "TMO",
+    "MPC",
+    "ACN",
+    "TECH",
+    "VEEV",
+    "BDX",
+    "SWK"
+   ],
+   "v0m": [
+    "CRL",
+    "BBY",
+    "CDW",
+    "CRWD",
+    "MTD",
+    "RVTY",
+    "HPE",
+    "WDAY",
+    "DLTR",
+    "A",
+    "IQV",
+    "TMO",
+    "MPC",
+    "ACN",
+    "TECH",
+    "VEEV",
+    "BDX",
+    "SWK"
+   ],
+   "v7": [
+    "MET",
+    "REGN",
+    "EXPD",
+    "MPC",
+    "XEL",
+    "FTV",
+    "NTAP",
+    "UDR",
+    "VEEV",
+    "APP"
+   ]
+  },
+  "status": "Day 9 of paper trading (data to 2026-11-20)."
+ },
+ "magic": {
+  "as_of": "2026-11-13",
+  "status": "interrupted by Yahoo (YFRateLimitError) after 120 of 479 tickers; the rest keep their older data",
+  "n_scanned": 719,
+  "n_ranked": 535,
+  "n_excluded": 184,
+  "top": [
+   {
+    "rank": 1,
+    "ticker": "BMBL",
+    "magic_score": 11,
+    "roc_rank": 4,
+    "ey_rank": 7,
+    "roc_pct": 1915.3,
+    "ey_pct": 20.2,
+    "sector": "Communication Services"
+   },
+   {
+    "rank": 2,
+    "ticker": "SPRO",
+    "magic_score": 16,
+    "roc_rank": 15,
+    "ey_rank": 1,
+    "roc_pct": 642.6,
+    "ey_pct": 69.6,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 3,
+    "ticker": "BCRX",
+    "magic_score": 23,
+    "roc_rank": 2,
+    "ey_rank": 21,
+    "roc_pct": 5457.7,
+    "ey_pct": 15.3,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 4,
+    "ticker": "HRMY",
+    "magic_score": 25,
+    "roc_rank": 1,
+    "ey_rank": 24,
+    "roc_pct": 15233.4,
+    "ey_pct": 14.8,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 5,
+    "ticker": "SNDK",
+    "magic_score": 42,
+    "roc_rank": 27,
+    "ey_rank": 15,
+    "roc_pct": 422.0,
+    "ey_pct": 16.4,
+    "sector": "Technology"
+   },
+   {
+    "rank": 6,
+    "ticker": "EVER",
+    "magic_score": 45,
+    "roc_rank": 10,
+    "ey_rank": 35,
+    "roc_pct": 784.2,
+    "ey_pct": 11.7,
+    "sector": "Communication Services"
+   },
+   {
+    "rank": 7,
+    "ticker": "PXED",
+    "magic_score": 56,
+    "roc_rank": 52,
+    "ey_rank": 4,
+    "roc_pct": 231.9,
+    "ey_pct": 26.7,
+    "sector": "Consumer Defensive"
+   },
+   {
+    "rank": 8,
+    "ticker": "VXRT",
+    "magic_score": 58,
+    "roc_rank": 56,
+    "ey_rank": 2,
+    "roc_pct": 209.2,
+    "ey_pct": 48.4,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 9,
+    "ticker": "SBC",
+    "magic_score": 66,
+    "roc_rank": 49,
+    "ey_rank": 17,
+    "roc_pct": 251.1,
+    "ey_pct": 15.8,
+    "sector": "Industrials"
+   },
+   {
+    "rank": 10,
+    "ticker": "GEN",
+    "magic_score": 71,
+    "roc_rank": 3,
+    "ey_rank": 68,
+    "roc_pct": 3244.9,
+    "ey_pct": 9.0,
+    "sector": "Technology"
+   },
+   {
+    "rank": 11,
+    "ticker": "ADBE",
+    "magic_score": 72,
+    "roc_rank": 26,
+    "ey_rank": 46,
+    "roc_pct": 430.0,
+    "ey_pct": 10.6,
+    "sector": "Technology"
+   },
+   {
+    "rank": 12,
+    "ticker": "GDDY",
+    "magic_score": 80,
+    "roc_rank": 14,
+    "ey_rank": 66,
+    "roc_pct": 686.1,
+    "ey_pct": 9.1,
+    "sector": "Technology"
+   },
+   {
+    "rank": 13,
+    "ticker": "PRDO",
+    "magic_score": 88,
+    "roc_rank": 60,
+    "ey_rank": 28,
+    "roc_pct": 197.2,
+    "ey_pct": 13.8,
+    "sector": "Consumer Defensive"
+   },
+   {
+    "rank": 14,
+    "ticker": "IT",
+    "magic_score": 90,
+    "roc_rank": 39,
+    "ey_rank": 51,
+    "roc_pct": 330.7,
+    "ey_pct": 10.4,
+    "sector": "Technology"
+   },
+   {
+    "rank": 15,
+    "ticker": "RIGL",
+    "magic_score": 91,
+    "roc_rank": 28,
+    "ey_rank": 63,
+    "roc_pct": 416.4,
+    "ey_pct": 9.2,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 16,
+    "ticker": "MO",
+    "magic_score": 91,
+    "roc_rank": 11,
+    "ey_rank": 80,
+    "roc_pct": 739.4,
+    "ey_pct": 8.5,
+    "sector": "Consumer Defensive"
+   },
+   {
+    "rank": 17,
+    "ticker": "BKNG",
+    "magic_score": 97,
+    "roc_rank": 12,
+    "ey_rank": 85,
+    "roc_pct": 688.5,
+    "ey_pct": 8.2,
+    "sector": "Consumer Cyclical"
+   },
+   {
+    "rank": 18,
+    "ticker": "XYZ",
+    "magic_score": 101,
+    "roc_rank": 40,
+    "ey_rank": 61,
+    "roc_pct": 323.8,
+    "ey_pct": 9.3,
+    "sector": "Technology"
+   },
+   {
+    "rank": 19,
+    "ticker": "UIS",
+    "magic_score": 105,
+    "roc_rank": 97,
+    "ey_rank": 8,
+    "roc_pct": 139.4,
+    "ey_pct": 18.8,
+    "sector": "Technology"
+   },
+   {
+    "rank": 20,
+    "ticker": "MD",
+    "magic_score": 113,
+    "roc_rank": 38,
+    "ey_rank": 75,
+    "roc_pct": 335.4,
+    "ey_pct": 8.6,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 21,
+    "ticker": "MTCH",
+    "magic_score": 114,
+    "roc_rank": 41,
+    "ey_rank": 73,
+    "roc_pct": 318.2,
+    "ey_pct": 8.8,
+    "sector": "Communication Services"
+   },
+   {
+    "rank": 22,
+    "ticker": "VSNT",
+    "magic_score": 116,
+    "roc_rank": 103,
+    "ey_rank": 13,
+    "roc_pct": 136.0,
+    "ey_pct": 16.6,
+    "sector": "Communication Services"
+   },
+   {
+    "rank": 23,
+    "ticker": "INTU",
+    "magic_score": 119,
+    "roc_rank": 32,
+    "ey_rank": 87,
+    "roc_pct": 378.5,
+    "ey_pct": 8.1,
+    "sector": "Technology"
+   },
+   {
+    "rank": 24,
+    "ticker": "CI",
+    "magic_score": 120,
+    "roc_rank": 51,
+    "ey_rank": 69,
+    "roc_pct": 232.0,
+    "ey_pct": 9.0,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 25,
+    "ticker": "TNET",
+    "magic_score": 124,
+    "roc_rank": 35,
+    "ey_rank": 89,
+    "roc_pct": 358.0,
+    "ey_pct": 8.0,
+    "sector": "Industrials"
+   },
+   {
+    "rank": 26,
+    "ticker": "PBI",
+    "magic_score": 130,
+    "roc_rank": 91,
+    "ey_rank": 39,
+    "roc_pct": 147.0,
+    "ey_pct": 11.1,
+    "sector": "Industrials"
+   },
+   {
+    "rank": 27,
+    "ticker": "YELP",
+    "magic_score": 131,
+    "roc_rank": 113,
+    "ey_rank": 18,
+    "roc_pct": 123.9,
+    "ey_pct": 15.6,
+    "sector": "Communication Services"
+   },
+   {
+    "rank": 28,
+    "ticker": "COLL",
+    "magic_score": 131,
+    "roc_rank": 9,
+    "ey_rank": 122,
+    "roc_pct": 792.1,
+    "ey_pct": 7.1,
+    "sector": "Healthcare"
+   },
+   {
+    "rank": 29,
+    "ticker": "MU",
+    "magic_score": 137,
+    "roc_rank": 117,
+    "ey_rank": 20,
+    "roc_pct": 119.0,
+    "ey_pct": 15.5,
+    "sector": "Technology"
+   },
+   {
+    "rank": 30,
+    "ticker": "BMY",
+    "magic_score": 140,
+    "roc_rank": 81,
+    "ey_rank": 59,
+    "roc_pct": 154.5,
+    "ey_pct": 9.4,
+    "sector": "Healthcare"
+   }
+  ],
+  "ranks": {
+   "BMBL": 1,
+   "SPRO": 2,
+   "BCRX": 3,
+   "HRMY": 4,
+   "SNDK": 5,
+   "EVER": 6,
+   "PXED": 7,
+   "VXRT": 8,
+   "SBC": 9,
+   "GEN": 10,
+   "ADBE": 11,
+   "GDDY": 12,
+   "PRDO": 13,
+   "IT": 14,
+   "RIGL": 15,
+   "MO": 16,
+   "BKNG": 17,
+   "XYZ": 18,
+   "UIS": 19,
+   "MD": 20,
+   "MTCH": 21,
+   "VSNT": 22,
+   "INTU": 23,
+   "CI": 24,
+   "TNET": 25,
+   "PBI": 26,
+   "YELP": 27,
+   "COLL": 28,
+   "MU": 29,
+   "BMY": 30,
+   "STRA": 31,
+   "HRB": 32,
+   "CROX": 33,
+   "NFLX": 34,
+   "FICO": 35,
+   "DOX": 36,
+   "EME": 37,
+   "DELL": 38,
+   "BLKB": 39,
+   "HPQ": 40,
+   "WLY": 41,
+   "EXPE": 42,
+   "DECK": 43,
+   "HAS": 44,
+   "CTSH": 45,
+   "HALO": 46,
+   "FOX": 47,
+   "NTAP": 48,
+   "IDT": 49,
+   "OTIS": 50,
+   "HON": 51,
+   "SIRI": 52,
+   "LDOS": 53,
+   "DLX": 54,
+   "AU": 55,
+   "KFY": 56,
+   "UNH": 57,
+   "FOXA": 58,
+   "ETSY": 59,
+   "GIS": 60,
+   "FIS": 61,
+   "FIX": 62,
+   "APP": 63,
+   "VLO": 64,
+   "BBWI": 65,
+   "KVUE": 66,
+   "CSCO": 67,
+   "PTON": 68,
+   "INVA": 69,
+   "ZBRA": 70,
+   "MPC": 71,
+   "BAH": 72,
+   "FFIV": 73,
+   "DPZ": 74,
+   "PFE": 75,
+   "MCK": 76,
+   "TRMB": 77,
+   "EPAM": 78,
+   "GILD": 79,
+   "DAVE": 80,
+   "PAYX": 81,
+   "ADSK": 82,
+   "BR": 83,
+   "CF": 84,
+   "KHC": 85,
+   "CPAY": 86,
+   "PTC": 87,
+   "BKE": 88,
+   "NEM": 89,
+   "GEHC": 90,
+   "JKHY": 91,
+   "ROP": 92,
+   "RDDT": 93,
+   "AOS": 94,
+   "COR": 95,
+   "CVS": 96,
+   "CDW": 97,
+   "PM": 98,
+   "SJM": 99,
+   "MKC": 100,
+   "WDC": 101,
+   "UBER": 102,
+   "TPR": 103,
+   "ZM": 104,
+   "TTEK": 105,
+   "VRSN": 106,
+   "NWSA": 107,
+   "VRSK": 108,
+   "MAS": 109,
+   "IQV": 110,
+   "ABBV": 111,
+   "APA": 112,
+   "ZTS": 113,
+   "LMT": 114,
+   "NVR": 115,
+   "CRM": 116,
+   "VLTO": 117,
+   "RMD": 118,
+   "FOUR": 119,
+   "ANF": 120,
+   "NWS": 121,
+   "SWK": 122,
+   "ALGN": 123,
+   "ADP": 124,
+   "IBM": 125,
+   "SMCI": 126,
+   "EXPD": 127,
+   "CTVA": 128,
+   "GTM": 129,
+   "ABNB": 130,
+   "XYL": 131,
+   "AMGN": 132,
+   "ALNY": 133,
+   "FRT": 134,
+   "CNC": 135,
+   "DVA": 136,
+   "LII": 137,
+   "JBL": 138,
+   "AVY": 139,
+   "EBAY": 140,
+   "UPWK": 141,
+   "SNA": 142,
+   "HSY": 143,
+   "LRCX": 144,
+   "CAH": 145,
+   "TAP": 146,
+   "PSX": 147,
+   "BSX": 148,
+   "FSLR": 149,
+   "EOG": 150,
+   "PSA": 151,
+   "OMC": 152,
+   "ITW": 153,
+   "GCT": 154,
+   "YUM": 155,
+   "XPOF": 156,
+   "BBY": 157,
+   "CMCSA": 158,
+   "HLT": 159,
+   "UHS": 160,
+   "TDG": 161,
+   "CAG": 162,
+   "AAPL": 163,
+   "CL": 164,
+   "KO": 165,
+   "PEP": 166,
+   "CART": 167,
+   "MAR": 168,
+   "TTD": 169,
+   "RL": 170,
+   "HAL": 171,
+   "INVH": 172,
+   "SPG": 173,
+   "STZ": 174,
+   "EXE": 175,
+   "ROL": 176,
+   "NVDA": 177,
+   "AVGO": 178,
+   "ESS": 179,
+   "HCA": 180,
+   "PG": 181,
+   "GME": 182,
+   "TOST": 183,
+   "DOV": 184,
+   "CHD": 185,
+   "CLX": 186,
+   "VRT": 187,
+   "NUE": 188,
+   "PSKY": 189,
+   "GD": 190,
+   "DOCS": 191,
+   "CHTR": 192,
+   "WSM": 193,
+   "PHM": 194,
+   "O": 195,
+   "ANET": 196,
+   "IEX": 197,
+   "LOW": 198,
+   "VEEV": 199,
+   "MSI": 200,
+   "REG": 201,
+   "BKR": 202,
+   "COP": 203,
+   "CMI": 204,
+   "LHX": 205,
+   "PLD": 206,
+   "HUBB": 207,
+   "KLAC": 208,
+   "EA": 209,
+   "PPG": 210,
+   "IR": 211,
+   "CPRT": 212,
+   "SLB": 213,
+   "EFX": 214,
+   "LVS": 215,
+   "JNJ": 216,
+   "KIM": 217,
+   "BF-B": 218,
+   "EQR": 219,
+   "FTNT": 220,
+   "QCOM": 221,
+   "T": 222,
+   "PODD": 223,
+   "KDP": 224,
+   "HPE": 225,
+   "NKE": 226,
+   "TMUS": 227,
+   "CDNS": 228,
+   "MMM": 229,
+   "AME": 230,
+   "EQT": 231,
+   "FANG": 232,
+   "MNST": 233,
+   "STLD": 234,
+   "DIS": 235,
+   "LLY": 236,
+   "PLTR": 237,
+   "OXY": 238,
+   "VZ": 239,
+   "REGN": 240,
+   "DGX": 241,
+   "FTV": 242,
+   "BL": 243,
+   "FCX": 244,
+   "ALB": 245,
+   "EMR": 246,
+   "HD": 247,
+   "RMBS": 248,
+   "SYK": 249,
+   "ULTA": 250,
+   "J": 251,
+   "DLTR": 252,
+   "SYY": 253,
+   "DT": 254,
+   "NDSN": 255,
+   "AZO": 256,
+   "CVX": 257,
+   "HSIC": 258,
+   "GE": 259,
+   "PATH": 260,
+   "UDR": 261,
+   "CAT": 262,
+   "VRTX": 263,
+   "TKO": 264,
+   "TDY": 265,
+   "TPL": 266,
+   "DHI": 267,
+   "INCY": 268,
+   "NOC": 269,
+   "CHRW": 270,
+   "XOM": 271,
+   "TJX": 272,
+   "DVN": 273,
+   "SHW": 274,
+   "ADI": 275,
+   "IDXX": 276,
+   "PH": 277,
+   "LEN": 278,
+   "EXR": 279,
+   "OKE": 280,
+   "TGT": 281,
+   "Q": 282,
+   "DOC": 283,
+   "TXT": 284,
+   "VICI": 285,
+   "ROK": 286,
+   "DAL": 287,
+   "APH": 288,
+   "DUOL": 289,
+   "AMAT": 290,
+   "RTX": 291,
+   "WAB": 292,
+   "KRYS": 293,
+   "BALL": 294,
+   "EW": 295,
+   "GOOG": 296,
+   "TYL": 297,
+   "GOOGL": 298,
+   "MSFT": 299,
+   "KEYS": 300,
+   "GWW": 301,
+   "CCL": 302,
+   "ZBH": 303,
+   "MCD": 304,
+   "ROKU": 305,
+   "ROST": 306,
+   "ORLY": 307,
+   "EL": 308,
+   "META": 309,
+   "CTAS": 310,
+   "FDX": 311,
+   "HRL": 312,
+   "MCHP": 313,
+   "STE": 314,
+   "FLEX": 315,
+   "DXCM": 316,
+   "DHR": 317,
+   "LH": 318,
+   "ON": 319,
+   "ABT": 320,
+   "URI": 321,
+   "ODFL": 322,
+   "DOCU": 323,
+   "BG": 324,
+   "TWLO": 325,
+   "GPC": 326,
+   "CARR": 327,
+   "HWM": 328,
+   "ORCL": 329,
+   "A": 330,
+   "UPS": 331,
+   "PKG": 332,
+   "TSCO": 333,
+   "WYNN": 334,
+   "UAL": 335,
+   "DRS": 336,
+   "DG": 337,
+   "WDAY": 338,
+   "PD": 339,
+   "HII": 340,
+   "DRI": 341,
+   "BDX": 342,
+   "NCLH": 343,
+   "ECL": 344,
+   "MPWR": 345,
+   "ADM": 346,
+   "DLR": 347,
+   "NSC": 348,
+   "UNP": 349,
+   "KMI": 350,
+   "BIIB": 351,
+   "TMO": 352,
+   "ALAB": 353,
+   "DOW": 354,
+   "FAST": 355,
+   "TRGP": 356,
+   "SBAC": 357,
+   "CSX": 358,
+   "PWR": 359,
+   "SNPS": 360,
+   "TXN": 361,
+   "ISRG": 362,
+   "KMB": 363,
+   "LUV": 364,
+   "RCL": 365,
+   "FDXF": 366,
+   "MDLZ": 367,
+   "WM": 368,
+   "PCAR": 369,
+   "RSG": 370,
+   "CIEN": 371,
+   "AMC": 372,
+   "CHWY": 373,
+   "CMG": 374,
+   "AMD": 375,
+   "AVB": 376,
+   "GNRC": 377,
+   "JBHT": 378,
+   "DASH": 379,
+   "COO": 380,
+   "CASY": 381,
+   "TECH": 382,
+   "PANW": 383,
+   "AMT": 384,
+   "NOW": 385,
+   "TGTX": 386,
+   "TSN": 387,
+   "VMC": 388,
+   "MRVL": 389,
+   "PINS": 390,
+   "ARE": 391,
+   "WST": 392,
+   "LITE": 393,
+   "HST": 394,
+   "CRL": 395,
+   "CCI": 396,
+   "COST": 397,
+   "TER": 398,
+   "APD": 399,
+   "WMT": 400,
+   "WBD": 401,
+   "ONTO": 402,
+   "GPN": 403,
+   "GLW": 404,
+   "GEV": 405,
+   "CVNA": 406,
+   "WMB": 407,
+   "DE": 408,
+   "SBUX": 409,
+   "LSCC": 410,
+   "ACLS": 411,
+   "CBRE": 412,
+   "IRM": 413,
+   "COHR": 414,
+   "SOLV": 415,
+   "BE": 416,
+   "KR": 417,
+   "RVTY": 418,
+   "APPN": 419,
+   "AMZN": 420,
+   "W": 421,
+   "MRK": 422,
+   "MTSI": 423,
+   "WY": 424,
+   "MLM": 425,
+   "IFF": 426,
+   "POWI": 427,
+   "LYV": 428,
+   "MGM": 429,
+   "BLDR": 430,
+   "CSGP": 431,
+   "AKAM": 432,
+   "GM": 433,
+   "EQIX": 434,
+   "BILL": 435,
+   "SWKS": 436,
+   "DDOG": 437,
+   "SITM": 438,
+   "INTC": 439,
+   "IP": 440,
+   "WAT": 441,
+   "BAX": 442,
+   "RUN": 443,
+   "DD": 444,
+   "WELL": 445,
+   "MQ": 446,
+   "TSLA": 447,
+   "AXON": 448,
+   "VTRS": 449,
+   "KTOS": 450,
+   "CRWV": 451,
+   "ARRY": 452,
+   "AVAV": 453,
+   "CRWD": 454,
+   "SRPT": 455,
+   "MDB": 456,
+   "AEHR": 457,
+   "MOS": 458,
+   "CORZ": 459,
+   "VERX": 460,
+   "NET": 461,
+   "SNAP": 462,
+   "ZS": 463,
+   "TTWO": 464,
+   "Z": 465,
+   "FROG": 466,
+   "MSTR": 467,
+   "BKSY": 468,
+   "F": 469,
+   "FSLY": 470,
+   "RKLB": 471,
+   "PCOR": 472,
+   "CIFR": 473,
+   "RUM": 474,
+   "AMPX": 475,
+   "PL": 476,
+   "SSTK": 477,
+   "BA": 478,
+   "CPNG": 479,
+   "ASTS": 480,
+   "ARWR": 481,
+   "SIGA": 482,
+   "BRZE": 483,
+   "HIMS": 484,
+   "RBLX": 485,
+   "TEM": 486,
+   "LUNR": 487,
+   "EVGO": 488,
+   "SNOW": 489,
+   "MRNA": 490,
+   "PLUG": 491,
+   "RGTI": 492,
+   "FLNC": 493,
+   "MVST": 494,
+   "ASAN": 495,
+   "AMBA": 496,
+   "OPEN": 497,
+   "IOVA": 498,
+   "GTLB": 499,
+   "DKNG": 500,
+   "INSM": 501,
+   "U": 502,
+   "SDGR": 503,
+   "RIVN": 504,
+   "S": 505,
+   "RDW": 506,
+   "AXSM": 507,
+   "INDI": 508,
+   "DNA": 509,
+   "FCEL": 510,
+   "IONQ": 511,
+   "NVTS": 512,
+   "CYTK": 513,
+   "BEAM": 514,
+   "QS": 515,
+   "SPCE": 516,
+   "BBAI": 517,
+   "FUBO": 518,
+   "LCID": 519,
+   "ABSI": 520,
+   "NNE": 521,
+   "RCAT": 522,
+   "DJT": 523,
+   "NTLA": 524,
+   "JOBY": 525,
+   "BLNK": 526,
+   "BYND": 527,
+   "SOUN": 528,
+   "RXRX": 529,
+   "ACHR": 530,
+   "AI": 531,
+   "EDIT": 532,
+   "SMR": 533,
+   "CHPT": 534,
+   "VKTX": 535
+  },
+  "valuation": {
+   "MMM": {
+    "label": "fair",
+    "ey_pct": 4.97,
+    "forward_pe": 17.94,
+    "trailing_pe": 26.57,
+    "peg": 1.55,
+    "price_to_sales": 3.64,
+    "target_upside_pct": 9.0
+   },
+   "AOS": {
+    "label": "cheap",
+    "ey_pct": 7.7,
+    "forward_pe": 16.73,
+    "trailing_pe": 17.66,
+    "peg": 1.72,
+    "price_to_sales": 2.23,
+    "target_upside_pct": 5.15
+   },
+   "ABT": {
+    "label": "fair",
+    "ey_pct": 3.92,
+    "forward_pe": 17.35,
+    "trailing_pe": 38.43,
+    "peg": 1.49,
+    "price_to_sales": 3.7,
+    "target_upside_pct": 16.12
+   },
+   "ABBV": {
+    "label": "fair",
+    "ey_pct": 4.12,
+    "forward_pe": 17.65,
+    "trailing_pe": 49.18,
+    "peg": 0.57,
+    "price_to_sales": 7.66,
+    "target_upside_pct": 10.37
+   },
+   "ACN": {
+    "label": "cheap",
+    "ey_pct": 8.93,
+    "forward_pe": 13.9,
+    "trailing_pe": 15.67,
+    "peg": 2.08,
+    "price_to_sales": 1.76,
+    "target_upside_pct": 6.71
+   },
+   "ADBE": {
+    "label": "cheap",
+    "ey_pct": 10.64,
+    "forward_pe": 7.94,
+    "trailing_pe": 12.16,
+    "peg": 0.53,
+    "price_to_sales": 3.26,
+    "target_upside_pct": 22.6
+   },
+   "AMD": {
+    "label": "expensive",
+    "ey_pct": 1.14,
+    "forward_pe": 24.06,
+    "trailing_pe": 90.68,
+    "peg": 0.44,
+    "price_to_sales": 15.46,
+    "target_upside_pct": 54.99
+   },
+   "AES": {
+    "label": "cheap",
+    "ey_pct": 6.29,
+    "forward_pe": 6.3,
+    "trailing_pe": 6.03,
+    "peg": null,
+    "price_to_sales": 0.79,
+    "target_upside_pct": -0.13
+   },
+   "AFL": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 16.05,
+    "trailing_pe": 18.15,
+    "peg": null,
+    "price_to_sales": 3.7,
+    "target_upside_pct": -3.58
+   },
+   "A": {
+    "label": "expensive",
+    "ey_pct": 3.26,
+    "forward_pe": 25.36,
+    "trailing_pe": 33.61,
+    "peg": 1.48,
+    "price_to_sales": 6.52,
+    "target_upside_pct": 7.49
+   },
+   "APD": {
+    "label": "expensive",
+    "ey_pct": 3.82,
+    "forward_pe": 19.11,
+    "trailing_pe": 124.31,
+    "peg": 2.26,
+    "price_to_sales": 5.09,
+    "target_upside_pct": 15.98
+   },
+   "ABNB": {
+    "label": "expensive",
+    "ey_pct": 3.24,
+    "forward_pe": 26.79,
+    "trailing_pe": 31.96,
+    "peg": 1.4,
+    "price_to_sales": 7.3,
+    "target_upside_pct": 20.85
+   },
+   "AKAM": {
+    "label": "expensive",
+    "ey_pct": 2.24,
+    "forward_pe": 12.31,
+    "trailing_pe": 33.12,
+    "peg": 1.14,
+    "price_to_sales": 2.8,
+    "target_upside_pct": 51.1
+   },
+   "ALB": {
+    "label": "cheap",
+    "ey_pct": 10.6,
+    "forward_pe": 10.4,
+    "trailing_pe": 19.2,
+    "peg": 0.79,
+    "price_to_sales": 1.53,
+    "target_upside_pct": 76.35
+   },
+   "ARE": {
+    "label": "expensive",
+    "ey_pct": 2.08,
+    "forward_pe": -42.77,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.54,
+    "target_upside_pct": 20.65
+   },
+   "ALGN": {
+    "label": "cheap",
+    "ey_pct": 7.22,
+    "forward_pe": 12.63,
+    "trailing_pe": 22.62,
+    "peg": 0.73,
+    "price_to_sales": 2.63,
+    "target_upside_pct": 19.73
+   },
+   "ALLE": {
+    "label": "fair",
+    "ey_pct": 5.51,
+    "forward_pe": 18.15,
+    "trailing_pe": 22.84,
+    "peg": 2.11,
+    "price_to_sales": 3.53,
+    "target_upside_pct": 5.46
+   },
+   "LNT": {
+    "label": "expensive",
+    "ey_pct": 3.81,
+    "forward_pe": 19.46,
+    "trailing_pe": 19.95,
+    "peg": 2.36,
+    "price_to_sales": 4.12,
+    "target_upside_pct": 7.94
+   },
+   "ALL": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.36,
+    "trailing_pe": 6.06,
+    "peg": 1.96,
+    "price_to_sales": 0.94,
+    "target_upside_pct": 4.09
+   },
+   "GOOGL": {
+    "label": "fair",
+    "ey_pct": 4.69,
+    "forward_pe": 17.34,
+    "trailing_pe": 13.85,
+    "peg": 0.96,
+    "price_to_sales": 6.92,
+    "target_upside_pct": 49.7
+   },
+   "GOOG": {
+    "label": "fair",
+    "ey_pct": 4.71,
+    "forward_pe": 17.26,
+    "trailing_pe": 13.79,
+    "peg": 0.99,
+    "price_to_sales": 6.89,
+    "target_upside_pct": 47.13
+   },
+   "MO": {
+    "label": "cheap",
+    "ey_pct": 8.46,
+    "forward_pe": 12.64,
+    "trailing_pe": 15.44,
+    "peg": 2.86,
+    "price_to_sales": 6.04,
+    "target_upside_pct": -1.89
+   },
+   "AMZN": {
+    "label": "expensive",
+    "ey_pct": 2.77,
+    "forward_pe": 22.59,
+    "trailing_pe": 19.95,
+    "peg": 1.19,
+    "price_to_sales": 3.35,
+    "target_upside_pct": 32.29
+   },
+   "AMCR": {
+    "label": "cheap",
+    "ey_pct": 6.33,
+    "forward_pe": 10.17,
+    "trailing_pe": 18.18,
+    "peg": 1.08,
+    "price_to_sales": 0.82,
+    "target_upside_pct": 15.86
+   },
+   "AEE": {
+    "label": "expensive",
+    "ey_pct": 3.79,
+    "forward_pe": 19.22,
+    "trailing_pe": 19.47,
+    "peg": 2.37,
+    "price_to_sales": 3.61,
+    "target_upside_pct": 5.11
+   },
+   "AEP": {
+    "label": "fair",
+    "ey_pct": 4.58,
+    "forward_pe": 18.14,
+    "trailing_pe": 20.45,
+    "peg": 2.71,
+    "price_to_sales": 2.89,
+    "target_upside_pct": 13.49
+   },
+   "AXP": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 14.92,
+    "trailing_pe": 17.0,
+    "peg": 1.29,
+    "price_to_sales": 2.78,
+    "target_upside_pct": 20.91
+   },
+   "AIG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.11,
+    "trailing_pe": 13.19,
+    "peg": 0.68,
+    "price_to_sales": 1.49,
+    "target_upside_pct": 11.57
+   },
+   "AMT": {
+    "label": "fair",
+    "ey_pct": 3.9,
+    "forward_pe": 26.39,
+    "trailing_pe": 25.95,
+    "peg": 1.77,
+    "price_to_sales": 7.76,
+    "target_upside_pct": 17.33
+   },
+   "AWK": {
+    "label": "fair",
+    "ey_pct": 4.3,
+    "forward_pe": 22.66,
+    "trailing_pe": 25.87,
+    "peg": 2.63,
+    "price_to_sales": 5.57,
+    "target_upside_pct": -5.44
+   },
+   "AMP": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.32,
+    "trailing_pe": 10.82,
+    "peg": 1.38,
+    "price_to_sales": 2.07,
+    "target_upside_pct": 13.51
+   },
+   "AME": {
+    "label": "expensive",
+    "ey_pct": 3.74,
+    "forward_pe": 23.07,
+    "trailing_pe": 31.44,
+    "peg": 2.64,
+    "price_to_sales": 6.24,
+    "target_upside_pct": 29.58
+   },
+   "AMGN": {
+    "label": "fair",
+    "ey_pct": 4.56,
+    "forward_pe": 17.34,
+    "trailing_pe": 25.25,
+    "peg": 2.58,
+    "price_to_sales": 6.06,
+    "target_upside_pct": 0.32
+   },
+   "APH": {
+    "label": "expensive",
+    "ey_pct": 3.21,
+    "forward_pe": 19.23,
+    "trailing_pe": 30.31,
+    "peg": 0.69,
+    "price_to_sales": 5.21,
+    "target_upside_pct": 53.43
+   },
+   "ADI": {
+    "label": "expensive",
+    "ey_pct": 2.84,
+    "forward_pe": 20.99,
+    "trailing_pe": 41.08,
+    "peg": 0.56,
+    "price_to_sales": 12.07,
+    "target_upside_pct": 37.16
+   },
+   "AON": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 16.48,
+    "trailing_pe": 18.23,
+    "peg": 2.72,
+    "price_to_sales": 4.0,
+    "target_upside_pct": 10.3
+   },
+   "APA": {
+    "label": "cheap",
+    "ey_pct": 22.53,
+    "forward_pe": 7.68,
+    "trailing_pe": 7.32,
+    "peg": 1.1,
+    "price_to_sales": 1.64,
+    "target_upside_pct": 12.4
+   },
+   "APO": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.49,
+    "trailing_pe": null,
+    "peg": 0.44,
+    "price_to_sales": 2.15,
+    "target_upside_pct": 32.03
+   },
+   "AAPL": {
+    "label": "expensive",
+    "ey_pct": 3.15,
+    "forward_pe": 32.4,
+    "trailing_pe": 38.15,
+    "peg": 2.82,
+    "price_to_sales": 10.4,
+    "target_upside_pct": 0.9
+   },
+   "AMAT": {
+    "label": "expensive",
+    "ey_pct": 3.52,
+    "forward_pe": 12.29,
+    "trailing_pe": 23.98,
+    "peg": 0.71,
+    "price_to_sales": 6.97,
+    "target_upside_pct": 84.34
+   },
+   "APP": {
+    "label": "fair",
+    "ey_pct": 5.11,
+    "forward_pe": 16.7,
+    "trailing_pe": 23.45,
+    "peg": 0.8,
+    "price_to_sales": 15.17,
+    "target_upside_pct": 31.53
+   },
+   "APTV": {
+    "label": "cheap",
+    "ey_pct": 12.98,
+    "forward_pe": 5.87,
+    "trailing_pe": 9.87,
+    "peg": 0.95,
+    "price_to_sales": 0.35,
+    "target_upside_pct": 61.18
+   },
+   "ACGL": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.9,
+    "trailing_pe": 8.9,
+    "peg": null,
+    "price_to_sales": 1.89,
+    "target_upside_pct": 4.86
+   },
+   "ADM": {
+    "label": "fair",
+    "ey_pct": 5.9,
+    "forward_pe": 11.89,
+    "trailing_pe": 13.08,
+    "peg": 1.93,
+    "price_to_sales": 0.38,
+    "target_upside_pct": 17.25
+   },
+   "ARES": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 17.67,
+    "trailing_pe": 101.07,
+    "peg": 0.92,
+    "price_to_sales": 8.22,
+    "target_upside_pct": 19.92
+   },
+   "ANET": {
+    "label": "expensive",
+    "ey_pct": 2.49,
+    "forward_pe": 27.77,
+    "trailing_pe": 44.94,
+    "peg": 1.38,
+    "price_to_sales": 17.81,
+    "target_upside_pct": 48.94
+   },
+   "AJG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 18.88,
+    "trailing_pe": 42.64,
+    "peg": 1.0,
+    "price_to_sales": 4.54,
+    "target_upside_pct": 7.96
+   },
+   "AIZ": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.94,
+    "trailing_pe": 14.94,
+    "peg": null,
+    "price_to_sales": 1.13,
+    "target_upside_pct": 12.16
+   },
+   "T": {
+    "label": "cheap",
+    "ey_pct": 8.68,
+    "forward_pe": 8.59,
+    "trailing_pe": 11.93,
+    "peg": 1.28,
+    "price_to_sales": 1.17,
+    "target_upside_pct": 23.65
+   },
+   "ATO": {
+    "label": "fair",
+    "ey_pct": 4.71,
+    "forward_pe": 17.21,
+    "trailing_pe": 19.82,
+    "peg": 1.95,
+    "price_to_sales": 5.75,
+    "target_upside_pct": 8.86
+   },
+   "ADSK": {
+    "label": "fair",
+    "ey_pct": 4.29,
+    "forward_pe": 17.22,
+    "trailing_pe": 31.71,
+    "peg": 0.82,
+    "price_to_sales": 6.56,
+    "target_upside_pct": 26.64
+   },
+   "ADP": {
+    "label": "fair",
+    "ey_pct": 4.88,
+    "forward_pe": 22.31,
+    "trailing_pe": 26.75,
+    "peg": 2.77,
+    "price_to_sales": 5.35,
+    "target_upside_pct": -0.17
+   },
+   "AZO": {
+    "label": "fair",
+    "ey_pct": 5.73,
+    "forward_pe": 16.95,
+    "trailing_pe": 21.34,
+    "peg": 1.4,
+    "price_to_sales": 2.58,
+    "target_upside_pct": 12.32
+   },
+   "AVB": {
+    "label": "expensive",
+    "ey_pct": 0.96,
+    "forward_pe": 36.58,
+    "trailing_pe": 25.25,
+    "peg": null,
+    "price_to_sales": 8.52,
+    "target_upside_pct": 9.59
+   },
+   "AVY": {
+    "label": "cheap",
+    "ey_pct": 6.98,
+    "forward_pe": 16.35,
+    "trailing_pe": 19.6,
+    "peg": null,
+    "price_to_sales": 1.46,
+    "target_upside_pct": 12.23
+   },
+   "AXON": {
+    "label": "expensive",
+    "ey_pct": 0.27,
+    "forward_pe": 30.83,
+    "trailing_pe": 93.61,
+    "peg": 1.13,
+    "price_to_sales": 6.94,
+    "target_upside_pct": 85.93
+   },
+   "BKR": {
+    "label": "fair",
+    "ey_pct": 6.01,
+    "forward_pe": 15.98,
+    "trailing_pe": 15.4,
+    "peg": 1.35,
+    "price_to_sales": 1.55,
+    "target_upside_pct": 55.66
+   },
+   "BALL": {
+    "label": "cheap",
+    "ey_pct": 6.2,
+    "forward_pe": 14.19,
+    "trailing_pe": 31.9,
+    "peg": 1.19,
+    "price_to_sales": 1.09,
+    "target_upside_pct": 14.37
+   },
+   "BAC": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.08,
+    "trailing_pe": 11.23,
+    "peg": 0.88,
+    "price_to_sales": 2.83,
+    "target_upside_pct": 32.82
+   },
+   "BAX": {
+    "label": "expensive",
+    "ey_pct": 1.32,
+    "forward_pe": 12.41,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1.13,
+    "target_upside_pct": 7.33
+   },
+   "BDX": {
+    "label": "expensive",
+    "ey_pct": 3.87,
+    "forward_pe": 14.96,
+    "trailing_pe": 42.05,
+    "peg": null,
+    "price_to_sales": 2.98,
+    "target_upside_pct": 6.28
+   },
+   "BRK-B": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 24.98,
+    "trailing_pe": 15.95,
+    "peg": null,
+    "price_to_sales": 3.06,
+    "target_upside_pct": -0.94
+   },
+   "BBY": {
+    "label": "cheap",
+    "ey_pct": 8.18,
+    "forward_pe": 13.56,
+    "trailing_pe": 16.3,
+    "peg": 1.76,
+    "price_to_sales": 0.49,
+    "target_upside_pct": -6.8
+   },
+   "TECH": {
+    "label": "expensive",
+    "ey_pct": 2.3,
+    "forward_pe": 31.43,
+    "trailing_pe": 66.67,
+    "peg": 2.17,
+    "price_to_sales": 9.29,
+    "target_upside_pct": -2.99
+   },
+   "BIIB": {
+    "label": "fair",
+    "ey_pct": 4.16,
+    "forward_pe": 15.37,
+    "trailing_pe": 108.05,
+    "peg": 3.37,
+    "price_to_sales": 3.58,
+    "target_upside_pct": 7.86
+   },
+   "BLK": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 16.96,
+    "trailing_pe": 25.08,
+    "peg": 0.94,
+    "price_to_sales": 5.96,
+    "target_upside_pct": 23.99
+   },
+   "BX": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 15.05,
+    "trailing_pe": 24.68,
+    "peg": 1.14,
+    "price_to_sales": 8.84,
+    "target_upside_pct": 25.49
+   },
+   "XYZ": {
+    "label": "cheap",
+    "ey_pct": 9.29,
+    "forward_pe": 12.94,
+    "trailing_pe": 91.66,
+    "peg": 0.6,
+    "price_to_sales": 1.64,
+    "target_upside_pct": 45.73
+   },
+   "BNY": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 13.53,
+    "trailing_pe": 15.64,
+    "peg": 1.06,
+    "price_to_sales": 4.32,
+    "target_upside_pct": 15.9
+   },
+   "BA": {
+    "label": "no profits",
+    "ey_pct": -3.39,
+    "forward_pe": 71.64,
+    "trailing_pe": 16.09,
+    "peg": 3.46,
+    "price_to_sales": 1.3,
+    "target_upside_pct": 49.69
+   },
+   "BKNG": {
+    "label": "cheap",
+    "ey_pct": 8.19,
+    "forward_pe": 11.84,
+    "trailing_pe": 15.72,
+    "peg": 0.55,
+    "price_to_sales": 3.83,
+    "target_upside_pct": 48.41
+   },
+   "BSX": {
+    "label": "fair",
+    "ey_pct": 6.01,
+    "forward_pe": 13.41,
+    "trailing_pe": 17.71,
+    "peg": 0.72,
+    "price_to_sales": 2.89,
+    "target_upside_pct": 18.15
+   },
+   "BMY": {
+    "label": "cheap",
+    "ey_pct": 9.4,
+    "forward_pe": 8.78,
+    "trailing_pe": 13.04,
+    "peg": 16.0,
+    "price_to_sales": 2.4,
+    "target_upside_pct": 10.97
+   },
+   "AVGO": {
+    "label": "expensive",
+    "ey_pct": 2.9,
+    "forward_pe": 15.7,
+    "trailing_pe": 38.88,
+    "peg": 0.34,
+    "price_to_sales": 16.31,
+    "target_upside_pct": 72.95
+   },
+   "BR": {
+    "label": "fair",
+    "ey_pct": 5.39,
+    "forward_pe": 15.68,
+    "trailing_pe": 20.09,
+    "peg": 1.86,
+    "price_to_sales": 2.72,
+    "target_upside_pct": 15.35
+   },
+   "BRO": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 15.37,
+    "trailing_pe": 23.12,
+    "peg": 1.86,
+    "price_to_sales": 3.56,
+    "target_upside_pct": 4.01
+   },
+   "BF-B": {
+    "label": "cheap",
+    "ey_pct": 7.13,
+    "forward_pe": 17.45,
+    "trailing_pe": 19.3,
+    "peg": 2.3,
+    "price_to_sales": 3.51,
+    "target_upside_pct": -5.16
+   },
+   "BLDR": {
+    "label": "expensive",
+    "ey_pct": 2.74,
+    "forward_pe": 23.26,
+    "trailing_pe": 148.73,
+    "peg": null,
+    "price_to_sales": 0.41,
+    "target_upside_pct": 22.66
+   },
+   "BG": {
+    "label": "cheap",
+    "ey_pct": 6.85,
+    "forward_pe": 8.25,
+    "trailing_pe": 15.62,
+    "peg": null,
+    "price_to_sales": 0.19,
+    "target_upside_pct": 53.16
+   },
+   "BXP": {
+    "label": "expensive",
+    "ey_pct": 3.85,
+    "forward_pe": 33.26,
+    "trailing_pe": 18.34,
+    "peg": 2.31,
+    "price_to_sales": 3.42,
+    "target_upside_pct": 19.69
+   },
+   "CHRW": {
+    "label": "fair",
+    "ey_pct": 4.54,
+    "forward_pe": 17.94,
+    "trailing_pe": 24.06,
+    "peg": 1.65,
+    "price_to_sales": 0.85,
+    "target_upside_pct": 33.81
+   },
+   "CDNS": {
+    "label": "expensive",
+    "ey_pct": 2.31,
+    "forward_pe": 28.6,
+    "trailing_pe": 55.98,
+    "peg": 2.22,
+    "price_to_sales": 12.6,
+    "target_upside_pct": 46.23
+   },
+   "CPT": {
+    "label": "expensive",
+    "ey_pct": 2.12,
+    "forward_pe": 208.26,
+    "trailing_pe": 8.95,
+    "peg": null,
+    "price_to_sales": 6.1,
+    "target_upside_pct": 14.17
+   },
+   "COF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 7.49,
+    "trailing_pe": 10.95,
+    "peg": 0.16,
+    "price_to_sales": 2.2,
+    "target_upside_pct": 42.44
+   },
+   "CAH": {
+    "label": "fair",
+    "ey_pct": 4.86,
+    "forward_pe": 18.89,
+    "trailing_pe": 35.29,
+    "peg": 1.29,
+    "price_to_sales": 0.24,
+    "target_upside_pct": 10.26
+   },
+   "CCL": {
+    "label": "cheap",
+    "ey_pct": 7.39,
+    "forward_pe": 10.31,
+    "trailing_pe": 11.71,
+    "peg": 0.95,
+    "price_to_sales": 1.3,
+    "target_upside_pct": 26.22
+   },
+   "CARR": {
+    "label": "expensive",
+    "ey_pct": 3.57,
+    "forward_pe": 15.7,
+    "trailing_pe": null,
+    "peg": 1.03,
+    "price_to_sales": 1.79,
+    "target_upside_pct": 37.51
+   },
+   "CVNA": {
+    "label": "expensive",
+    "ey_pct": 1.47,
+    "forward_pe": 29.81,
+    "trailing_pe": 30.7,
+    "peg": null,
+    "price_to_sales": 5.84,
+    "target_upside_pct": 28.95
+   },
+   "CASY": {
+    "label": "fair",
+    "ey_pct": 3.93,
+    "forward_pe": 29.37,
+    "trailing_pe": 33.29,
+    "peg": 3.13,
+    "price_to_sales": 1.37,
+    "target_upside_pct": 14.2
+   },
+   "CAT": {
+    "label": "fair",
+    "ey_pct": 5.26,
+    "forward_pe": 15.86,
+    "trailing_pe": 20.03,
+    "peg": 0.94,
+    "price_to_sales": 3.0,
+    "target_upside_pct": 58.15
+   },
+   "CBOE": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 23.0,
+    "trailing_pe": 25.46,
+    "peg": 3.18,
+    "price_to_sales": 7.07,
+    "target_upside_pct": 0.71
+   },
+   "CBRE": {
+    "label": "expensive",
+    "ey_pct": 2.57,
+    "forward_pe": 14.26,
+    "trailing_pe": 27.13,
+    "peg": 0.75,
+    "price_to_sales": 0.81,
+    "target_upside_pct": 34.35
+   },
+   "CDW": {
+    "label": "cheap",
+    "ey_pct": 6.65,
+    "forward_pe": 12.99,
+    "trailing_pe": 18.88,
+    "peg": null,
+    "price_to_sales": 0.82,
+    "target_upside_pct": 14.9
+   },
+   "COR": {
+    "label": "fair",
+    "ey_pct": 5.34,
+    "forward_pe": 15.6,
+    "trailing_pe": 18.89,
+    "peg": 0.75,
+    "price_to_sales": 0.19,
+    "target_upside_pct": 14.5
+   },
+   "CNC": {
+    "label": "fair",
+    "ey_pct": 5.75,
+    "forward_pe": 11.45,
+    "trailing_pe": 21.92,
+    "peg": 0.76,
+    "price_to_sales": 0.18,
+    "target_upside_pct": 19.33
+   },
+   "CNP": {
+    "label": "fair",
+    "ey_pct": 4.74,
+    "forward_pe": 18.71,
+    "trailing_pe": 22.48,
+    "peg": 1.98,
+    "price_to_sales": 2.64,
+    "target_upside_pct": 12.97
+   },
+   "CF": {
+    "label": "cheap",
+    "ey_pct": 17.51,
+    "forward_pe": 9.77,
+    "trailing_pe": 8.15,
+    "peg": 0.47,
+    "price_to_sales": 2.13,
+    "target_upside_pct": 12.56
+   },
+   "CRL": {
+    "label": "expensive",
+    "ey_pct": 3.02,
+    "forward_pe": 24.24,
+    "trailing_pe": 341.65,
+    "peg": null,
+    "price_to_sales": 3.79,
+    "target_upside_pct": 11.56
+   },
+   "SCHW": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 11.55,
+    "trailing_pe": 15.41,
+    "peg": 0.76,
+    "price_to_sales": 5.75,
+    "target_upside_pct": 29.37
+   },
+   "CHTR": {
+    "label": "cheap",
+    "ey_pct": 9.69,
+    "forward_pe": 2.82,
+    "trailing_pe": 12.1,
+    "peg": 4.93,
+    "price_to_sales": 0.41,
+    "target_upside_pct": 22.13
+   },
+   "CVX": {
+    "label": "cheap",
+    "ey_pct": 7.7,
+    "forward_pe": 12.61,
+    "trailing_pe": 15.3,
+    "peg": 0.78,
+    "price_to_sales": 1.8,
+    "target_upside_pct": 16.4
+   },
+   "CMG": {
+    "label": "expensive",
+    "ey_pct": 3.81,
+    "forward_pe": 26.86,
+    "trailing_pe": 33.22,
+    "peg": 1.86,
+    "price_to_sales": 3.54,
+    "target_upside_pct": 14.06
+   },
+   "CB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.61,
+    "trailing_pe": 13.03,
+    "peg": 2.79,
+    "price_to_sales": 2.29,
+    "target_upside_pct": 1.07
+   },
+   "CHD": {
+    "label": "expensive",
+    "ey_pct": 3.86,
+    "forward_pe": 27.34,
+    "trailing_pe": 34.0,
+    "peg": 3.08,
+    "price_to_sales": 4.19,
+    "target_upside_pct": 0.7
+   },
+   "CIEN": {
+    "label": "expensive",
+    "ey_pct": 2.5,
+    "forward_pe": 19.76,
+    "trailing_pe": 52.43,
+    "peg": 0.27,
+    "price_to_sales": 5.52,
+    "target_upside_pct": 118.35
+   },
+   "CI": {
+    "label": "cheap",
+    "ey_pct": 9.0,
+    "forward_pe": 8.14,
+    "trailing_pe": 11.94,
+    "peg": 0.7,
+    "price_to_sales": 0.25,
+    "target_upside_pct": 27.13
+   },
+   "CINF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 20.29,
+    "trailing_pe": 10.95,
+    "peg": null,
+    "price_to_sales": 2.16,
+    "target_upside_pct": 2.21
+   },
+   "CTAS": {
+    "label": "expensive",
+    "ey_pct": 3.04,
+    "forward_pe": 35.71,
+    "trailing_pe": 43.39,
+    "peg": 3.43,
+    "price_to_sales": 7.56,
+    "target_upside_pct": -0.71
+   },
+   "CSCO": {
+    "label": "fair",
+    "ey_pct": 4.79,
+    "forward_pe": 14.96,
+    "trailing_pe": 24.11,
+    "peg": 0.84,
+    "price_to_sales": 5.34,
+    "target_upside_pct": 43.98
+   },
+   "C": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.47,
+    "trailing_pe": 10.78,
+    "peg": 0.48,
+    "price_to_sales": 2.2,
+    "target_upside_pct": 36.14
+   },
+   "CFG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.03,
+    "trailing_pe": 11.86,
+    "peg": null,
+    "price_to_sales": 2.93,
+    "target_upside_pct": 30.3
+   },
+   "CLX": {
+    "label": "fair",
+    "ey_pct": 5.61,
+    "forward_pe": 16.98,
+    "trailing_pe": 18.84,
+    "peg": 1.57,
+    "price_to_sales": 1.76,
+    "target_upside_pct": -7.38
+   },
+   "CME": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 23.21,
+    "trailing_pe": 25.21,
+    "peg": 4.22,
+    "price_to_sales": 15.83,
+    "target_upside_pct": 3.44
+   },
+   "CMS": {
+    "label": "fair",
+    "ey_pct": 4.22,
+    "forward_pe": 16.89,
+    "trailing_pe": 25.04,
+    "peg": 2.51,
+    "price_to_sales": 2.45,
+    "target_upside_pct": 6.25
+   },
+   "KO": {
+    "label": "expensive",
+    "ey_pct": 3.68,
+    "forward_pe": 27.45,
+    "trailing_pe": 28.61,
+    "peg": 4.05,
+    "price_to_sales": 8.17,
+    "target_upside_pct": 2.73
+   },
+   "CTSH": {
+    "label": "cheap",
+    "ey_pct": 13.46,
+    "forward_pe": 9.25,
+    "trailing_pe": 10.59,
+    "peg": 0.72,
+    "price_to_sales": 1.19,
+    "target_upside_pct": 19.57
+   },
+   "COHR": {
+    "label": "expensive",
+    "ey_pct": 2.81,
+    "forward_pe": 11.86,
+    "trailing_pe": 38.76,
+    "peg": 0.45,
+    "price_to_sales": 4.66,
+    "target_upside_pct": 98.65
+   },
+   "COIN": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 41.53,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.96,
+    "target_upside_pct": 88.92
+   },
+   "CL": {
+    "label": "fair",
+    "ey_pct": 4.83,
+    "forward_pe": 24.07,
+    "trailing_pe": 38.41,
+    "peg": 1.77,
+    "price_to_sales": 3.69,
+    "target_upside_pct": 3.03
+   },
+   "CMCSA": {
+    "label": "cheap",
+    "ey_pct": 10.76,
+    "forward_pe": 7.07,
+    "trailing_pe": 7.88,
+    "peg": 1.35,
+    "price_to_sales": 0.72,
+    "target_upside_pct": 12.36
+   },
+   "FIX": {
+    "label": "fair",
+    "ey_pct": 6.02,
+    "forward_pe": 15.49,
+    "trailing_pe": 22.52,
+    "peg": 0.34,
+    "price_to_sales": 2.91,
+    "target_upside_pct": 70.01
+   },
+   "CAG": {
+    "label": "cheap",
+    "ey_pct": 8.42,
+    "forward_pe": 9.96,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.63,
+    "target_upside_pct": -7.91
+   },
+   "COP": {
+    "label": "cheap",
+    "ey_pct": 9.5,
+    "forward_pe": 11.84,
+    "trailing_pe": 14.34,
+    "peg": 0.87,
+    "price_to_sales": 2.33,
+    "target_upside_pct": 12.81
+   },
+   "ED": {
+    "label": "fair",
+    "ey_pct": 4.81,
+    "forward_pe": 18.35,
+    "trailing_pe": 19.16,
+    "peg": 2.18,
+    "price_to_sales": 2.45,
+    "target_upside_pct": -5.5
+   },
+   "STZ": {
+    "label": "cheap",
+    "ey_pct": 8.59,
+    "forward_pe": 11.72,
+    "trailing_pe": 12.7,
+    "peg": 1.73,
+    "price_to_sales": 2.61,
+    "target_upside_pct": 8.15
+   },
+   "CEG": {
+    "label": "fair",
+    "ey_pct": 5.17,
+    "forward_pe": 17.73,
+    "trailing_pe": 19.08,
+    "peg": 0.87,
+    "price_to_sales": 2.44,
+    "target_upside_pct": 43.37
+   },
+   "COO": {
+    "label": "fair",
+    "ey_pct": 4.01,
+    "forward_pe": 12.55,
+    "trailing_pe": 20.23,
+    "peg": 0.57,
+    "price_to_sales": 2.64,
+    "target_upside_pct": 11.75
+   },
+   "CPRT": {
+    "label": "fair",
+    "ey_pct": 6.12,
+    "forward_pe": 17.65,
+    "trailing_pe": 20.06,
+    "peg": 3.1,
+    "price_to_sales": 6.17,
+    "target_upside_pct": 25.44
+   },
+   "GLW": {
+    "label": "expensive",
+    "ey_pct": 3.32,
+    "forward_pe": 20.74,
+    "trailing_pe": 38.21,
+    "peg": 0.61,
+    "price_to_sales": 4.59,
+    "target_upside_pct": 82.12
+   },
+   "CPAY": {
+    "label": "fair",
+    "ey_pct": 5.96,
+    "forward_pe": 13.5,
+    "trailing_pe": 23.63,
+    "peg": 0.82,
+    "price_to_sales": 5.26,
+    "target_upside_pct": 15.55
+   },
+   "CTVA": {
+    "label": "cheap",
+    "ey_pct": 29.83,
+    "forward_pe": 9.04,
+    "trailing_pe": 6.07,
+    "peg": 0.62,
+    "price_to_sales": 0.68,
+    "target_upside_pct": 65.16
+   },
+   "CSGP": {
+    "label": "expensive",
+    "ey_pct": 1.68,
+    "forward_pe": 16.74,
+    "trailing_pe": 68.86,
+    "peg": 0.11,
+    "price_to_sales": 3.24,
+    "target_upside_pct": 21.07
+   },
+   "COST": {
+    "label": "expensive",
+    "ey_pct": 2.45,
+    "forward_pe": 44.01,
+    "trailing_pe": 53.09,
+    "peg": 5.48,
+    "price_to_sales": 1.61,
+    "target_upside_pct": -1.52
+   },
+   "CRH": {
+    "label": "cheap",
+    "ey_pct": 7.34,
+    "forward_pe": 14.88,
+    "trailing_pe": 16.58,
+    "peg": 1.59,
+    "price_to_sales": 1.5,
+    "target_upside_pct": 37.19
+   },
+   "CRWD": {
+    "label": "no profits",
+    "ey_pct": -0.05,
+    "forward_pe": 142.4,
+    "trailing_pe": 3824.0,
+    "peg": 6.12,
+    "price_to_sales": 43.54,
+    "target_upside_pct": 9.52
+   },
+   "CCI": {
+    "label": "expensive",
+    "ey_pct": 3.38,
+    "forward_pe": 28.13,
+    "trailing_pe": 33.09,
+    "peg": 0.64,
+    "price_to_sales": 8.58,
+    "target_upside_pct": 13.6
+   },
+   "CSX": {
+    "label": "fair",
+    "ey_pct": 5.04,
+    "forward_pe": 20.95,
+    "trailing_pe": 25.57,
+    "peg": 1.73,
+    "price_to_sales": 6.06,
+    "target_upside_pct": 9.59
+   },
+   "CMI": {
+    "label": "cheap",
+    "ey_pct": 7.06,
+    "forward_pe": 11.97,
+    "trailing_pe": 16.84,
+    "peg": 0.87,
+    "price_to_sales": 1.54,
+    "target_upside_pct": 53.65
+   },
+   "CVS": {
+    "label": "cheap",
+    "ey_pct": 9.02,
+    "forward_pe": 9.29,
+    "trailing_pe": 9.39,
+    "peg": 0.19,
+    "price_to_sales": 0.25,
+    "target_upside_pct": 35.21
+   },
+   "DHR": {
+    "label": "expensive",
+    "ey_pct": 2.97,
+    "forward_pe": 23.64,
+    "trailing_pe": 36.48,
+    "peg": 1.29,
+    "price_to_sales": 6.05,
+    "target_upside_pct": 17.95
+   },
+   "DRI": {
+    "label": "fair",
+    "ey_pct": 5.09,
+    "forward_pe": 18.21,
+    "trailing_pe": 21.92,
+    "peg": 2.37,
+    "price_to_sales": 1.91,
+    "target_upside_pct": 3.41
+   },
+   "DDOG": {
+    "label": "expensive",
+    "ey_pct": 0.17,
+    "forward_pe": 49.44,
+    "trailing_pe": 218.57,
+    "peg": 0.81,
+    "price_to_sales": 13.28,
+    "target_upside_pct": 71.35
+   },
+   "DVA": {
+    "label": "cheap",
+    "ey_pct": 9.33,
+    "forward_pe": 9.52,
+    "trailing_pe": 12.19,
+    "peg": 0.38,
+    "price_to_sales": 0.71,
+    "target_upside_pct": 38.04
+   },
+   "DECK": {
+    "label": "cheap",
+    "ey_pct": 13.52,
+    "forward_pe": 9.51,
+    "trailing_pe": 10.32,
+    "peg": 0.93,
+    "price_to_sales": 1.87,
+    "target_upside_pct": 24.43
+   },
+   "DE": {
+    "label": "expensive",
+    "ey_pct": 3.76,
+    "forward_pe": 26.59,
+    "trailing_pe": 33.87,
+    "peg": 1.45,
+    "price_to_sales": 3.43,
+    "target_upside_pct": 13.91
+   },
+   "DELL": {
+    "label": "cheap",
+    "ey_pct": 7.29,
+    "forward_pe": 9.07,
+    "trailing_pe": 16.16,
+    "peg": 0.32,
+    "price_to_sales": 1.17,
+    "target_upside_pct": 108.22
+   },
+   "DAL": {
+    "label": "cheap",
+    "ey_pct": 7.81,
+    "forward_pe": 10.86,
+    "trailing_pe": 15.97,
+    "peg": null,
+    "price_to_sales": 0.73,
+    "target_upside_pct": 27.05
+   },
+   "DVN": {
+    "label": "cheap",
+    "ey_pct": 8.92,
+    "forward_pe": 8.05,
+    "trailing_pe": 9.75,
+    "peg": null,
+    "price_to_sales": 2.14,
+    "target_upside_pct": 43.99
+   },
+   "DXCM": {
+    "label": "fair",
+    "ey_pct": 4.08,
+    "forward_pe": 25.3,
+    "trailing_pe": 31.23,
+    "peg": 1.26,
+    "price_to_sales": 5.8,
+    "target_upside_pct": 24.28
+   },
+   "FANG": {
+    "label": "cheap",
+    "ey_pct": 11.83,
+    "forward_pe": 8.12,
+    "trailing_pe": 23.65,
+    "peg": 1.1,
+    "price_to_sales": 2.78,
+    "target_upside_pct": 35.62
+   },
+   "DLR": {
+    "label": "expensive",
+    "ey_pct": 1.12,
+    "forward_pe": 56.16,
+    "trailing_pe": 68.55,
+    "peg": 14.01,
+    "price_to_sales": 8.83,
+    "target_upside_pct": 37.86
+   },
+   "DG": {
+    "label": "fair",
+    "ey_pct": 5.68,
+    "forward_pe": 15.73,
+    "trailing_pe": 16.95,
+    "peg": 1.67,
+    "price_to_sales": 0.66,
+    "target_upside_pct": 8.79
+   },
+   "DLTR": {
+    "label": "cheap",
+    "ey_pct": 6.77,
+    "forward_pe": 17.49,
+    "trailing_pe": 16.8,
+    "peg": 1.42,
+    "price_to_sales": 1.29,
+    "target_upside_pct": -0.21
+   },
+   "D": {
+    "label": "fair",
+    "ey_pct": 4.88,
+    "forward_pe": 17.35,
+    "trailing_pe": 21.87,
+    "peg": 2.59,
+    "price_to_sales": 3.03,
+    "target_upside_pct": 6.24
+   },
+   "DPZ": {
+    "label": "fair",
+    "ey_pct": 6.04,
+    "forward_pe": 16.89,
+    "trailing_pe": 19.27,
+    "peg": 1.63,
+    "price_to_sales": 2.26,
+    "target_upside_pct": 3.09
+   },
+   "DASH": {
+    "label": "expensive",
+    "ey_pct": 1.46,
+    "forward_pe": 20.01,
+    "trailing_pe": 63.32,
+    "peg": 0.89,
+    "price_to_sales": 3.9,
+    "target_upside_pct": 64.08
+   },
+   "DOV": {
+    "label": "fair",
+    "ey_pct": 5.33,
+    "forward_pe": 16.45,
+    "trailing_pe": 22.67,
+    "peg": 1.35,
+    "price_to_sales": 3.01,
+    "target_upside_pct": 22.5
+   },
+   "DOW": {
+    "label": "fair",
+    "ey_pct": 5.93,
+    "forward_pe": 15.9,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.49,
+    "target_upside_pct": 19.55
+   },
+   "DHI": {
+    "label": "cheap",
+    "ey_pct": 8.4,
+    "forward_pe": 13.46,
+    "trailing_pe": 14.39,
+    "peg": 1.78,
+    "price_to_sales": 1.18,
+    "target_upside_pct": 0.73
+   },
+   "DTE": {
+    "label": "fair",
+    "ey_pct": 4.43,
+    "forward_pe": 16.44,
+    "trailing_pe": 20.72,
+    "peg": 1.75,
+    "price_to_sales": 1.7,
+    "target_upside_pct": 11.65
+   },
+   "DUK": {
+    "label": "fair",
+    "ey_pct": 4.76,
+    "forward_pe": 18.11,
+    "trailing_pe": 19.03,
+    "peg": 2.4,
+    "price_to_sales": 3.03,
+    "target_upside_pct": 3.19
+   },
+   "DD": {
+    "label": "expensive",
+    "ey_pct": 0.66,
+    "forward_pe": 17.79,
+    "trailing_pe": 50.67,
+    "peg": null,
+    "price_to_sales": 2.73,
+    "target_upside_pct": 18.59
+   },
+   "ETN": {
+    "label": "fair",
+    "ey_pct": 3.92,
+    "forward_pe": 18.88,
+    "trailing_pe": 31.1,
+    "peg": 1.77,
+    "price_to_sales": 3.78,
+    "target_upside_pct": 50.64
+   },
+   "EBAY": {
+    "label": "fair",
+    "ey_pct": 4.41,
+    "forward_pe": 16.8,
+    "trailing_pe": 25.24,
+    "peg": 1.61,
+    "price_to_sales": 4.09,
+    "target_upside_pct": 9.97
+   },
+   "SATS": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "ECL": {
+    "label": "expensive",
+    "ey_pct": 3.29,
+    "forward_pe": 31.13,
+    "trailing_pe": 40.1,
+    "peg": 2.36,
+    "price_to_sales": 4.76,
+    "target_upside_pct": 16.37
+   },
+   "EIX": {
+    "label": "cheap",
+    "ey_pct": 7.45,
+    "forward_pe": 9.58,
+    "trailing_pe": 6.61,
+    "peg": 2.8,
+    "price_to_sales": 1.29,
+    "target_upside_pct": 2.77
+   },
+   "EW": {
+    "label": "expensive",
+    "ey_pct": 3.42,
+    "forward_pe": 30.08,
+    "trailing_pe": 59.22,
+    "peg": 2.29,
+    "price_to_sales": 8.77,
+    "target_upside_pct": 11.76
+   },
+   "EA": {
+    "label": "expensive",
+    "ey_pct": 2.69,
+    "forward_pe": 21.72,
+    "trailing_pe": 59.74,
+    "peg": 1.3,
+    "price_to_sales": 6.75,
+    "target_upside_pct": -2.02
+   },
+   "ELV": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 13.02,
+    "trailing_pe": 16.75,
+    "peg": 1.19,
+    "price_to_sales": 0.42,
+    "target_upside_pct": 22.28
+   },
+   "EME": {
+    "label": "cheap",
+    "ey_pct": 7.48,
+    "forward_pe": 14.69,
+    "trailing_pe": 17.44,
+    "peg": 0.4,
+    "price_to_sales": 1.33,
+    "target_upside_pct": 45.13
+   },
+   "EMR": {
+    "label": "fair",
+    "ey_pct": 4.28,
+    "forward_pe": 18.77,
+    "trailing_pe": 31.51,
+    "peg": 1.91,
+    "price_to_sales": 4.36,
+    "target_upside_pct": 21.32
+   },
+   "ETR": {
+    "label": "fair",
+    "ey_pct": 3.99,
+    "forward_pe": 20.41,
+    "trailing_pe": 23.89,
+    "peg": 1.63,
+    "price_to_sales": 3.55,
+    "target_upside_pct": 16.01
+   },
+   "EOG": {
+    "label": "cheap",
+    "ey_pct": 13.66,
+    "forward_pe": 8.74,
+    "trailing_pe": 9.59,
+    "peg": 1.15,
+    "price_to_sales": 2.64,
+    "target_upside_pct": 13.57
+   },
+   "EQT": {
+    "label": "cheap",
+    "ey_pct": 10.96,
+    "forward_pe": 14.74,
+    "trailing_pe": 11.59,
+    "peg": 1.24,
+    "price_to_sales": 3.34,
+    "target_upside_pct": 36.11
+   },
+   "EFX": {
+    "label": "fair",
+    "ey_pct": 4.82,
+    "forward_pe": 18.68,
+    "trailing_pe": 28.67,
+    "peg": 1.49,
+    "price_to_sales": 3.15,
+    "target_upside_pct": 15.7
+   },
+   "EQIX": {
+    "label": "expensive",
+    "ey_pct": 2.01,
+    "forward_pe": 46.79,
+    "trailing_pe": 58.15,
+    "peg": 3.02,
+    "price_to_sales": 9.45,
+    "target_upside_pct": 27.54
+   },
+   "EQR": {
+    "label": "expensive",
+    "ey_pct": 2.66,
+    "forward_pe": 41.36,
+    "trailing_pe": 28.68,
+    "peg": null,
+    "price_to_sales": 7.87,
+    "target_upside_pct": 14.66
+   },
+   "ERIE": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 20.44,
+    "trailing_pe": 24.74,
+    "peg": null,
+    "price_to_sales": 3.46,
+    "target_upside_pct": null
+   },
+   "ESS": {
+    "label": "expensive",
+    "ey_pct": 2.27,
+    "forward_pe": 42.87,
+    "trailing_pe": 50.03,
+    "peg": null,
+    "price_to_sales": 9.39,
+    "target_upside_pct": 9.47
+   },
+   "EL": {
+    "label": "fair",
+    "ey_pct": 4.44,
+    "forward_pe": 24.49,
+    "trailing_pe": 99.46,
+    "peg": 2.12,
+    "price_to_sales": 2.36,
+    "target_upside_pct": 17.13
+   },
+   "EG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 6.94,
+    "trailing_pe": 8.87,
+    "peg": null,
+    "price_to_sales": 0.97,
+    "target_upside_pct": 3.78
+   },
+   "EVRG": {
+    "label": "fair",
+    "ey_pct": 4.8,
+    "forward_pe": 18.78,
+    "trailing_pe": 19.14,
+    "peg": 2.23,
+    "price_to_sales": 3.16,
+    "target_upside_pct": 7.27
+   },
+   "ES": {
+    "label": "fair",
+    "ey_pct": 5.39,
+    "forward_pe": 14.42,
+    "trailing_pe": 18.74,
+    "peg": 2.32,
+    "price_to_sales": 1.95,
+    "target_upside_pct": 1.75
+   },
+   "EXC": {
+    "label": "fair",
+    "ey_pct": 5.2,
+    "forward_pe": 15.12,
+    "trailing_pe": 17.85,
+    "peg": 2.44,
+    "price_to_sales": 1.82,
+    "target_upside_pct": 5.03
+   },
+   "EXE": {
+    "label": "cheap",
+    "ey_pct": 16.77,
+    "forward_pe": 10.49,
+    "trailing_pe": 7.01,
+    "peg": 0.81,
+    "price_to_sales": 1.45,
+    "target_upside_pct": 48.43
+   },
+   "EXPE": {
+    "label": "cheap",
+    "ey_pct": 10.47,
+    "forward_pe": 9.44,
+    "trailing_pe": 13.77,
+    "peg": 0.58,
+    "price_to_sales": 1.72,
+    "target_upside_pct": 41.31
+   },
+   "EXPD": {
+    "label": "fair",
+    "ey_pct": 5.51,
+    "forward_pe": 20.97,
+    "trailing_pe": 24.47,
+    "peg": 2.63,
+    "price_to_sales": 1.88,
+    "target_upside_pct": 5.26
+   },
+   "EXR": {
+    "label": "expensive",
+    "ey_pct": 3.11,
+    "forward_pe": 31.59,
+    "trailing_pe": 31.49,
+    "peg": 5.24,
+    "price_to_sales": 9.6,
+    "target_upside_pct": 4.35
+   },
+   "XOM": {
+    "label": "cheap",
+    "ey_pct": 7.16,
+    "forward_pe": 12.81,
+    "trailing_pe": 16.46,
+    "peg": 1.25,
+    "price_to_sales": 1.68,
+    "target_upside_pct": 15.12
+   },
+   "FFIV": {
+    "label": "fair",
+    "ey_pct": 5.17,
+    "forward_pe": 15.22,
+    "trailing_pe": 24.28,
+    "peg": 1.28,
+    "price_to_sales": 5.07,
+    "target_upside_pct": 46.28
+   },
+   "FDS": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 14.35,
+    "trailing_pe": 21.41,
+    "peg": 1.05,
+    "price_to_sales": 4.44,
+    "target_upside_pct": -1.84
+   },
+   "FICO": {
+    "label": "cheap",
+    "ey_pct": 6.5,
+    "forward_pe": 13.63,
+    "trailing_pe": 19.12,
+    "peg": 0.64,
+    "price_to_sales": 5.86,
+    "target_upside_pct": 18.3
+   },
+   "FAST": {
+    "label": "expensive",
+    "ey_pct": 3.2,
+    "forward_pe": 35.76,
+    "trailing_pe": 41.15,
+    "peg": 3.4,
+    "price_to_sales": 6.4,
+    "target_upside_pct": 0.3
+   },
+   "FRT": {
+    "label": "expensive",
+    "ey_pct": 3.24,
+    "forward_pe": 35.03,
+    "trailing_pe": 22.05,
+    "peg": null,
+    "price_to_sales": 7.06,
+    "target_upside_pct": 15.17
+   },
+   "FDX": {
+    "label": "cheap",
+    "ey_pct": 6.8,
+    "forward_pe": 14.52,
+    "trailing_pe": 16.39,
+    "peg": 1.9,
+    "price_to_sales": 0.75,
+    "target_upside_pct": 17.37
+   },
+   "FDXF": {
+    "label": "fair",
+    "ey_pct": 4.37,
+    "forward_pe": 23.02,
+    "trailing_pe": 34.76,
+    "peg": null,
+    "price_to_sales": 2.02,
+    "target_upside_pct": 22.38
+   },
+   "FIS": {
+    "label": "cheap",
+    "ey_pct": 6.69,
+    "forward_pe": 4.75,
+    "trailing_pe": 3.86,
+    "peg": 0.19,
+    "price_to_sales": 1.03,
+    "target_upside_pct": 34.32
+   },
+   "FITB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.9,
+    "trailing_pe": 16.57,
+    "peg": 1.52,
+    "price_to_sales": 4.0,
+    "target_upside_pct": 24.59
+   },
+   "FSLR": {
+    "label": "cheap",
+    "ey_pct": 13.96,
+    "forward_pe": 5.93,
+    "trailing_pe": 7.96,
+    "peg": 0.27,
+    "price_to_sales": 2.95,
+    "target_upside_pct": 82.19
+   },
+   "FE": {
+    "label": "fair",
+    "ey_pct": 4.92,
+    "forward_pe": 15.96,
+    "trailing_pe": 22.72,
+    "peg": 1.97,
+    "price_to_sales": 1.7,
+    "target_upside_pct": 8.82
+   },
+   "FISV": {
+    "label": "cheap",
+    "ey_pct": 7.02,
+    "forward_pe": 7.02,
+    "trailing_pe": null,
+    "peg": 1.69,
+    "price_to_sales": null,
+    "target_upside_pct": 15.86
+   },
+   "FLEX": {
+    "label": "fair",
+    "ey_pct": 5.29,
+    "forward_pe": 8.45,
+    "trailing_pe": 23.83,
+    "peg": null,
+    "price_to_sales": 0.79,
+    "target_upside_pct": 133.09
+   },
+   "F": {
+    "label": "no profits",
+    "ey_pct": -3.8,
+    "forward_pe": 5.98,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.24,
+    "target_upside_pct": 34.44
+   },
+   "FTNT": {
+    "label": "expensive",
+    "ey_pct": 2.94,
+    "forward_pe": 31.93,
+    "trailing_pe": 40.71,
+    "peg": 1.53,
+    "price_to_sales": 11.61,
+    "target_upside_pct": 16.16
+   },
+   "FTV": {
+    "label": "expensive",
+    "ey_pct": 3.88,
+    "forward_pe": 19.29,
+    "trailing_pe": 30.41,
+    "peg": null,
+    "price_to_sales": 4.34,
+    "target_upside_pct": 5.21
+   },
+   "FOXA": {
+    "label": "cheap",
+    "ey_pct": 10.45,
+    "forward_pe": 11.79,
+    "trailing_pe": 13.39,
+    "peg": 1.12,
+    "price_to_sales": 1.99,
+    "target_upside_pct": 27.83
+   },
+   "FOX": {
+    "label": "cheap",
+    "ey_pct": 15.16,
+    "forward_pe": 11.78,
+    "trailing_pe": 11.94,
+    "peg": 1.0,
+    "price_to_sales": 1.32,
+    "target_upside_pct": null
+   },
+   "BEN": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.81,
+    "trailing_pe": 16.26,
+    "peg": 0.41,
+    "price_to_sales": 1.74,
+    "target_upside_pct": 15.7
+   },
+   "FCX": {
+    "label": "cheap",
+    "ey_pct": 9.15,
+    "forward_pe": 10.9,
+    "trailing_pe": 19.32,
+    "peg": 2.75,
+    "price_to_sales": 2.5,
+    "target_upside_pct": 70.09
+   },
+   "GRMN": {
+    "label": "fair",
+    "ey_pct": 4.57,
+    "forward_pe": 23.38,
+    "trailing_pe": 25.75,
+    "peg": 2.07,
+    "price_to_sales": 6.55,
+    "target_upside_pct": 11.55
+   },
+   "IT": {
+    "label": "cheap",
+    "ey_pct": 10.35,
+    "forward_pe": 10.5,
+    "trailing_pe": 12.5,
+    "peg": 0.66,
+    "price_to_sales": 1.71,
+    "target_upside_pct": 15.46
+   },
+   "GE": {
+    "label": "expensive",
+    "ey_pct": 2.9,
+    "forward_pe": 33.25,
+    "trailing_pe": 35.39,
+    "peg": 3.73,
+    "price_to_sales": 6.09,
+    "target_upside_pct": 22.22
+   },
+   "GEHC": {
+    "label": "cheap",
+    "ey_pct": 6.55,
+    "forward_pe": 14.66,
+    "trailing_pe": 17.05,
+    "peg": 2.24,
+    "price_to_sales": 1.69,
+    "target_upside_pct": 9.44
+   },
+   "GEV": {
+    "label": "expensive",
+    "ey_pct": 1.65,
+    "forward_pe": 27.0,
+    "trailing_pe": 18.36,
+    "peg": 1.4,
+    "price_to_sales": 4.2,
+    "target_upside_pct": 66.89
+   },
+   "GEN": {
+    "label": "cheap",
+    "ey_pct": 9.01,
+    "forward_pe": 8.75,
+    "trailing_pe": 14.82,
+    "peg": 1.79,
+    "price_to_sales": 3.31,
+    "target_upside_pct": 10.57
+   },
+   "GNRC": {
+    "label": "expensive",
+    "ey_pct": 3.83,
+    "forward_pe": 13.83,
+    "trailing_pe": 38.11,
+    "peg": 0.52,
+    "price_to_sales": 2.47,
+    "target_upside_pct": 49.6
+   },
+   "GD": {
+    "label": "fair",
+    "ey_pct": 6.04,
+    "forward_pe": 18.0,
+    "trailing_pe": 20.1,
+    "peg": 1.97,
+    "price_to_sales": 1.63,
+    "target_upside_pct": 22.78
+   },
+   "GIS": {
+    "label": "cheap",
+    "ey_pct": 8.59,
+    "forward_pe": 11.35,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1.04,
+    "target_upside_pct": 2.21
+   },
+   "GM": {
+    "label": "expensive",
+    "ey_pct": 2.52,
+    "forward_pe": 5.35,
+    "trailing_pe": 17.22,
+    "peg": 0.27,
+    "price_to_sales": 0.36,
+    "target_upside_pct": 28.54
+   },
+   "GPC": {
+    "label": "fair",
+    "ey_pct": 5.32,
+    "forward_pe": 14.56,
+    "trailing_pe": 455.81,
+    "peg": null,
+    "price_to_sales": 0.64,
+    "target_upside_pct": 17.29
+   },
+   "GILD": {
+    "label": "fair",
+    "ey_pct": 5.17,
+    "forward_pe": 16.4,
+    "trailing_pe": null,
+    "peg": 2.24,
+    "price_to_sales": 6.66,
+    "target_upside_pct": 5.7
+   },
+   "GPN": {
+    "label": "expensive",
+    "ey_pct": 1.89,
+    "forward_pe": 5.67,
+    "trailing_pe": 163.98,
+    "peg": 0.2,
+    "price_to_sales": 2.11,
+    "target_upside_pct": 19.03
+   },
+   "GL": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.26,
+    "trailing_pe": 10.15,
+    "peg": null,
+    "price_to_sales": 1.82,
+    "target_upside_pct": 22.29
+   },
+   "GDDY": {
+    "label": "cheap",
+    "ey_pct": 9.12,
+    "forward_pe": 8.86,
+    "trailing_pe": 13.69,
+    "peg": 0.57,
+    "price_to_sales": 2.33,
+    "target_upside_pct": 19.5
+   },
+   "GS": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.63,
+    "trailing_pe": 11.37,
+    "peg": 1.06,
+    "price_to_sales": 3.21,
+    "target_upside_pct": 30.46
+   },
+   "HAL": {
+    "label": "cheap",
+    "ey_pct": 9.24,
+    "forward_pe": 10.4,
+    "trailing_pe": 12.83,
+    "peg": 0.64,
+    "price_to_sales": 1.12,
+    "target_upside_pct": 42.68
+   },
+   "HIG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.05,
+    "trailing_pe": 9.16,
+    "peg": null,
+    "price_to_sales": 1.24,
+    "target_upside_pct": 6.52
+   },
+   "HAS": {
+    "label": "cheap",
+    "ey_pct": 7.26,
+    "forward_pe": 16.08,
+    "trailing_pe": 16.75,
+    "peg": 1.64,
+    "price_to_sales": 3.03,
+    "target_upside_pct": 10.72
+   },
+   "HCA": {
+    "label": "cheap",
+    "ey_pct": 7.99,
+    "forward_pe": 15.2,
+    "trailing_pe": 15.77,
+    "peg": 1.41,
+    "price_to_sales": 1.26,
+    "target_upside_pct": 2.13
+   },
+   "DOC": {
+    "label": "expensive",
+    "ey_pct": 2.21,
+    "forward_pe": 160.33,
+    "trailing_pe": 35.63,
+    "peg": null,
+    "price_to_sales": 4.56,
+    "target_upside_pct": 16.94
+   },
+   "HSIC": {
+    "label": "cheap",
+    "ey_pct": 6.14,
+    "forward_pe": 13.91,
+    "trailing_pe": 22.88,
+    "peg": 1.66,
+    "price_to_sales": 0.67,
+    "target_upside_pct": 15.98
+   },
+   "HSY": {
+    "label": "cheap",
+    "ey_pct": 6.38,
+    "forward_pe": 18.53,
+    "trailing_pe": 19.85,
+    "peg": 0.88,
+    "price_to_sales": 2.88,
+    "target_upside_pct": 3.09
+   },
+   "HPE": {
+    "label": "fair",
+    "ey_pct": 4.81,
+    "forward_pe": 8.64,
+    "trailing_pe": 21.09,
+    "peg": 0.36,
+    "price_to_sales": 1.3,
+    "target_upside_pct": 72.53
+   },
+   "HLT": {
+    "label": "expensive",
+    "ey_pct": 3.3,
+    "forward_pe": 34.06,
+    "trailing_pe": 48.08,
+    "peg": 1.97,
+    "price_to_sales": 15.31,
+    "target_upside_pct": 5.03
+   },
+   "HD": {
+    "label": "fair",
+    "ey_pct": 5.24,
+    "forward_pe": 21.53,
+    "trailing_pe": 23.54,
+    "peg": 1.78,
+    "price_to_sales": 1.98,
+    "target_upside_pct": 10.78
+   },
+   "HON": {
+    "label": "cheap",
+    "ey_pct": 6.35,
+    "forward_pe": 21.53,
+    "trailing_pe": 10.54,
+    "peg": 2.99,
+    "price_to_sales": 1.79,
+    "target_upside_pct": 19.39
+   },
+   "HRL": {
+    "label": "fair",
+    "ey_pct": 5.32,
+    "forward_pe": 15.04,
+    "trailing_pe": 37.97,
+    "peg": 1.59,
+    "price_to_sales": 1.07,
+    "target_upside_pct": 5.94
+   },
+   "HST": {
+    "label": "fair",
+    "ey_pct": 4.39,
+    "forward_pe": 21.0,
+    "trailing_pe": 17.85,
+    "peg": 3.4,
+    "price_to_sales": 2.68,
+    "target_upside_pct": 9.35
+   },
+   "HWM": {
+    "label": "expensive",
+    "ey_pct": 3.12,
+    "forward_pe": 31.47,
+    "trailing_pe": 41.01,
+    "peg": null,
+    "price_to_sales": 8.55,
+    "target_upside_pct": 41.66
+   },
+   "HPQ": {
+    "label": "cheap",
+    "ey_pct": 12.38,
+    "forward_pe": 8.88,
+    "trailing_pe": 10.67,
+    "peg": 2.97,
+    "price_to_sales": 0.43,
+    "target_upside_pct": -1.46
+   },
+   "HUBB": {
+    "label": "fair",
+    "ey_pct": 5.07,
+    "forward_pe": 17.5,
+    "trailing_pe": 23.68,
+    "peg": 1.54,
+    "price_to_sales": 3.23,
+    "target_upside_pct": 33.19
+   },
+   "HUM": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 21.06,
+    "trailing_pe": 38.05,
+    "peg": 1.05,
+    "price_to_sales": 0.3,
+    "target_upside_pct": 30.98
+   },
+   "HBAN": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.17,
+    "trailing_pe": 11.7,
+    "peg": 1.77,
+    "price_to_sales": 2.93,
+    "target_upside_pct": 31.76
+   },
+   "HII": {
+    "label": "fair",
+    "ey_pct": 5.28,
+    "forward_pe": 13.66,
+    "trailing_pe": 15.1,
+    "peg": 0.86,
+    "price_to_sales": 0.82,
+    "target_upside_pct": 27.58
+   },
+   "IBM": {
+    "label": "fair",
+    "ey_pct": 4.74,
+    "forward_pe": 16.95,
+    "trailing_pe": 19.15,
+    "peg": 2.11,
+    "price_to_sales": 3.04,
+    "target_upside_pct": 15.78
+   },
+   "IEX": {
+    "label": "fair",
+    "ey_pct": 4.51,
+    "forward_pe": 22.34,
+    "trailing_pe": 30.51,
+    "peg": 1.62,
+    "price_to_sales": 4.41,
+    "target_upside_pct": 19.71
+   },
+   "IDXX": {
+    "label": "expensive",
+    "ey_pct": 2.79,
+    "forward_pe": 40.03,
+    "trailing_pe": 45.57,
+    "peg": 3.2,
+    "price_to_sales": 11.43,
+    "target_upside_pct": 6.06
+   },
+   "ITW": {
+    "label": "fair",
+    "ey_pct": 5.13,
+    "forward_pe": 22.13,
+    "trailing_pe": 24.4,
+    "peg": 2.62,
+    "price_to_sales": 4.67,
+    "target_upside_pct": 7.69
+   },
+   "INCY": {
+    "label": "expensive",
+    "ey_pct": 3.48,
+    "forward_pe": 13.3,
+    "trailing_pe": 58.48,
+    "peg": 10.82,
+    "price_to_sales": 3.89,
+    "target_upside_pct": 15.7
+   },
+   "IR": {
+    "label": "fair",
+    "ey_pct": 4.53,
+    "forward_pe": 19.75,
+    "trailing_pe": 22.18,
+    "peg": 0.67,
+    "price_to_sales": 3.73,
+    "target_upside_pct": 22.41
+   },
+   "PODD": {
+    "label": "fair",
+    "ey_pct": 6.11,
+    "forward_pe": 16.83,
+    "trailing_pe": 21.76,
+    "peg": 1.07,
+    "price_to_sales": 2.9,
+    "target_upside_pct": 33.6
+   },
+   "INTC": {
+    "label": "expensive",
+    "ey_pct": 2.0,
+    "forward_pe": 28.64,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.55,
+    "target_upside_pct": 76.78
+   },
+   "IBKR": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 21.51,
+    "trailing_pe": 27.17,
+    "peg": 1.08,
+    "price_to_sales": 17.19,
+    "target_upside_pct": 46.14
+   },
+   "ICE": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 19.01,
+    "trailing_pe": 23.16,
+    "peg": 1.91,
+    "price_to_sales": 8.71,
+    "target_upside_pct": 13.84
+   },
+   "IFF": {
+    "label": "expensive",
+    "ey_pct": 2.82,
+    "forward_pe": 20.6,
+    "trailing_pe": 227.49,
+    "peg": 1.94,
+    "price_to_sales": 1.84,
+    "target_upside_pct": 23.38
+   },
+   "IP": {
+    "label": "expensive",
+    "ey_pct": 2.06,
+    "forward_pe": 11.04,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.67,
+    "target_upside_pct": 39.33
+   },
+   "INTU": {
+    "label": "cheap",
+    "ey_pct": 8.13,
+    "forward_pe": 10.05,
+    "trailing_pe": 16.43,
+    "peg": 0.98,
+    "price_to_sales": 3.3,
+    "target_upside_pct": 45.19
+   },
+   "ISRG": {
+    "label": "expensive",
+    "ey_pct": 2.76,
+    "forward_pe": 32.0,
+    "trailing_pe": 48.25,
+    "peg": 1.83,
+    "price_to_sales": 11.95,
+    "target_upside_pct": 22.42
+   },
+   "IVZ": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.01,
+    "trailing_pe": null,
+    "peg": 0.9,
+    "price_to_sales": 1.63,
+    "target_upside_pct": 32.53
+   },
+   "INVH": {
+    "label": "expensive",
+    "ey_pct": 3.02,
+    "forward_pe": 37.27,
+    "trailing_pe": 23.01,
+    "peg": null,
+    "price_to_sales": 5.31,
+    "target_upside_pct": 24.15
+   },
+   "IQV": {
+    "label": "fair",
+    "ey_pct": 4.38,
+    "forward_pe": 17.31,
+    "trailing_pe": 29.91,
+    "peg": 0.93,
+    "price_to_sales": 2.34,
+    "target_upside_pct": 26.88
+   },
+   "IRM": {
+    "label": "expensive",
+    "ey_pct": 3.21,
+    "forward_pe": 37.64,
+    "trailing_pe": 66.81,
+    "peg": null,
+    "price_to_sales": 3.9,
+    "target_upside_pct": 35.71
+   },
+   "JBHT": {
+    "label": "fair",
+    "ey_pct": 4.47,
+    "forward_pe": 22.2,
+    "trailing_pe": 30.82,
+    "peg": 1.55,
+    "price_to_sales": 1.53,
+    "target_upside_pct": 27.9
+   },
+   "JBL": {
+    "label": "cheap",
+    "ey_pct": 7.19,
+    "forward_pe": 10.18,
+    "trailing_pe": 23.16,
+    "peg": null,
+    "price_to_sales": 0.65,
+    "target_upside_pct": 88.24
+   },
+   "JKHY": {
+    "label": "fair",
+    "ey_pct": 5.49,
+    "forward_pe": 21.42,
+    "trailing_pe": 23.53,
+    "peg": 2.05,
+    "price_to_sales": 4.59,
+    "target_upside_pct": 16.74
+   },
+   "J": {
+    "label": "expensive",
+    "ey_pct": 3.17,
+    "forward_pe": 18.29,
+    "trailing_pe": 50.04,
+    "peg": 0.47,
+    "price_to_sales": 1.24,
+    "target_upside_pct": 8.09
+   },
+   "JNJ": {
+    "label": "expensive",
+    "ey_pct": 3.76,
+    "forward_pe": 23.29,
+    "trailing_pe": 41.04,
+    "peg": 3.01,
+    "price_to_sales": 6.55,
+    "target_upside_pct": 3.47
+   },
+   "JCI": {
+    "label": "fair",
+    "ey_pct": 4.61,
+    "forward_pe": 17.56,
+    "trailing_pe": 27.58,
+    "peg": 1.53,
+    "price_to_sales": 3.04,
+    "target_upside_pct": 33.99
+   },
+   "JPM": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.14,
+    "trailing_pe": 13.03,
+    "peg": 1.36,
+    "price_to_sales": 4.32,
+    "target_upside_pct": 20.27
+   },
+   "KVUE": {
+    "label": "cheap",
+    "ey_pct": 6.68,
+    "forward_pe": 15.59,
+    "trailing_pe": 21.94,
+    "peg": 1.53,
+    "price_to_sales": 2.39,
+    "target_upside_pct": 0.98
+   },
+   "KDP": {
+    "label": "fair",
+    "ey_pct": 4.75,
+    "forward_pe": 13.76,
+    "trailing_pe": 31.39,
+    "peg": 1.08,
+    "price_to_sales": 2.15,
+    "target_upside_pct": 11.41
+   },
+   "KEY": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.94,
+    "trailing_pe": 10.69,
+    "peg": 1.27,
+    "price_to_sales": 2.71,
+    "target_upside_pct": 29.2
+   },
+   "KEYS": {
+    "label": "expensive",
+    "ey_pct": 2.98,
+    "forward_pe": 18.77,
+    "trailing_pe": 35.39,
+    "peg": 0.56,
+    "price_to_sales": 6.22,
+    "target_upside_pct": 49.55
+   },
+   "KMB": {
+    "label": "expensive",
+    "ey_pct": 3.45,
+    "forward_pe": 14.95,
+    "trailing_pe": 20.3,
+    "peg": 2.17,
+    "price_to_sales": 3.94,
+    "target_upside_pct": 11.22
+   },
+   "KIM": {
+    "label": "expensive",
+    "ey_pct": 3.1,
+    "forward_pe": 28.59,
+    "trailing_pe": 23.71,
+    "peg": null,
+    "price_to_sales": 7.67,
+    "target_upside_pct": 5.31
+   },
+   "KMI": {
+    "label": "fair",
+    "ey_pct": 5.33,
+    "forward_pe": 19.72,
+    "trailing_pe": 18.74,
+    "peg": 2.7,
+    "price_to_sales": 3.69,
+    "target_upside_pct": 23.52
+   },
+   "KKR": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.32,
+    "trailing_pe": 25.96,
+    "peg": 0.4,
+    "price_to_sales": 3.41,
+    "target_upside_pct": 38.4
+   },
+   "KLAC": {
+    "label": "expensive",
+    "ey_pct": 3.64,
+    "forward_pe": 17.86,
+    "trailing_pe": 31.8,
+    "peg": 1.28,
+    "price_to_sales": 11.4,
+    "target_upside_pct": 73.1
+   },
+   "KHC": {
+    "label": "cheap",
+    "ey_pct": 8.93,
+    "forward_pe": 12.41,
+    "trailing_pe": null,
+    "peg": 2.85,
+    "price_to_sales": 1.21,
+    "target_upside_pct": -0.96
+   },
+   "KR": {
+    "label": "expensive",
+    "ey_pct": 3.31,
+    "forward_pe": 12.48,
+    "trailing_pe": 38.02,
+    "peg": 0.66,
+    "price_to_sales": 0.27,
+    "target_upside_pct": 2.22
+   },
+   "LHX": {
+    "label": "fair",
+    "ey_pct": 4.53,
+    "forward_pe": 18.31,
+    "trailing_pe": 23.27,
+    "peg": 0.96,
+    "price_to_sales": 1.99,
+    "target_upside_pct": 33.64
+   },
+   "LH": {
+    "label": "fair",
+    "ey_pct": 4.53,
+    "forward_pe": 18.73,
+    "trailing_pe": 30.09,
+    "peg": 1.63,
+    "price_to_sales": 2.04,
+    "target_upside_pct": 6.25
+   },
+   "LRCX": {
+    "label": "fair",
+    "ey_pct": 4.29,
+    "forward_pe": 14.93,
+    "trailing_pe": 27.31,
+    "peg": 0.89,
+    "price_to_sales": 8.76,
+    "target_upside_pct": 97.58
+   },
+   "LVS": {
+    "label": "cheap",
+    "ey_pct": 8.24,
+    "forward_pe": 12.67,
+    "trailing_pe": 15.92,
+    "peg": 1.04,
+    "price_to_sales": 1.79,
+    "target_upside_pct": 26.51
+   },
+   "LDOS": {
+    "label": "cheap",
+    "ey_pct": 10.09,
+    "forward_pe": 10.34,
+    "trailing_pe": 10.92,
+    "peg": null,
+    "price_to_sales": 0.84,
+    "target_upside_pct": 25.79
+   },
+   "LEN": {
+    "label": "cheap",
+    "ey_pct": 7.6,
+    "forward_pe": 15.95,
+    "trailing_pe": 15.29,
+    "peg": 11.3,
+    "price_to_sales": 0.6,
+    "target_upside_pct": -4.3
+   },
+   "LII": {
+    "label": "cheap",
+    "ey_pct": 8.05,
+    "forward_pe": 14.31,
+    "trailing_pe": 15.13,
+    "peg": 1.08,
+    "price_to_sales": 2.1,
+    "target_upside_pct": 11.19
+   },
+   "LLY": {
+    "label": "expensive",
+    "ey_pct": 3.56,
+    "forward_pe": 26.48,
+    "trailing_pe": 43.72,
+    "peg": 1.25,
+    "price_to_sales": 13.88,
+    "target_upside_pct": 9.13
+   },
+   "LIN": {
+    "label": "expensive",
+    "ey_pct": 3.87,
+    "forward_pe": 25.7,
+    "trailing_pe": 33.39,
+    "peg": 2.0,
+    "price_to_sales": 6.37,
+    "target_upside_pct": 10.4
+   },
+   "LYV": {
+    "label": "expensive",
+    "ey_pct": 1.99,
+    "forward_pe": 93.64,
+    "trailing_pe": null,
+    "peg": 5.73,
+    "price_to_sales": 1.48,
+    "target_upside_pct": 16.57
+   },
+   "LMT": {
+    "label": "cheap",
+    "ey_pct": 6.42,
+    "forward_pe": 16.99,
+    "trailing_pe": 20.08,
+    "peg": 1.05,
+    "price_to_sales": 1.65,
+    "target_upside_pct": 16.86
+   },
+   "L": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 37.72,
+    "trailing_pe": 15.13,
+    "peg": null,
+    "price_to_sales": 1.18,
+    "target_upside_pct": null
+   },
+   "LOW": {
+    "label": "cheap",
+    "ey_pct": 6.24,
+    "forward_pe": 17.34,
+    "trailing_pe": 18.53,
+    "peg": 1.39,
+    "price_to_sales": 1.34,
+    "target_upside_pct": 12.64
+   },
+   "LULU": {
+    "label": "cheap",
+    "ey_pct": 15.66,
+    "forward_pe": 11.91,
+    "trailing_pe": 8.45,
+    "peg": 1.06,
+    "price_to_sales": 1.07,
+    "target_upside_pct": 1.73
+   },
+   "LITE": {
+    "label": "expensive",
+    "ey_pct": 2.09,
+    "forward_pe": 11.47,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 11.16,
+    "target_upside_pct": 131.2
+   },
+   "LYB": {
+    "label": "cheap",
+    "ey_pct": 10.1,
+    "forward_pe": 8.81,
+    "trailing_pe": 13.52,
+    "peg": null,
+    "price_to_sales": 0.56,
+    "target_upside_pct": 28.64
+   },
+   "MTB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.87,
+    "trailing_pe": 10.88,
+    "peg": 1.25,
+    "price_to_sales": 3.16,
+    "target_upside_pct": 18.18
+   },
+   "MPC": {
+    "label": "cheap",
+    "ey_pct": 16.33,
+    "forward_pe": 6.11,
+    "trailing_pe": 7.28,
+    "peg": 0.85,
+    "price_to_sales": 0.57,
+    "target_upside_pct": 24.8
+   },
+   "MAR": {
+    "label": "expensive",
+    "ey_pct": 3.58,
+    "forward_pe": 30.24,
+    "trailing_pe": 40.54,
+    "peg": 1.85,
+    "price_to_sales": 13.81,
+    "target_upside_pct": 3.98
+   },
+   "MRSH": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 17.99,
+    "trailing_pe": 24.67,
+    "peg": 1.79,
+    "price_to_sales": 3.45,
+    "target_upside_pct": 2.06
+   },
+   "MLM": {
+    "label": "expensive",
+    "ey_pct": 2.93,
+    "forward_pe": 28.13,
+    "trailing_pe": 37.37,
+    "peg": 2.66,
+    "price_to_sales": 4.94,
+    "target_upside_pct": 25.01
+   },
+   "MRVL": {
+    "label": "expensive",
+    "ey_pct": 1.43,
+    "forward_pe": 16.59,
+    "trailing_pe": 40.22,
+    "peg": 0.34,
+    "price_to_sales": 11.64,
+    "target_upside_pct": 152.82
+   },
+   "MAS": {
+    "label": "cheap",
+    "ey_pct": 7.34,
+    "forward_pe": 17.56,
+    "trailing_pe": 17.92,
+    "peg": 1.87,
+    "price_to_sales": 2.08,
+    "target_upside_pct": 0.17
+   },
+   "MA": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 27.01,
+    "trailing_pe": 32.74,
+    "peg": 1.63,
+    "price_to_sales": 15.02,
+    "target_upside_pct": 15.2
+   },
+   "MKC": {
+    "label": "cheap",
+    "ey_pct": 7.24,
+    "forward_pe": 14.75,
+    "trailing_pe": 8.57,
+    "peg": 3.0,
+    "price_to_sales": 1.66,
+    "target_upside_pct": 14.13
+   },
+   "MCD": {
+    "label": "fair",
+    "ey_pct": 5.2,
+    "forward_pe": 20.01,
+    "trailing_pe": 21.62,
+    "peg": 2.9,
+    "price_to_sales": 6.94,
+    "target_upside_pct": 9.43
+   },
+   "MCK": {
+    "label": "fair",
+    "ey_pct": 5.47,
+    "forward_pe": 20.39,
+    "trailing_pe": 27.58,
+    "peg": 1.83,
+    "price_to_sales": 0.29,
+    "target_upside_pct": 8.57
+   },
+   "MDT": {
+    "label": "fair",
+    "ey_pct": 4.63,
+    "forward_pe": 15.6,
+    "trailing_pe": 24.56,
+    "peg": 1.81,
+    "price_to_sales": 3.41,
+    "target_upside_pct": 7.03
+   },
+   "MRK": {
+    "label": "expensive",
+    "ey_pct": 1.66,
+    "forward_pe": 14.92,
+    "trailing_pe": 135.07,
+    "peg": 3.21,
+    "price_to_sales": 4.89,
+    "target_upside_pct": 20.79
+   },
+   "META": {
+    "label": "fair",
+    "ey_pct": 5.16,
+    "forward_pe": 15.72,
+    "trailing_pe": 19.13,
+    "peg": 0.78,
+    "price_to_sales": 5.93,
+    "target_upside_pct": 51.24
+   },
+   "MET": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.55,
+    "trailing_pe": 12.51,
+    "peg": 0.52,
+    "price_to_sales": 0.73,
+    "target_upside_pct": 16.15
+   },
+   "MTD": {
+    "label": "expensive",
+    "ey_pct": 3.41,
+    "forward_pe": 31.32,
+    "trailing_pe": 36.18,
+    "peg": 3.17,
+    "price_to_sales": 7.9,
+    "target_upside_pct": 4.24
+   },
+   "MGM": {
+    "label": "expensive",
+    "ey_pct": 2.92,
+    "forward_pe": 23.02,
+    "trailing_pe": 12.45,
+    "peg": 0.71,
+    "price_to_sales": 0.46,
+    "target_upside_pct": 17.1
+   },
+   "MCHP": {
+    "label": "expensive",
+    "ey_pct": 3.43,
+    "forward_pe": 12.51,
+    "trailing_pe": 41.68,
+    "peg": 0.18,
+    "price_to_sales": 5.38,
+    "target_upside_pct": 55.99
+   },
+   "MU": {
+    "label": "cheap",
+    "ey_pct": 15.54,
+    "forward_pe": 2.85,
+    "trailing_pe": 8.0,
+    "peg": 0.16,
+    "price_to_sales": 5.05,
+    "target_upside_pct": 162.72
+   },
+   "MSFT": {
+    "label": "fair",
+    "ey_pct": 4.49,
+    "forward_pe": 20.02,
+    "trailing_pe": 25.29,
+    "peg": 1.47,
+    "price_to_sales": 10.39,
+    "target_upside_pct": 31.29
+   },
+   "MAA": {
+    "label": "expensive",
+    "ey_pct": 3.04,
+    "forward_pe": 34.43,
+    "trailing_pe": 34.22,
+    "peg": null,
+    "price_to_sales": 6.04,
+    "target_upside_pct": 18.11
+   },
+   "MRNA": {
+    "label": "no profits",
+    "ey_pct": -3.58,
+    "forward_pe": -46.55,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 31.25,
+    "target_upside_pct": -15.63
+   },
+   "TAP": {
+    "label": "cheap",
+    "ey_pct": 10.95,
+    "forward_pe": 8.88,
+    "trailing_pe": 8.53,
+    "peg": 3.92,
+    "price_to_sales": 0.66,
+    "target_upside_pct": 8.03
+   },
+   "MDLZ": {
+    "label": "expensive",
+    "ey_pct": 3.46,
+    "forward_pe": 19.71,
+    "trailing_pe": 21.18,
+    "peg": 0.97,
+    "price_to_sales": 2.1,
+    "target_upside_pct": 6.57
+   },
+   "MPWR": {
+    "label": "expensive",
+    "ey_pct": 2.0,
+    "forward_pe": 24.48,
+    "trailing_pe": 62.61,
+    "peg": 0.74,
+    "price_to_sales": 14.9,
+    "target_upside_pct": 60.36
+   },
+   "MNST": {
+    "label": "expensive",
+    "ey_pct": 3.27,
+    "forward_pe": 33.61,
+    "trailing_pe": 39.72,
+    "peg": 28.17,
+    "price_to_sales": 8.92,
+    "target_upside_pct": 15.01
+   },
+   "MCO": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 25.1,
+    "trailing_pe": 28.48,
+    "peg": 1.71,
+    "price_to_sales": 9.85,
+    "target_upside_pct": 18.6
+   },
+   "MS": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.15,
+    "trailing_pe": 13.14,
+    "peg": 1.52,
+    "price_to_sales": 3.25,
+    "target_upside_pct": 27.66
+   },
+   "MOS": {
+    "label": "no profits",
+    "ey_pct": -0.94,
+    "forward_pe": 14.92,
+    "trailing_pe": null,
+    "peg": 2.11,
+    "price_to_sales": 0.5,
+    "target_upside_pct": 34.84
+   },
+   "MSI": {
+    "label": "expensive",
+    "ey_pct": 3.34,
+    "forward_pe": 26.61,
+    "trailing_pe": 41.85,
+    "peg": 2.25,
+    "price_to_sales": 6.82,
+    "target_upside_pct": 5.36
+   },
+   "MSCI": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 27.22,
+    "trailing_pe": 32.28,
+    "peg": 1.97,
+    "price_to_sales": 12.72,
+    "target_upside_pct": 13.02
+   },
+   "NDAQ": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 21.67,
+    "trailing_pe": 28.12,
+    "peg": 1.61,
+    "price_to_sales": 9.88,
+    "target_upside_pct": 12.1
+   },
+   "NTAP": {
+    "label": "fair",
+    "ey_pct": 6.03,
+    "forward_pe": 14.11,
+    "trailing_pe": 22.24,
+    "peg": 1.89,
+    "price_to_sales": 4.19,
+    "target_upside_pct": 34.28
+   },
+   "NFLX": {
+    "label": "cheap",
+    "ey_pct": 6.49,
+    "forward_pe": 15.04,
+    "trailing_pe": 16.4,
+    "peg": 0.93,
+    "price_to_sales": 4.68,
+    "target_upside_pct": 49.42
+   },
+   "NEM": {
+    "label": "cheap",
+    "ey_pct": 15.55,
+    "forward_pe": 9.53,
+    "trailing_pe": 10.98,
+    "peg": null,
+    "price_to_sales": 3.7,
+    "target_upside_pct": 42.13
+   },
+   "NWSA": {
+    "label": "cheap",
+    "ey_pct": 8.19,
+    "forward_pe": 16.33,
+    "trailing_pe": 22.37,
+    "peg": 2.21,
+    "price_to_sales": 1.47,
+    "target_upside_pct": 45.18
+   },
+   "NWS": {
+    "label": "cheap",
+    "ey_pct": 7.42,
+    "forward_pe": 18.17,
+    "trailing_pe": 24.88,
+    "peg": 2.47,
+    "price_to_sales": 1.63,
+    "target_upside_pct": null
+   },
+   "NEE": {
+    "label": "expensive",
+    "ey_pct": 2.95,
+    "forward_pe": 19.07,
+    "trailing_pe": 15.04,
+    "peg": 1.71,
+    "price_to_sales": 6.07,
+    "target_upside_pct": 13.21
+   },
+   "NKE": {
+    "label": "cheap",
+    "ey_pct": 7.08,
+    "forward_pe": 23.69,
+    "trailing_pe": 15.83,
+    "peg": 2.97,
+    "price_to_sales": 1.07,
+    "target_upside_pct": 11.07
+   },
+   "NI": {
+    "label": "fair",
+    "ey_pct": 4.75,
+    "forward_pe": 19.62,
+    "trailing_pe": 22.71,
+    "peg": 2.57,
+    "price_to_sales": 3.05,
+    "target_upside_pct": 9.32
+   },
+   "NDSN": {
+    "label": "fair",
+    "ey_pct": 4.26,
+    "forward_pe": 23.66,
+    "trailing_pe": 31.1,
+    "peg": 1.81,
+    "price_to_sales": 5.74,
+    "target_upside_pct": 13.83
+   },
+   "NSC": {
+    "label": "fair",
+    "ey_pct": 5.46,
+    "forward_pe": 21.36,
+    "trailing_pe": 26.07,
+    "peg": 3.62,
+    "price_to_sales": 5.39,
+    "target_upside_pct": 14.93
+   },
+   "NTRS": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.43,
+    "trailing_pe": 12.72,
+    "peg": 0.92,
+    "price_to_sales": 3.15,
+    "target_upside_pct": 11.44
+   },
+   "NOC": {
+    "label": "fair",
+    "ey_pct": 5.21,
+    "forward_pe": 17.85,
+    "trailing_pe": 16.87,
+    "peg": 4.06,
+    "price_to_sales": 1.74,
+    "target_upside_pct": 19.13
+   },
+   "NCLH": {
+    "label": "cheap",
+    "ey_pct": 6.35,
+    "forward_pe": 11.25,
+    "trailing_pe": 8.83,
+    "peg": 1.42,
+    "price_to_sales": 0.72,
+    "target_upside_pct": 22.73
+   },
+   "NRG": {
+    "label": "cheap",
+    "ey_pct": 6.66,
+    "forward_pe": 9.17,
+    "trailing_pe": 15.35,
+    "peg": 0.34,
+    "price_to_sales": 0.53,
+    "target_upside_pct": 78.97
+   },
+   "NUE": {
+    "label": "cheap",
+    "ey_pct": 8.97,
+    "forward_pe": 10.44,
+    "trailing_pe": 15.26,
+    "peg": null,
+    "price_to_sales": 1.39,
+    "target_upside_pct": 27.1
+   },
+   "NVDA": {
+    "label": "fair",
+    "ey_pct": 4.28,
+    "forward_pe": 7.56,
+    "trailing_pe": 13.48,
+    "peg": 0.18,
+    "price_to_sales": 8.38,
+    "target_upside_pct": 94.52
+   },
+   "NVR": {
+    "label": "cheap",
+    "ey_pct": 9.18,
+    "forward_pe": 15.79,
+    "trailing_pe": 15.12,
+    "peg": null,
+    "price_to_sales": 1.54,
+    "target_upside_pct": 13.93
+   },
+   "NXPI": {
+    "label": "fair",
+    "ey_pct": 5.91,
+    "forward_pe": 12.82,
+    "trailing_pe": 18.5,
+    "peg": 0.51,
+    "price_to_sales": 4.3,
+    "target_upside_pct": 28.34
+   },
+   "ORLY": {
+    "label": "fair",
+    "ey_pct": 4.45,
+    "forward_pe": 25.27,
+    "trailing_pe": 28.42,
+    "peg": 1.72,
+    "price_to_sales": 3.91,
+    "target_upside_pct": 14.85
+   },
+   "OXY": {
+    "label": "cheap",
+    "ey_pct": 10.97,
+    "forward_pe": 10.18,
+    "trailing_pe": 12.0,
+    "peg": 0.68,
+    "price_to_sales": 2.16,
+    "target_upside_pct": 31.93
+   },
+   "ODFL": {
+    "label": "fair",
+    "ey_pct": 4.5,
+    "forward_pe": 24.87,
+    "trailing_pe": 30.18,
+    "peg": 2.15,
+    "price_to_sales": 5.98,
+    "target_upside_pct": 27.0
+   },
+   "OMC": {
+    "label": "fair",
+    "ey_pct": 5.33,
+    "forward_pe": 7.71,
+    "trailing_pe": 86.04,
+    "peg": null,
+    "price_to_sales": 0.94,
+    "target_upside_pct": 20.04
+   },
+   "ON": {
+    "label": "fair",
+    "ey_pct": 5.07,
+    "forward_pe": 12.85,
+    "trailing_pe": 35.58,
+    "peg": 0.14,
+    "price_to_sales": 3.72,
+    "target_upside_pct": 58.05
+   },
+   "OKE": {
+    "label": "cheap",
+    "ey_pct": 7.55,
+    "forward_pe": 13.78,
+    "trailing_pe": 13.1,
+    "peg": 1.43,
+    "price_to_sales": 1.23,
+    "target_upside_pct": 21.4
+   },
+   "ORCL": {
+    "label": "fair",
+    "ey_pct": 5.65,
+    "forward_pe": 9.15,
+    "trailing_pe": 15.86,
+    "peg": 0.6,
+    "price_to_sales": 4.4,
+    "target_upside_pct": 133.41
+   },
+   "OTIS": {
+    "label": "cheap",
+    "ey_pct": 6.55,
+    "forward_pe": 16.97,
+    "trailing_pe": 18.92,
+    "peg": 1.84,
+    "price_to_sales": 1.91,
+    "target_upside_pct": 13.39
+   },
+   "PCAR": {
+    "label": "fair",
+    "ey_pct": 4.99,
+    "forward_pe": 14.98,
+    "trailing_pe": 19.5,
+    "peg": 0.74,
+    "price_to_sales": 1.85,
+    "target_upside_pct": 22.41
+   },
+   "PKG": {
+    "label": "fair",
+    "ey_pct": 5.29,
+    "forward_pe": 16.27,
+    "trailing_pe": 28.88,
+    "peg": 1.39,
+    "price_to_sales": 2.12,
+    "target_upside_pct": 14.96
+   },
+   "PLTR": {
+    "label": "expensive",
+    "ey_pct": 0.97,
+    "forward_pe": 56.52,
+    "trailing_pe": 101.05,
+    "peg": 1.24,
+    "price_to_sales": 47.44,
+    "target_upside_pct": 55.34
+   },
+   "PANW": {
+    "label": "expensive",
+    "ey_pct": 0.25,
+    "forward_pe": 69.87,
+    "trailing_pe": 602.32,
+    "peg": 1.85,
+    "price_to_sales": 22.64,
+    "target_upside_pct": 19.34
+   },
+   "PSKY": {
+    "label": "cheap",
+    "ey_pct": 6.26,
+    "forward_pe": 11.62,
+    "trailing_pe": null,
+    "peg": 17.61,
+    "price_to_sales": 0.38,
+    "target_upside_pct": 1.53
+   },
+   "PH": {
+    "label": "expensive",
+    "ey_pct": 3.49,
+    "forward_pe": 23.43,
+    "trailing_pe": 32.91,
+    "peg": 3.41,
+    "price_to_sales": 5.39,
+    "target_upside_pct": 18.82
+   },
+   "PAYX": {
+    "label": "fair",
+    "ey_pct": 5.75,
+    "forward_pe": 18.03,
+    "trailing_pe": 22.85,
+    "peg": 2.15,
+    "price_to_sales": 6.21,
+    "target_upside_pct": -0.53
+   },
+   "PYPL": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 9.88,
+    "trailing_pe": 11.13,
+    "peg": 0.95,
+    "price_to_sales": 1.41,
+    "target_upside_pct": -1.69
+   },
+   "PNR": {
+    "label": "cheap",
+    "ey_pct": 6.81,
+    "forward_pe": 12.85,
+    "trailing_pe": 18.57,
+    "peg": 0.99,
+    "price_to_sales": 2.74,
+    "target_upside_pct": 8.21
+   },
+   "PEP": {
+    "label": "cheap",
+    "ey_pct": 6.4,
+    "forward_pe": 16.5,
+    "trailing_pe": 17.89,
+    "peg": 1.54,
+    "price_to_sales": 1.97,
+    "target_upside_pct": -0.47
+   },
+   "PFE": {
+    "label": "cheap",
+    "ey_pct": 7.38,
+    "forward_pe": 9.78,
+    "trailing_pe": 41.19,
+    "peg": 9.0,
+    "price_to_sales": 2.58,
+    "target_upside_pct": 4.83
+   },
+   "PCG": {
+    "label": "fair",
+    "ey_pct": 5.59,
+    "forward_pe": 7.2,
+    "trailing_pe": 9.61,
+    "peg": 0.55,
+    "price_to_sales": 1.11,
+    "target_upside_pct": 35.83
+   },
+   "PM": {
+    "label": "fair",
+    "ey_pct": 4.8,
+    "forward_pe": 21.75,
+    "trailing_pe": 28.71,
+    "peg": 2.59,
+    "price_to_sales": 7.11,
+    "target_upside_pct": 8.02
+   },
+   "PSX": {
+    "label": "cheap",
+    "ey_pct": 10.81,
+    "forward_pe": 8.15,
+    "trailing_pe": 8.43,
+    "peg": 0.68,
+    "price_to_sales": 0.61,
+    "target_upside_pct": 10.8
+   },
+   "PNW": {
+    "label": "fair",
+    "ey_pct": 3.94,
+    "forward_pe": 19.18,
+    "trailing_pe": 20.12,
+    "peg": 3.87,
+    "price_to_sales": 2.27,
+    "target_upside_pct": -1.24
+   },
+   "PNC": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.83,
+    "trailing_pe": 12.3,
+    "peg": 1.44,
+    "price_to_sales": 3.67,
+    "target_upside_pct": 14.09
+   },
+   "PPG": {
+    "label": "cheap",
+    "ey_pct": 6.87,
+    "forward_pe": 14.14,
+    "trailing_pe": 17.18,
+    "peg": 1.71,
+    "price_to_sales": 1.62,
+    "target_upside_pct": 6.36
+   },
+   "PPL": {
+    "label": "fair",
+    "ey_pct": 5.02,
+    "forward_pe": 16.63,
+    "trailing_pe": 20.24,
+    "peg": 1.3,
+    "price_to_sales": 2.74,
+    "target_upside_pct": 13.6
+   },
+   "PFG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 11.24,
+    "trailing_pe": 12.58,
+    "peg": null,
+    "price_to_sales": 1.44,
+    "target_upside_pct": -3.15
+   },
+   "PG": {
+    "label": "fair",
+    "ey_pct": 4.8,
+    "forward_pe": 22.71,
+    "trailing_pe": 25.31,
+    "peg": 4.31,
+    "price_to_sales": 4.43,
+    "target_upside_pct": 3.58
+   },
+   "PGR": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 14.54,
+    "trailing_pe": 11.86,
+    "peg": 71.29,
+    "price_to_sales": 1.49,
+    "target_upside_pct": -1.32
+   },
+   "PLD": {
+    "label": "expensive",
+    "ey_pct": 2.24,
+    "forward_pe": 35.68,
+    "trailing_pe": 28.31,
+    "peg": 2.98,
+    "price_to_sales": 12.63,
+    "target_upside_pct": 18.3
+   },
+   "PRU": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 8.96,
+    "trailing_pe": 11.15,
+    "peg": 0.91,
+    "price_to_sales": 0.68,
+    "target_upside_pct": -6.82
+   },
+   "PEG": {
+    "label": "fair",
+    "ey_pct": 4.29,
+    "forward_pe": 16.15,
+    "trailing_pe": 21.13,
+    "peg": 3.47,
+    "price_to_sales": 3.02,
+    "target_upside_pct": 8.57
+   },
+   "PTC": {
+    "label": "fair",
+    "ey_pct": 4.42,
+    "forward_pe": 19.58,
+    "trailing_pe": 21.98,
+    "peg": 2.62,
+    "price_to_sales": 7.8,
+    "target_upside_pct": 2.78
+   },
+   "PSA": {
+    "label": "expensive",
+    "ey_pct": 3.0,
+    "forward_pe": 36.06,
+    "trailing_pe": 35.05,
+    "peg": 4.49,
+    "price_to_sales": 12.35,
+    "target_upside_pct": 2.42
+   },
+   "PHM": {
+    "label": "cheap",
+    "ey_pct": 9.93,
+    "forward_pe": 13.49,
+    "trailing_pe": 13.56,
+    "peg": 1.39,
+    "price_to_sales": 1.46,
+    "target_upside_pct": 4.34
+   },
+   "PWR": {
+    "label": "expensive",
+    "ey_pct": 2.63,
+    "forward_pe": 27.89,
+    "trailing_pe": 54.86,
+    "peg": 1.1,
+    "price_to_sales": 2.45,
+    "target_upside_pct": 27.02
+   },
+   "QCOM": {
+    "label": "fair",
+    "ey_pct": 4.33,
+    "forward_pe": 14.51,
+    "trailing_pe": 13.95,
+    "peg": 1.04,
+    "price_to_sales": 4.4,
+    "target_upside_pct": 4.98
+   },
+   "DGX": {
+    "label": "fair",
+    "ey_pct": 5.07,
+    "forward_pe": 21.68,
+    "trailing_pe": 25.86,
+    "peg": 1.68,
+    "price_to_sales": 2.41,
+    "target_upside_pct": -0.92
+   },
+   "Q": {
+    "label": "fair",
+    "ey_pct": 4.37,
+    "forward_pe": 20.49,
+    "trailing_pe": 46.12,
+    "peg": 1.17,
+    "price_to_sales": 4.67,
+    "target_upside_pct": 41.25
+   },
+   "RL": {
+    "label": "cheap",
+    "ey_pct": 6.14,
+    "forward_pe": 18.48,
+    "trailing_pe": 22.43,
+    "peg": 2.11,
+    "price_to_sales": 2.71,
+    "target_upside_pct": 14.55
+   },
+   "RJF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.21,
+    "trailing_pe": 14.05,
+    "peg": 1.06,
+    "price_to_sales": 2.03,
+    "target_upside_pct": 8.92
+   },
+   "RTX": {
+    "label": "expensive",
+    "ey_pct": 3.8,
+    "forward_pe": 24.51,
+    "trailing_pe": 32.25,
+    "peg": 2.15,
+    "price_to_sales": 2.79,
+    "target_upside_pct": 14.9
+   },
+   "O": {
+    "label": "expensive",
+    "ey_pct": 3.17,
+    "forward_pe": 38.16,
+    "trailing_pe": 40.59,
+    "peg": 3.0,
+    "price_to_sales": 9.09,
+    "target_upside_pct": 7.22
+   },
+   "REG": {
+    "label": "expensive",
+    "ey_pct": 2.99,
+    "forward_pe": 30.01,
+    "trailing_pe": 27.15,
+    "peg": null,
+    "price_to_sales": 8.25,
+    "target_upside_pct": 11.64
+   },
+   "REGN": {
+    "label": "fair",
+    "ey_pct": 5.27,
+    "forward_pe": 13.45,
+    "trailing_pe": 21.03,
+    "peg": 1.17,
+    "price_to_sales": 5.82,
+    "target_upside_pct": 2.81
+   },
+   "RF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.01,
+    "trailing_pe": 11.18,
+    "peg": 1.52,
+    "price_to_sales": 3.3,
+    "target_upside_pct": 9.51
+   },
+   "RSG": {
+    "label": "expensive",
+    "ey_pct": 3.8,
+    "forward_pe": 31.57,
+    "trailing_pe": 35.04,
+    "peg": 3.19,
+    "price_to_sales": 4.47,
+    "target_upside_pct": 1.75
+   },
+   "RMD": {
+    "label": "fair",
+    "ey_pct": 5.72,
+    "forward_pe": 18.06,
+    "trailing_pe": 21.76,
+    "peg": 1.28,
+    "price_to_sales": 5.86,
+    "target_upside_pct": 10.65
+   },
+   "RVTY": {
+    "label": "expensive",
+    "ey_pct": 1.88,
+    "forward_pe": 26.34,
+    "trailing_pe": 69.79,
+    "peg": 0.97,
+    "price_to_sales": 5.96,
+    "target_upside_pct": 8.95
+   },
+   "HOOD": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 23.85,
+    "trailing_pe": 37.49,
+    "peg": 1.37,
+    "price_to_sales": 14.41,
+    "target_upside_pct": 57.88
+   },
+   "ROK": {
+    "label": "expensive",
+    "ey_pct": 2.96,
+    "forward_pe": 24.15,
+    "trailing_pe": 32.23,
+    "peg": 2.39,
+    "price_to_sales": 4.99,
+    "target_upside_pct": 10.25
+   },
+   "ROL": {
+    "label": "expensive",
+    "ey_pct": 3.82,
+    "forward_pe": 30.79,
+    "trailing_pe": 34.78,
+    "peg": 3.44,
+    "price_to_sales": 4.54,
+    "target_upside_pct": 1.48
+   },
+   "ROP": {
+    "label": "fair",
+    "ey_pct": 4.17,
+    "forward_pe": 19.45,
+    "trailing_pe": 18.91,
+    "peg": 1.82,
+    "price_to_sales": 5.61,
+    "target_upside_pct": -1.82
+   },
+   "ROST": {
+    "label": "fair",
+    "ey_pct": 4.42,
+    "forward_pe": 26.29,
+    "trailing_pe": 28.69,
+    "peg": 2.21,
+    "price_to_sales": 3.09,
+    "target_upside_pct": 15.23
+   },
+   "RCL": {
+    "label": "fair",
+    "ey_pct": 4.86,
+    "forward_pe": 15.7,
+    "trailing_pe": 19.05,
+    "peg": 1.21,
+    "price_to_sales": 4.5,
+    "target_upside_pct": 11.09
+   },
+   "SPGI": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 23.22,
+    "trailing_pe": 27.99,
+    "peg": 1.9,
+    "price_to_sales": 8.34,
+    "target_upside_pct": 12.42
+   },
+   "CRM": {
+    "label": "fair",
+    "ey_pct": 4.45,
+    "forward_pe": 13.59,
+    "trailing_pe": 19.91,
+    "peg": 0.78,
+    "price_to_sales": 4.08,
+    "target_upside_pct": 31.95
+   },
+   "SNDK": {
+    "label": "cheap",
+    "ey_pct": 16.39,
+    "forward_pe": 3.24,
+    "trailing_pe": 7.49,
+    "peg": null,
+    "price_to_sales": 4.6,
+    "target_upside_pct": 118.4
+   },
+   "SBAC": {
+    "label": "fair",
+    "ey_pct": 4.49,
+    "forward_pe": 23.56,
+    "trailing_pe": 20.15,
+    "peg": 11.59,
+    "price_to_sales": 6.83,
+    "target_upside_pct": 19.39
+   },
+   "SLB": {
+    "label": "fair",
+    "ey_pct": 5.85,
+    "forward_pe": 16.54,
+    "trailing_pe": 24.71,
+    "peg": 1.42,
+    "price_to_sales": 2.04,
+    "target_upside_pct": 22.19
+   },
+   "STX": {
+    "label": "fair",
+    "ey_pct": 4.41,
+    "forward_pe": 8.34,
+    "trailing_pe": 28.59,
+    "peg": 0.31,
+    "price_to_sales": 9.07,
+    "target_upside_pct": 91.66
+   },
+   "SRE": {
+    "label": "fair",
+    "ey_pct": 4.3,
+    "forward_pe": 14.3,
+    "trailing_pe": 16.91,
+    "peg": 0.69,
+    "price_to_sales": 3.8,
+    "target_upside_pct": 23.17
+   },
+   "NOW": {
+    "label": "expensive",
+    "ey_pct": 1.35,
+    "forward_pe": 20.96,
+    "trailing_pe": 72.42,
+    "peg": 0.81,
+    "price_to_sales": 6.77,
+    "target_upside_pct": 54.8
+   },
+   "SHW": {
+    "label": "fair",
+    "ey_pct": 4.09,
+    "forward_pe": 26.6,
+    "trailing_pe": 32.33,
+    "peg": 2.35,
+    "price_to_sales": 3.41,
+    "target_upside_pct": 6.51
+   },
+   "SPG": {
+    "label": "expensive",
+    "ey_pct": 2.8,
+    "forward_pe": 34.46,
+    "trailing_pe": 16.87,
+    "peg": null,
+    "price_to_sales": 12.36,
+    "target_upside_pct": 0.11
+   },
+   "SWKS": {
+    "label": "expensive",
+    "ey_pct": 1.61,
+    "forward_pe": 11.94,
+    "trailing_pe": 78.97,
+    "peg": 0.44,
+    "price_to_sales": 5.34,
+    "target_upside_pct": -12.13
+   },
+   "SJM": {
+    "label": "cheap",
+    "ey_pct": 8.62,
+    "forward_pe": 11.97,
+    "trailing_pe": 61.55,
+    "peg": null,
+    "price_to_sales": 1.54,
+    "target_upside_pct": 7.67
+   },
+   "SW": {
+    "label": "fair",
+    "ey_pct": 4.76,
+    "forward_pe": 13.4,
+    "trailing_pe": 47.98,
+    "peg": null,
+    "price_to_sales": 0.72,
+    "target_upside_pct": 24.7
+   },
+   "SNA": {
+    "label": "cheap",
+    "ey_pct": 7.06,
+    "forward_pe": 17.68,
+    "trailing_pe": 19.11,
+    "peg": 1.96,
+    "price_to_sales": 3.6,
+    "target_upside_pct": 9.85
+   },
+   "SOLV": {
+    "label": "expensive",
+    "ey_pct": 2.11,
+    "forward_pe": 11.77,
+    "trailing_pe": 99.79,
+    "peg": null,
+    "price_to_sales": 1.85,
+    "target_upside_pct": 10.78
+   },
+   "SO": {
+    "label": "fair",
+    "ey_pct": 4.25,
+    "forward_pe": 18.74,
+    "trailing_pe": 21.11,
+    "peg": 2.22,
+    "price_to_sales": 3.45,
+    "target_upside_pct": 4.05
+   },
+   "LUV": {
+    "label": "fair",
+    "ey_pct": 5.45,
+    "forward_pe": 10.85,
+    "trailing_pe": 22.06,
+    "peg": 0.22,
+    "price_to_sales": 0.7,
+    "target_upside_pct": 10.57
+   },
+   "SWK": {
+    "label": "cheap",
+    "ey_pct": 7.5,
+    "forward_pe": 17.3,
+    "trailing_pe": 20.25,
+    "peg": null,
+    "price_to_sales": 1.1,
+    "target_upside_pct": -0.9
+   },
+   "SBUX": {
+    "label": "expensive",
+    "ey_pct": 2.53,
+    "forward_pe": 28.79,
+    "trailing_pe": 48.53,
+    "peg": 1.19,
+    "price_to_sales": 3.23,
+    "target_upside_pct": 3.55
+   },
+   "STT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 11.18,
+    "trailing_pe": 14.19,
+    "peg": 0.65,
+    "price_to_sales": 3.05,
+    "target_upside_pct": 10.9
+   },
+   "STLD": {
+    "label": "cheap",
+    "ey_pct": 7.47,
+    "forward_pe": 10.99,
+    "trailing_pe": 17.51,
+    "peg": null,
+    "price_to_sales": 1.52,
+    "target_upside_pct": 15.6
+   },
+   "STE": {
+    "label": "fair",
+    "ey_pct": 4.55,
+    "forward_pe": 20.35,
+    "trailing_pe": 30.06,
+    "peg": 2.5,
+    "price_to_sales": 3.99,
+    "target_upside_pct": 10.93
+   },
+   "SYK": {
+    "label": "fair",
+    "ey_pct": 4.39,
+    "forward_pe": 19.18,
+    "trailing_pe": 33.27,
+    "peg": 1.54,
+    "price_to_sales": 4.52,
+    "target_upside_pct": 8.64
+   },
+   "SMCI": {
+    "label": "cheap",
+    "ey_pct": 23.76,
+    "forward_pe": 3.89,
+    "trailing_pe": 5.69,
+    "peg": null,
+    "price_to_sales": 0.33,
+    "target_upside_pct": 61.54
+   },
+   "SYF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 6.84,
+    "trailing_pe": 7.48,
+    "peg": 0.89,
+    "price_to_sales": 2.28,
+    "target_upside_pct": 21.41
+   },
+   "SNPS": {
+    "label": "expensive",
+    "ey_pct": 1.08,
+    "forward_pe": 24.82,
+    "trailing_pe": 81.75,
+    "peg": 2.4,
+    "price_to_sales": 9.42,
+    "target_upside_pct": 27.42
+   },
+   "SYY": {
+    "label": "fair",
+    "ey_pct": 6.06,
+    "forward_pe": 14.16,
+    "trailing_pe": 20.28,
+    "peg": 1.08,
+    "price_to_sales": 0.44,
+    "target_upside_pct": 19.69
+   },
+   "TMUS": {
+    "label": "cheap",
+    "ey_pct": 6.6,
+    "forward_pe": 12.0,
+    "trailing_pe": 16.49,
+    "peg": 0.51,
+    "price_to_sales": 1.93,
+    "target_upside_pct": 31.81
+   },
+   "TROW": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.67,
+    "trailing_pe": 10.95,
+    "peg": 2.27,
+    "price_to_sales": 3.0,
+    "target_upside_pct": -2.62
+   },
+   "TTWO": {
+    "label": "no profits",
+    "ey_pct": -0.41,
+    "forward_pe": 22.24,
+    "trailing_pe": null,
+    "peg": 3.17,
+    "price_to_sales": 6.63,
+    "target_upside_pct": 25.07
+   },
+   "TPR": {
+    "label": "cheap",
+    "ey_pct": 6.45,
+    "forward_pe": 14.42,
+    "trailing_pe": 17.05,
+    "peg": 1.91,
+    "price_to_sales": 3.18,
+    "target_upside_pct": 23.31
+   },
+   "TRGP": {
+    "label": "fair",
+    "ey_pct": 4.92,
+    "forward_pe": 24.01,
+    "trailing_pe": 26.22,
+    "peg": null,
+    "price_to_sales": 3.5,
+    "target_upside_pct": 12.26
+   },
+   "TGT": {
+    "label": "cheap",
+    "ey_pct": 6.97,
+    "forward_pe": 16.79,
+    "trailing_pe": 16.71,
+    "peg": 2.23,
+    "price_to_sales": 0.68,
+    "target_upside_pct": 3.13
+   },
+   "TEL": {
+    "label": "cheap",
+    "ey_pct": 6.22,
+    "forward_pe": 14.44,
+    "trailing_pe": 19.68,
+    "peg": 1.26,
+    "price_to_sales": 3.14,
+    "target_upside_pct": 18.62
+   },
+   "TDY": {
+    "label": "fair",
+    "ey_pct": 4.17,
+    "forward_pe": 23.35,
+    "trailing_pe": 29.65,
+    "peg": null,
+    "price_to_sales": 4.57,
+    "target_upside_pct": 18.92
+   },
+   "TER": {
+    "label": "expensive",
+    "ey_pct": 1.68,
+    "forward_pe": 21.91,
+    "trailing_pe": 30.32,
+    "peg": 0.45,
+    "price_to_sales": 8.23,
+    "target_upside_pct": 57.68
+   },
+   "TSLA": {
+    "label": "expensive",
+    "ey_pct": 0.23,
+    "forward_pe": 184.07,
+    "trailing_pe": 436.76,
+    "peg": 4.56,
+    "price_to_sales": 15.17,
+    "target_upside_pct": 3.78
+   },
+   "TXN": {
+    "label": "expensive",
+    "ey_pct": 2.9,
+    "forward_pe": 26.86,
+    "trailing_pe": 40.53,
+    "peg": 0.94,
+    "price_to_sales": 13.75,
+    "target_upside_pct": 8.42
+   },
+   "TPL": {
+    "label": "expensive",
+    "ey_pct": 3.84,
+    "forward_pe": 3.85,
+    "trailing_pe": 33.04,
+    "peg": null,
+    "price_to_sales": 20.04,
+    "target_upside_pct": 58.08
+   },
+   "TXT": {
+    "label": "cheap",
+    "ey_pct": 6.29,
+    "forward_pe": 11.7,
+    "trailing_pe": 15.16,
+    "peg": 1.01,
+    "price_to_sales": 0.92,
+    "target_upside_pct": 20.27
+   },
+   "TMO": {
+    "label": "expensive",
+    "ey_pct": 3.0,
+    "forward_pe": 25.17,
+    "trailing_pe": 36.89,
+    "peg": 2.08,
+    "price_to_sales": 5.47,
+    "target_upside_pct": 8.16
+   },
+   "TJX": {
+    "label": "fair",
+    "ey_pct": 4.99,
+    "forward_pe": 23.67,
+    "trailing_pe": 25.18,
+    "peg": 2.42,
+    "price_to_sales": 2.41,
+    "target_upside_pct": 23.36
+   },
+   "TKO": {
+    "label": "expensive",
+    "ey_pct": 2.94,
+    "forward_pe": 45.69,
+    "trailing_pe": 52.03,
+    "peg": 0.57,
+    "price_to_sales": 6.6,
+    "target_upside_pct": 19.73
+   },
+   "TTD": {
+    "label": "cheap",
+    "ey_pct": 7.76,
+    "forward_pe": 13.81,
+    "trailing_pe": 22.75,
+    "peg": 1.15,
+    "price_to_sales": 2.45,
+    "target_upside_pct": -4.65
+   },
+   "TSCO": {
+    "label": "fair",
+    "ey_pct": 5.36,
+    "forward_pe": 17.76,
+    "trailing_pe": 19.69,
+    "peg": 2.13,
+    "price_to_sales": 1.19,
+    "target_upside_pct": 2.32
+   },
+   "TT": {
+    "label": "fair",
+    "ey_pct": 4.34,
+    "forward_pe": 23.9,
+    "trailing_pe": 29.47,
+    "peg": 1.47,
+    "price_to_sales": 4.0,
+    "target_upside_pct": 21.8
+   },
+   "TDG": {
+    "label": "fair",
+    "ey_pct": 4.96,
+    "forward_pe": 21.62,
+    "trailing_pe": 33.88,
+    "peg": null,
+    "price_to_sales": 6.22,
+    "target_upside_pct": 18.59
+   },
+   "TRV": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 12.96,
+    "trailing_pe": 10.6,
+    "peg": null,
+    "price_to_sales": 1.69,
+    "target_upside_pct": -6.61
+   },
+   "TRMB": {
+    "label": "fair",
+    "ey_pct": 4.75,
+    "forward_pe": 13.85,
+    "trailing_pe": null,
+    "peg": 1.41,
+    "price_to_sales": 3.33,
+    "target_upside_pct": 32.87
+   },
+   "TFC": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.2,
+    "trailing_pe": 12.86,
+    "peg": 1.43,
+    "price_to_sales": 3.27,
+    "target_upside_pct": 6.83
+   },
+   "TYL": {
+    "label": "expensive",
+    "ey_pct": 2.21,
+    "forward_pe": 27.23,
+    "trailing_pe": 52.88,
+    "peg": 1.54,
+    "price_to_sales": 6.79,
+    "target_upside_pct": 5.32
+   },
+   "TSN": {
+    "label": "fair",
+    "ey_pct": 4.47,
+    "forward_pe": 15.44,
+    "trailing_pe": 36.58,
+    "peg": null,
+    "price_to_sales": 0.37,
+    "target_upside_pct": 6.31
+   },
+   "USB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.32,
+    "trailing_pe": 11.76,
+    "peg": 1.47,
+    "price_to_sales": 3.38,
+    "target_upside_pct": 13.77
+   },
+   "UBER": {
+    "label": "fair",
+    "ey_pct": 4.71,
+    "forward_pe": 15.77,
+    "trailing_pe": 40.66,
+    "peg": 5.35,
+    "price_to_sales": 2.5,
+    "target_upside_pct": 43.05
+   },
+   "UDR": {
+    "label": "expensive",
+    "ey_pct": 1.72,
+    "forward_pe": 64.52,
+    "trailing_pe": 17.04,
+    "peg": null,
+    "price_to_sales": 7.49,
+    "target_upside_pct": 9.99
+   },
+   "ULTA": {
+    "label": "fair",
+    "ey_pct": 5.41,
+    "forward_pe": 20.27,
+    "trailing_pe": 23.72,
+    "peg": 2.07,
+    "price_to_sales": 2.15,
+    "target_upside_pct": -1.36
+   },
+   "UNP": {
+    "label": "fair",
+    "ey_pct": 5.04,
+    "forward_pe": 21.13,
+    "trailing_pe": 23.73,
+    "peg": 2.92,
+    "price_to_sales": 6.86,
+    "target_upside_pct": 8.47
+   },
+   "UAL": {
+    "label": "cheap",
+    "ey_pct": 6.53,
+    "forward_pe": 9.46,
+    "trailing_pe": 10.19,
+    "peg": null,
+    "price_to_sales": 0.55,
+    "target_upside_pct": 35.34
+   },
+   "UPS": {
+    "label": "fair",
+    "ey_pct": 5.55,
+    "forward_pe": 13.63,
+    "trailing_pe": 21.27,
+    "peg": 1.63,
+    "price_to_sales": 1.03,
+    "target_upside_pct": 4.6
+   },
+   "URI": {
+    "label": "fair",
+    "ey_pct": 5.26,
+    "forward_pe": 18.54,
+    "trailing_pe": 25.07,
+    "peg": 1.36,
+    "price_to_sales": 4.03,
+    "target_upside_pct": 13.72
+   },
+   "UNH": {
+    "label": "fair",
+    "ey_pct": 5.81,
+    "forward_pe": 17.36,
+    "trailing_pe": 23.12,
+    "peg": 1.02,
+    "price_to_sales": 0.81,
+    "target_upside_pct": 17.53
+   },
+   "UHS": {
+    "label": "cheap",
+    "ey_pct": 11.59,
+    "forward_pe": 8.42,
+    "trailing_pe": 8.11,
+    "peg": 1.49,
+    "price_to_sales": 0.61,
+    "target_upside_pct": 0.72
+   },
+   "VLO": {
+    "label": "cheap",
+    "ey_pct": 16.62,
+    "forward_pe": 7.01,
+    "trailing_pe": 8.53,
+    "peg": 1.31,
+    "price_to_sales": 0.71,
+    "target_upside_pct": 12.83
+   },
+   "VEEV": {
+    "label": "expensive",
+    "ey_pct": 2.19,
+    "forward_pe": 29.47,
+    "trailing_pe": 49.58,
+    "peg": 1.18,
+    "price_to_sales": 14.16,
+    "target_upside_pct": 7.93
+   },
+   "VTR": {
+    "label": "expensive",
+    "ey_pct": 1.52,
+    "forward_pe": 128.99,
+    "trailing_pe": 172.4,
+    "peg": 5.15,
+    "price_to_sales": 7.03,
+    "target_upside_pct": 10.89
+   },
+   "VLTO": {
+    "label": "fair",
+    "ey_pct": 4.27,
+    "forward_pe": 24.09,
+    "trailing_pe": 29.01,
+    "peg": 2.69,
+    "price_to_sales": 4.92,
+    "target_upside_pct": 6.07
+   },
+   "VRSN": {
+    "label": "fair",
+    "ey_pct": 3.95,
+    "forward_pe": 28.5,
+    "trailing_pe": 33.64,
+    "peg": 2.24,
+    "price_to_sales": 16.19,
+    "target_upside_pct": 8.68
+   },
+   "VRSK": {
+    "label": "fair",
+    "ey_pct": 4.57,
+    "forward_pe": 23.7,
+    "trailing_pe": 31.26,
+    "peg": 1.73,
+    "price_to_sales": 8.33,
+    "target_upside_pct": 14.36
+   },
+   "VZ": {
+    "label": "cheap",
+    "ey_pct": 7.7,
+    "forward_pe": 8.77,
+    "trailing_pe": 11.88,
+    "peg": 0.98,
+    "price_to_sales": 1.38,
+    "target_upside_pct": 8.81
+   },
+   "VRTX": {
+    "label": "expensive",
+    "ey_pct": 3.08,
+    "forward_pe": 27.24,
+    "trailing_pe": 34.92,
+    "peg": 2.38,
+    "price_to_sales": 10.62,
+    "target_upside_pct": 9.72
+   },
+   "VRT": {
+    "label": "expensive",
+    "ey_pct": 3.31,
+    "forward_pe": 21.14,
+    "trailing_pe": 39.19,
+    "peg": 0.61,
+    "price_to_sales": 6.15,
+    "target_upside_pct": 59.46
+   },
+   "VTRS": {
+    "label": "expensive",
+    "ey_pct": 0.43,
+    "forward_pe": 7.58,
+    "trailing_pe": null,
+    "peg": 3.83,
+    "price_to_sales": 1.61,
+    "target_upside_pct": 1.6
+   },
+   "VICI": {
+    "label": "cheap",
+    "ey_pct": 7.17,
+    "forward_pe": 8.35,
+    "trailing_pe": 11.48,
+    "peg": null,
+    "price_to_sales": 6.57,
+    "target_upside_pct": 19.41
+   },
+   "V": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 24.52,
+    "trailing_pe": 34.12,
+    "peg": 1.93,
+    "price_to_sales": 17.08,
+    "target_upside_pct": 6.84
+   },
+   "VST": {
+    "label": "cheap",
+    "ey_pct": 7.27,
+    "forward_pe": 14.04,
+    "trailing_pe": 18.18,
+    "peg": 0.38,
+    "price_to_sales": 2.22,
+    "target_upside_pct": 50.53
+   },
+   "VMC": {
+    "label": "expensive",
+    "ey_pct": 3.87,
+    "forward_pe": 27.77,
+    "trailing_pe": 33.16,
+    "peg": 2.09,
+    "price_to_sales": 4.49,
+    "target_upside_pct": 11.93
+   },
+   "WRB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 15.9,
+    "trailing_pe": 16.31,
+    "peg": 5.05,
+    "price_to_sales": 1.93,
+    "target_upside_pct": -10.34
+   },
+   "GWW": {
+    "label": "fair",
+    "ey_pct": 4.22,
+    "forward_pe": 28.87,
+    "trailing_pe": 33.02,
+    "peg": 1.96,
+    "price_to_sales": 3.63,
+    "target_upside_pct": -4.49
+   },
+   "WAB": {
+    "label": "expensive",
+    "ey_pct": 3.73,
+    "forward_pe": 23.89,
+    "trailing_pe": 37.33,
+    "peg": null,
+    "price_to_sales": 4.13,
+    "target_upside_pct": 10.76
+   },
+   "WMT": {
+    "label": "expensive",
+    "ey_pct": 3.04,
+    "forward_pe": 39.17,
+    "trailing_pe": 45.72,
+    "peg": 4.27,
+    "price_to_sales": 1.36,
+    "target_upside_pct": 2.94
+   },
+   "DIS": {
+    "label": "fair",
+    "ey_pct": 6.13,
+    "forward_pe": 15.78,
+    "trailing_pe": 24.38,
+    "peg": 3.89,
+    "price_to_sales": 2.06,
+    "target_upside_pct": 7.28
+   },
+   "WBD": {
+    "label": "expensive",
+    "ey_pct": 2.07,
+    "forward_pe": -1238.0,
+    "trailing_pe": null,
+    "peg": 55.18,
+    "price_to_sales": 2.15,
+    "target_upside_pct": -1.05
+   },
+   "WM": {
+    "label": "fair",
+    "ey_pct": 4.03,
+    "forward_pe": 27.3,
+    "trailing_pe": 32.04,
+    "peg": 2.27,
+    "price_to_sales": 3.72,
+    "target_upside_pct": 4.71
+   },
+   "WAT": {
+    "label": "expensive",
+    "ey_pct": 0.34,
+    "forward_pe": 27.97,
+    "trailing_pe": 193.39,
+    "peg": 1.88,
+    "price_to_sales": 16.19,
+    "target_upside_pct": 8.89
+   },
+   "WEC": {
+    "label": "fair",
+    "ey_pct": 4.14,
+    "forward_pe": 19.49,
+    "trailing_pe": 21.36,
+    "peg": 2.13,
+    "price_to_sales": 3.74,
+    "target_upside_pct": 0.87
+   },
+   "WFC": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 10.71,
+    "trailing_pe": 12.1,
+    "peg": 1.33,
+    "price_to_sales": 3.1,
+    "target_upside_pct": 13.54
+   },
+   "WELL": {
+    "label": "expensive",
+    "ey_pct": 0.18,
+    "forward_pe": 78.0,
+    "trailing_pe": 103.78,
+    "peg": null,
+    "price_to_sales": 13.03,
+    "target_upside_pct": 7.64
+   },
+   "WST": {
+    "label": "expensive",
+    "ey_pct": 2.68,
+    "forward_pe": 39.57,
+    "trailing_pe": 46.16,
+    "peg": 3.0,
+    "price_to_sales": 8.44,
+    "target_upside_pct": 14.51
+   },
+   "WDC": {
+    "label": "fair",
+    "ey_pct": 5.08,
+    "forward_pe": 7.7,
+    "trailing_pe": 10.95,
+    "peg": 0.45,
+    "price_to_sales": 8.04,
+    "target_upside_pct": 97.09
+   },
+   "WY": {
+    "label": "expensive",
+    "ey_pct": 2.32,
+    "forward_pe": 47.54,
+    "trailing_pe": 32.48,
+    "peg": null,
+    "price_to_sales": 2.11,
+    "target_upside_pct": 30.19
+   },
+   "WSM": {
+    "label": "fair",
+    "ey_pct": 5.13,
+    "forward_pe": 23.82,
+    "trailing_pe": 25.68,
+    "peg": 2.62,
+    "price_to_sales": 3.68,
+    "target_upside_pct": 0.43
+   },
+   "WMB": {
+    "label": "fair",
+    "ey_pct": 3.88,
+    "forward_pe": 26.88,
+    "trailing_pe": 27.34,
+    "peg": 1.86,
+    "price_to_sales": 6.85,
+    "target_upside_pct": 22.95
+   },
+   "WTW": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 14.33,
+    "trailing_pe": 20.2,
+    "peg": null,
+    "price_to_sales": 2.95,
+    "target_upside_pct": 13.95
+   },
+   "WDAY": {
+    "label": "expensive",
+    "ey_pct": 2.49,
+    "forward_pe": 14.4,
+    "trailing_pe": 38.83,
+    "peg": 0.58,
+    "price_to_sales": 4.52,
+    "target_upside_pct": 9.76
+   },
+   "WYNN": {
+    "label": "fair",
+    "ey_pct": 5.82,
+    "forward_pe": 19.35,
+    "trailing_pe": 23.45,
+    "peg": 0.76,
+    "price_to_sales": 1.18,
+    "target_upside_pct": 39.91
+   },
+   "XEL": {
+    "label": "expensive",
+    "ey_pct": 3.48,
+    "forward_pe": 17.84,
+    "trailing_pe": 19.0,
+    "peg": 1.77,
+    "price_to_sales": 3.52,
+    "target_upside_pct": 10.2
+   },
+   "XYL": {
+    "label": "fair",
+    "ey_pct": 6.09,
+    "forward_pe": 16.07,
+    "trailing_pe": 20.85,
+    "peg": 1.27,
+    "price_to_sales": 2.38,
+    "target_upside_pct": 33.4
+   },
+   "YUM": {
+    "label": "fair",
+    "ey_pct": 4.99,
+    "forward_pe": 23.76,
+    "trailing_pe": 12.83,
+    "peg": 2.13,
+    "price_to_sales": 4.86,
+    "target_upside_pct": 10.03
+   },
+   "ZBRA": {
+    "label": "fair",
+    "ey_pct": 5.78,
+    "forward_pe": 14.27,
+    "trailing_pe": 25.69,
+    "peg": 0.57,
+    "price_to_sales": 2.44,
+    "target_upside_pct": 29.47
+   },
+   "ZBH": {
+    "label": "fair",
+    "ey_pct": 5.18,
+    "forward_pe": 11.64,
+    "trailing_pe": 26.4,
+    "peg": 2.29,
+    "price_to_sales": 2.31,
+    "target_upside_pct": 11.17
+   },
+   "ZTS": {
+    "label": "cheap",
+    "ey_pct": 8.54,
+    "forward_pe": 13.01,
+    "trailing_pe": 14.11,
+    "peg": 15.37,
+    "price_to_sales": 3.55,
+    "target_upside_pct": 8.12
+   },
+   "AFMJF": {
+    "label": "cheap",
+    "ey_pct": 42.62,
+    "forward_pe": null,
+    "trailing_pe": 5.12,
+    "peg": null,
+    "price_to_sales": 1.32,
+    "target_upside_pct": null
+   },
+   "ANF": {
+    "label": "cheap",
+    "ey_pct": 10.4,
+    "forward_pe": 11.59,
+    "trailing_pe": 13.0,
+    "peg": null,
+    "price_to_sales": 1.2,
+    "target_upside_pct": 13.27
+   },
+   "ANPMF": {
+    "label": "cheap",
+    "ey_pct": 32.0,
+    "forward_pe": null,
+    "trailing_pe": 4.08,
+    "peg": null,
+    "price_to_sales": 0.86,
+    "target_upside_pct": null
+   },
+   "AU": {
+    "label": "cheap",
+    "ey_pct": 14.12,
+    "forward_pe": 9.7,
+    "trailing_pe": 11.39,
+    "peg": null,
+    "price_to_sales": 3.68,
+    "target_upside_pct": 29.97
+   },
+   "BAH": {
+    "label": "cheap",
+    "ey_pct": 6.93,
+    "forward_pe": 12.81,
+    "trailing_pe": 13.42,
+    "peg": null,
+    "price_to_sales": 0.94,
+    "target_upside_pct": 3.5
+   },
+   "BBWI": {
+    "label": "cheap",
+    "ey_pct": 14.72,
+    "forward_pe": 7.58,
+    "trailing_pe": 5.55,
+    "peg": 0.8,
+    "price_to_sales": 0.59,
+    "target_upside_pct": 18.6
+   },
+   "BCRX": {
+    "label": "cheap",
+    "ey_pct": 15.33,
+    "forward_pe": 8.98,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.06,
+    "target_upside_pct": 166.34
+   },
+   "BKE": {
+    "label": "cheap",
+    "ey_pct": 11.44,
+    "forward_pe": 10.85,
+    "trailing_pe": 10.12,
+    "peg": null,
+    "price_to_sales": 1.7,
+    "target_upside_pct": 2.41
+   },
+   "BMBL": {
+    "label": "cheap",
+    "ey_pct": 20.17,
+    "forward_pe": 6.39,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1.09,
+    "target_upside_pct": -29.98
+   },
+   "BLKB": {
+    "label": "cheap",
+    "ey_pct": 6.8,
+    "forward_pe": 8.93,
+    "trailing_pe": 16.48,
+    "peg": 0.58,
+    "price_to_sales": 2.08,
+    "target_upside_pct": 5.02
+   },
+   "COLL": {
+    "label": "cheap",
+    "ey_pct": 7.05,
+    "forward_pe": 3.49,
+    "trailing_pe": 22.89,
+    "peg": 0.74,
+    "price_to_sales": 0.95,
+    "target_upside_pct": 79.86
+   },
+   "CROX": {
+    "label": "cheap",
+    "ey_pct": 10.66,
+    "forward_pe": 9.8,
+    "trailing_pe": 11.88,
+    "peg": null,
+    "price_to_sales": 1.75,
+    "target_upside_pct": 4.96
+   },
+   "DLX": {
+    "label": "cheap",
+    "ey_pct": 7.53,
+    "forward_pe": 6.47,
+    "trailing_pe": 15.52,
+    "peg": 0.53,
+    "price_to_sales": 0.58,
+    "target_upside_pct": 27.39
+   },
+   "DOX": {
+    "label": "cheap",
+    "ey_pct": 14.8,
+    "forward_pe": 7.21,
+    "trailing_pe": 9.43,
+    "peg": 0.58,
+    "price_to_sales": 0.98,
+    "target_upside_pct": 29.98
+   },
+   "EDVMF": {
+    "label": "cheap",
+    "ey_pct": 18.68,
+    "forward_pe": null,
+    "trailing_pe": 13.94,
+    "peg": null,
+    "price_to_sales": 2.44,
+    "target_upside_pct": null
+   },
+   "EPAM": {
+    "label": "cheap",
+    "ey_pct": 7.88,
+    "forward_pe": 11.44,
+    "trailing_pe": 20.56,
+    "peg": 0.94,
+    "price_to_sales": 1.48,
+    "target_upside_pct": 5.53
+   },
+   "EGHSF": {
+    "label": "cheap",
+    "ey_pct": 20.91,
+    "forward_pe": null,
+    "trailing_pe": 13.76,
+    "peg": null,
+    "price_to_sales": 1.45,
+    "target_upside_pct": null
+   },
+   "EVER": {
+    "label": "cheap",
+    "ey_pct": 11.74,
+    "forward_pe": 9.87,
+    "trailing_pe": 9.11,
+    "peg": null,
+    "price_to_sales": 1.24,
+    "target_upside_pct": 15.93
+   },
+   "GCT": {
+    "label": "cheap",
+    "ey_pct": 7.85,
+    "forward_pe": 10.27,
+    "trailing_pe": 13.99,
+    "peg": null,
+    "price_to_sales": 1.48,
+    "target_upside_pct": 13.7
+   },
+   "GIB": {
+    "label": "cheap",
+    "ey_pct": 13.43,
+    "forward_pe": 10.83,
+    "trailing_pe": 13.24,
+    "peg": 1.12,
+    "price_to_sales": 1.01,
+    "target_upside_pct": 5.3
+   },
+   "GTM": {
+    "label": "cheap",
+    "ey_pct": 7.1,
+    "forward_pe": 2.97,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.78,
+    "target_upside_pct": 29.97
+   },
+   "HALO": {
+    "label": "cheap",
+    "ey_pct": 7.36,
+    "forward_pe": 9.5,
+    "trailing_pe": 25.17,
+    "peg": null,
+    "price_to_sales": 6.37,
+    "target_upside_pct": 19.09
+   },
+   "HRB": {
+    "label": "cheap",
+    "ey_pct": 11.22,
+    "forward_pe": 7.34,
+    "trailing_pe": 9.26,
+    "peg": 0.65,
+    "price_to_sales": 1.55,
+    "target_upside_pct": 4.47
+   },
+   "HRMY": {
+    "label": "cheap",
+    "ey_pct": 14.75,
+    "forward_pe": 5.57,
+    "trailing_pe": 11.19,
+    "peg": null,
+    "price_to_sales": 2.01,
+    "target_upside_pct": 42.26
+   },
+   "IDT": {
+    "label": "cheap",
+    "ey_pct": 6.73,
+    "forward_pe": 18.57,
+    "trailing_pe": 23.93,
+    "peg": null,
+    "price_to_sales": 1.58,
+    "target_upside_pct": 2.66
+   },
+   "INVA": {
+    "label": "cheap",
+    "ey_pct": 16.41,
+    "forward_pe": 8.58,
+    "trailing_pe": 8.07,
+    "peg": 2.82,
+    "price_to_sales": 3.08,
+    "target_upside_pct": 83.45
+   },
+   "KFY": {
+    "label": "cheap",
+    "ey_pct": 9.8,
+    "forward_pe": 11.93,
+    "trailing_pe": 14.32,
+    "peg": null,
+    "price_to_sales": 1.4,
+    "target_upside_pct": 20.4
+   },
+   "LUGDF": {
+    "label": "cheap",
+    "ey_pct": 9.64,
+    "forward_pe": null,
+    "trailing_pe": 15.62,
+    "peg": null,
+    "price_to_sales": 7.2,
+    "target_upside_pct": null
+   },
+   "MD": {
+    "label": "cheap",
+    "ey_pct": 8.64,
+    "forward_pe": 12.52,
+    "trailing_pe": 17.16,
+    "peg": null,
+    "price_to_sales": 1.25,
+    "target_upside_pct": -4.19
+   },
+   "MTCH": {
+    "label": "cheap",
+    "ey_pct": 8.77,
+    "forward_pe": 10.43,
+    "trailing_pe": 14.26,
+    "peg": 0.37,
+    "price_to_sales": 2.73,
+    "target_upside_pct": 7.71
+   },
+   "OTEX": {
+    "label": "cheap",
+    "ey_pct": 11.02,
+    "forward_pe": 5.83,
+    "trailing_pe": 9.4,
+    "peg": null,
+    "price_to_sales": 1.15,
+    "target_upside_pct": 13.41
+   },
+   "PBI": {
+    "label": "cheap",
+    "ey_pct": 11.09,
+    "forward_pe": 9.18,
+    "trailing_pe": 12.03,
+    "peg": 0.61,
+    "price_to_sales": 1.14,
+    "target_upside_pct": 26.09
+   },
+   "PRDO": {
+    "label": "cheap",
+    "ey_pct": 13.84,
+    "forward_pe": 8.83,
+    "trailing_pe": 10.19,
+    "peg": 0.58,
+    "price_to_sales": 2.09,
+    "target_upside_pct": 51.05
+   },
+   "PXED": {
+    "label": "cheap",
+    "ey_pct": 26.69,
+    "forward_pe": 4.81,
+    "trailing_pe": 8.53,
+    "peg": 0.48,
+    "price_to_sales": 0.7,
+    "target_upside_pct": 45.56
+   },
+   "PLTK": {
+    "label": "no profits",
+    "ey_pct": -2.46,
+    "forward_pe": 2.81,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.34,
+    "target_upside_pct": 70.28
+   },
+   "QTTB": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -8.65,
+    "trailing_pe": 2.45,
+    "peg": null,
+    "price_to_sales": 4.91,
+    "target_upside_pct": 349.74
+   },
+   "RIGL": {
+    "label": "cheap",
+    "ey_pct": 9.22,
+    "forward_pe": 9.57,
+    "trailing_pe": 2.84,
+    "peg": null,
+    "price_to_sales": 2.99,
+    "target_upside_pct": 40.95
+   },
+   "SBC": {
+    "label": "cheap",
+    "ey_pct": 15.83,
+    "forward_pe": 9.89,
+    "trailing_pe": 11.36,
+    "peg": 2.02,
+    "price_to_sales": 3.14,
+    "target_upside_pct": 63.86
+   },
+   "SIGA": {
+    "label": "no profits",
+    "ey_pct": -8.12,
+    "forward_pe": 2.73,
+    "trailing_pe": 289.0,
+    "peg": null,
+    "price_to_sales": 3.97,
+    "target_upside_pct": null
+   },
+   "SIRI": {
+    "label": "cheap",
+    "ey_pct": 9.73,
+    "forward_pe": 9.92,
+    "trailing_pe": 12.4,
+    "peg": 1.31,
+    "price_to_sales": 1.24,
+    "target_upside_pct": 8.09
+   },
+   "SSTK": {
+    "label": "no profits",
+    "ey_pct": -4.35,
+    "forward_pe": 3.0,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.12,
+    "target_upside_pct": null
+   },
+   "SPRO": {
+    "label": "cheap",
+    "ey_pct": 69.57,
+    "forward_pe": -0.9,
+    "trailing_pe": 7.14,
+    "peg": null,
+    "price_to_sales": 1.24,
+    "target_upside_pct": 433.33
+   },
+   "STRA": {
+    "label": "cheap",
+    "ey_pct": 17.07,
+    "forward_pe": 9.42,
+    "trailing_pe": 166.91,
+    "peg": 0.44,
+    "price_to_sales": 0.93,
+    "target_upside_pct": 14.38
+   },
+   "TNET": {
+    "label": "cheap",
+    "ey_pct": 7.99,
+    "forward_pe": 13.04,
+    "trailing_pe": 17.61,
+    "peg": null,
+    "price_to_sales": 0.63,
+    "target_upside_pct": 1.32
+   },
+   "TTEK": {
+    "label": "fair",
+    "ey_pct": 5.51,
+    "forward_pe": 20.4,
+    "trailing_pe": 23.75,
+    "peg": null,
+    "price_to_sales": 2.3,
+    "target_upside_pct": 3.56
+   },
+   "UIS": {
+    "label": "cheap",
+    "ey_pct": 18.76,
+    "forward_pe": 3.05,
+    "trailing_pe": null,
+    "peg": 0.2,
+    "price_to_sales": 0.11,
+    "target_upside_pct": 63.33
+   },
+   "UPWK": {
+    "label": "cheap",
+    "ey_pct": 12.01,
+    "forward_pe": 8.87,
+    "trailing_pe": 12.17,
+    "peg": null,
+    "price_to_sales": 1.61,
+    "target_upside_pct": 13.74
+   },
+   "VSNT": {
+    "label": "cheap",
+    "ey_pct": 16.6,
+    "forward_pe": 4.62,
+    "trailing_pe": 6.97,
+    "peg": 0.64,
+    "price_to_sales": 0.74,
+    "target_upside_pct": 22.05
+   },
+   "VXRT": {
+    "label": "cheap",
+    "ey_pct": 48.4,
+    "forward_pe": -0.36,
+    "trailing_pe": 2.85,
+    "peg": null,
+    "price_to_sales": 0.5,
+    "target_upside_pct": 800.9
+   },
+   "WDOFF": {
+    "label": "cheap",
+    "ey_pct": 26.43,
+    "forward_pe": null,
+    "trailing_pe": 9.33,
+    "peg": null,
+    "price_to_sales": 2.46,
+    "target_upside_pct": null
+   },
+   "WLY": {
+    "label": "cheap",
+    "ey_pct": 7.75,
+    "forward_pe": 9.33,
+    "trailing_pe": 13.33,
+    "peg": null,
+    "price_to_sales": 1.5,
+    "target_upside_pct": 37.54
+   },
+   "XPOF": {
+    "label": "fair",
+    "ey_pct": 4.08,
+    "forward_pe": 9.49,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.84,
+    "target_upside_pct": 14.47
+   },
+   "YELP": {
+    "label": "cheap",
+    "ey_pct": 15.62,
+    "forward_pe": 5.57,
+    "trailing_pe": 9.69,
+    "peg": null,
+    "price_to_sales": 0.75,
+    "target_upside_pct": 6.74
+   },
+   "ZM": {
+    "label": "fair",
+    "ey_pct": 4.29,
+    "forward_pe": 15.41,
+    "trailing_pe": 9.06,
+    "peg": 2.59,
+    "price_to_sales": 5.71,
+    "target_upside_pct": 21.37
+   },
+   "ALNY": {
+    "label": "fair",
+    "ey_pct": 4.77,
+    "forward_pe": 14.46,
+    "trailing_pe": 7.91,
+    "peg": 0.22,
+    "price_to_sales": 4.19,
+    "target_upside_pct": 91.49
+   },
+   "ARM": {
+    "label": "expensive",
+    "ey_pct": 0.44,
+    "forward_pe": 64.97,
+    "trailing_pe": 229.63,
+    "peg": 1.64,
+    "price_to_sales": 39.12,
+    "target_upside_pct": 36.37
+   },
+   "ASML": {
+    "label": "expensive",
+    "ey_pct": 2.67,
+    "forward_pe": 23.61,
+    "trailing_pe": 36.84,
+    "peg": 0.8,
+    "price_to_sales": 14.62,
+    "target_upside_pct": 41.73
+   },
+   "CCEP": {
+    "label": "fair",
+    "ey_pct": 4.52,
+    "forward_pe": 21.36,
+    "trailing_pe": 22.86,
+    "peg": 3.19,
+    "price_to_sales": 2.43,
+    "target_upside_pct": -4.1
+   },
+   "FER": {
+    "label": "expensive",
+    "ey_pct": 1.61,
+    "forward_pe": 43.81,
+    "trailing_pe": 33.85,
+    "peg": 8.7,
+    "price_to_sales": 4.49,
+    "target_upside_pct": 17.5
+   },
+   "INSM": {
+    "label": "no profits",
+    "ey_pct": -2.43,
+    "forward_pe": 179.18,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 17.02,
+    "target_upside_pct": 64.69
+   },
+   "MELI": {
+    "label": "expensive",
+    "ey_pct": 3.28,
+    "forward_pe": 27.68,
+    "trailing_pe": 39.8,
+    "peg": 0.83,
+    "price_to_sales": 1.95,
+    "target_upside_pct": 48.98
+   },
+   "MSTR": {
+    "label": "no profits",
+    "ey_pct": -0.08,
+    "forward_pe": 6.49,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 95.66,
+    "target_upside_pct": 108.49
+   },
+   "PDD": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 6.32,
+    "trailing_pe": 8.79,
+    "peg": 0.69,
+    "price_to_sales": 0.25,
+    "target_upside_pct": 45.59
+   },
+   "SHOP": {
+    "label": "expensive",
+    "ey_pct": 1.34,
+    "forward_pe": 60.76,
+    "trailing_pe": 91.7,
+    "peg": 2.02,
+    "price_to_sales": 13.57,
+    "target_upside_pct": 18.61
+   },
+   "TRI": {
+    "label": "fair",
+    "ey_pct": 3.98,
+    "forward_pe": 23.15,
+    "trailing_pe": 33.42,
+    "peg": 1.59,
+    "price_to_sales": 5.89,
+    "target_upside_pct": 17.87
+   },
+   "ZS": {
+    "label": "no profits",
+    "ey_pct": -0.37,
+    "forward_pe": 34.36,
+    "trailing_pe": null,
+    "peg": 1.99,
+    "price_to_sales": 9.4,
+    "target_upside_pct": 21.74
+   },
+   "RIVN": {
+    "label": "no profits",
+    "ey_pct": -16.82,
+    "forward_pe": -7.17,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.85,
+    "target_upside_pct": 42.81
+   },
+   "LCID": {
+    "label": "no profits",
+    "ey_pct": -76.08,
+    "forward_pe": -0.52,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.79,
+    "target_upside_pct": 93.47
+   },
+   "SOFI": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 17.47,
+    "trailing_pe": 28.58,
+    "peg": 0.51,
+    "price_to_sales": 4.35,
+    "target_upside_pct": 32.55
+   },
+   "RBLX": {
+    "label": "no profits",
+    "ey_pct": -3.16,
+    "forward_pe": -39.48,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 6.1,
+    "target_upside_pct": -1.04
+   },
+   "SNAP": {
+    "label": "no profits",
+    "ey_pct": -0.97,
+    "forward_pe": 6.73,
+    "trailing_pe": null,
+    "peg": 0.26,
+    "price_to_sales": 1.39,
+    "target_upside_pct": 31.43
+   },
+   "PINS": {
+    "label": "expensive",
+    "ey_pct": 2.25,
+    "forward_pe": 8.48,
+    "trailing_pe": 80.42,
+    "peg": 0.26,
+    "price_to_sales": 2.36,
+    "target_upside_pct": 29.97
+   },
+   "DKNG": {
+    "label": "no profits",
+    "ey_pct": -3.75,
+    "forward_pe": 14.09,
+    "trailing_pe": null,
+    "peg": 0.05,
+    "price_to_sales": 1.5,
+    "target_upside_pct": 37.05
+   },
+   "ROKU": {
+    "label": "expensive",
+    "ey_pct": 1.96,
+    "forward_pe": 40.14,
+    "trailing_pe": 46.26,
+    "peg": 0.52,
+    "price_to_sales": 4.35,
+    "target_upside_pct": null
+   },
+   "NET": {
+    "label": "no profits",
+    "ey_pct": -0.19,
+    "forward_pe": 173.38,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 42.05,
+    "target_upside_pct": 6.38
+   },
+   "SNOW": {
+    "label": "no profits",
+    "ey_pct": -1.17,
+    "forward_pe": 97.48,
+    "trailing_pe": null,
+    "peg": 5.35,
+    "price_to_sales": 19.27,
+    "target_upside_pct": 43.99
+   },
+   "MDB": {
+    "label": "no profits",
+    "ey_pct": -0.06,
+    "forward_pe": 42.69,
+    "trailing_pe": 468.75,
+    "peg": null,
+    "price_to_sales": 9.75,
+    "target_upside_pct": 33.93
+   },
+   "CHWY": {
+    "label": "expensive",
+    "ey_pct": 3.43,
+    "forward_pe": 12.07,
+    "trailing_pe": 34.72,
+    "peg": 0.4,
+    "price_to_sales": 0.69,
+    "target_upside_pct": 26.88
+   },
+   "AFRM": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 13.44,
+    "trailing_pe": 11.7,
+    "peg": 7.43,
+    "price_to_sales": 4.99,
+    "target_upside_pct": 42.56
+   },
+   "UPST": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 6.71,
+    "trailing_pe": 32.05,
+    "peg": null,
+    "price_to_sales": 1.4,
+    "target_upside_pct": 59.53
+   },
+   "TWLO": {
+    "label": "expensive",
+    "ey_pct": 1.37,
+    "forward_pe": 30.88,
+    "trailing_pe": 26.58,
+    "peg": 0.31,
+    "price_to_sales": 5.61,
+    "target_upside_pct": 26.85
+   },
+   "DOCU": {
+    "label": "expensive",
+    "ey_pct": 2.76,
+    "forward_pe": 15.31,
+    "trailing_pe": 48.68,
+    "peg": 0.74,
+    "price_to_sales": 4.44,
+    "target_upside_pct": -9.91
+   },
+   "RUN": {
+    "label": "expensive",
+    "ey_pct": 1.45,
+    "forward_pe": 30.06,
+    "trailing_pe": 4.33,
+    "peg": null,
+    "price_to_sales": 0.54,
+    "target_upside_pct": 61.83
+   },
+   "PLUG": {
+    "label": "no profits",
+    "ey_pct": -13.76,
+    "forward_pe": -8.12,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.25,
+    "target_upside_pct": 157.76
+   },
+   "NIO": {
+    "label": "no profits",
+    "ey_pct": -17.66,
+    "forward_pe": 24.17,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.07,
+    "target_upside_pct": 102.42
+   },
+   "BABA": {
+    "label": "cheap",
+    "ey_pct": 12.38,
+    "forward_pe": 10.2,
+    "trailing_pe": 22.79,
+    "peg": 0.47,
+    "price_to_sales": 0.22,
+    "target_upside_pct": 96.26
+   },
+   "SE": {
+    "label": "fair",
+    "ey_pct": 5.28,
+    "forward_pe": 15.82,
+    "trailing_pe": 27.23,
+    "peg": 0.77,
+    "price_to_sales": 1.53,
+    "target_upside_pct": 79.97
+   },
+   "NU": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 11.46,
+    "trailing_pe": 15.62,
+    "peg": 0.41,
+    "price_to_sales": 6.63,
+    "target_upside_pct": 45.03
+   },
+   "HIMS": {
+    "label": "no profits",
+    "ey_pct": -4.2,
+    "forward_pe": 48.39,
+    "trailing_pe": null,
+    "peg": 1.9,
+    "price_to_sales": 1.6,
+    "target_upside_pct": 44.8
+   },
+   "RDDT": {
+    "label": "fair",
+    "ey_pct": 5.04,
+    "forward_pe": 10.79,
+    "trailing_pe": 20.44,
+    "peg": 0.52,
+    "price_to_sales": 6.26,
+    "target_upside_pct": 49.77
+   },
+   "DUOL": {
+    "label": "expensive",
+    "ey_pct": 2.33,
+    "forward_pe": 20.14,
+    "trailing_pe": 52.1,
+    "peg": null,
+    "price_to_sales": 6.28,
+    "target_upside_pct": -3.06
+   },
+   "TOST": {
+    "label": "expensive",
+    "ey_pct": 2.79,
+    "forward_pe": 19.3,
+    "trailing_pe": 37.58,
+    "peg": null,
+    "price_to_sales": 2.78,
+    "target_upside_pct": 13.73
+   },
+   "DOCS": {
+    "label": "expensive",
+    "ey_pct": 3.03,
+    "forward_pe": 21.58,
+    "trailing_pe": 46.47,
+    "peg": 0.59,
+    "price_to_sales": 9.02,
+    "target_upside_pct": -5.86
+   },
+   "CART": {
+    "label": "fair",
+    "ey_pct": 4.57,
+    "forward_pe": 11.77,
+    "trailing_pe": 30.74,
+    "peg": 2.36,
+    "price_to_sales": 3.35,
+    "target_upside_pct": 4.91
+   },
+   "U": {
+    "label": "no profits",
+    "ey_pct": -1.76,
+    "forward_pe": 19.22,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 10.36,
+    "target_upside_pct": 21.01
+   },
+   "PATH": {
+    "label": "expensive",
+    "ey_pct": 2.44,
+    "forward_pe": 14.14,
+    "trailing_pe": 19.46,
+    "peg": 0.41,
+    "price_to_sales": 3.95,
+    "target_upside_pct": 18.14
+   },
+   "OSCR": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 13.03,
+    "trailing_pe": 14.19,
+    "peg": null,
+    "price_to_sales": 0.57,
+    "target_upside_pct": 15.87
+   },
+   "CPNG": {
+    "label": "no profits",
+    "ey_pct": -4.58,
+    "forward_pe": 68.4,
+    "trailing_pe": null,
+    "peg": 2.72,
+    "price_to_sales": 0.76,
+    "target_upside_pct": 46.99
+   },
+   "GRAB": {
+    "label": "expensive",
+    "ey_pct": 3.54,
+    "forward_pe": 20.64,
+    "trailing_pe": 32.4,
+    "peg": 0.78,
+    "price_to_sales": 3.29,
+    "target_upside_pct": 66.42
+   },
+   "LI": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 29.93,
+    "trailing_pe": null,
+    "peg": 4.45,
+    "price_to_sales": 0.11,
+    "target_upside_pct": 29.34
+   },
+   "XPEV": {
+    "label": "no profits",
+    "ey_pct": -10.87,
+    "forward_pe": -261.36,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.12,
+    "target_upside_pct": 93.56
+   },
+   "BIDU": {
+    "label": "cheap",
+    "ey_pct": 7.68,
+    "forward_pe": 11.34,
+    "trailing_pe": null,
+    "peg": 0.7,
+    "price_to_sales": 0.21,
+    "target_upside_pct": 72.68
+   },
+   "JD": {
+    "label": "fair",
+    "ey_pct": 4.1,
+    "forward_pe": 6.86,
+    "trailing_pe": 19.25,
+    "peg": 0.56,
+    "price_to_sales": 0.03,
+    "target_upside_pct": 41.31
+   },
+   "RIOT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -21.34,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 9.64,
+    "target_upside_pct": 85.79
+   },
+   "MARA": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -15.22,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 3.81,
+    "target_upside_pct": 133.41
+   },
+   "CLSK": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -3.78,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.5,
+    "target_upside_pct": 215.06
+   },
+   "AI": {
+    "label": "no profits",
+    "ey_pct": -25.53,
+    "forward_pe": -25.58,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 8.32,
+    "target_upside_pct": -26.02
+   },
+   "IONQ": {
+    "label": "no profits",
+    "ey_pct": -9.39,
+    "forward_pe": -20.58,
+    "trailing_pe": 16.9,
+    "peg": null,
+    "price_to_sales": 35.72,
+    "target_upside_pct": 85.62
+   },
+   "RGTI": {
+    "label": "no profits",
+    "ey_pct": -3.24,
+    "forward_pe": -44.29,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 267.18,
+    "target_upside_pct": 114.63
+   },
+   "ASTS": {
+    "label": "no profits",
+    "ey_pct": -3.99,
+    "forward_pe": -20.96,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 89.36,
+    "target_upside_pct": 93.55
+   },
+   "RKLB": {
+    "label": "no profits",
+    "ey_pct": -0.66,
+    "forward_pe": 860.02,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 46.98,
+    "target_upside_pct": 51.23
+   },
+   "SOUN": {
+    "label": "no profits",
+    "ey_pct": -14.24,
+    "forward_pe": -56.61,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.83,
+    "target_upside_pct": 234.73
+   },
+   "CRWV": {
+    "label": "no profits",
+    "ey_pct": -0.06,
+    "forward_pe": -30.51,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 3.03,
+    "target_upside_pct": 122.97
+   },
+   "NBIS": {
+    "label": "no profits",
+    "ey_pct": -2.02,
+    "forward_pe": -39.96,
+    "trailing_pe": null,
+    "peg": 0.36,
+    "price_to_sales": 23.46,
+    "target_upside_pct": 131.91
+   },
+   "ETSY": {
+    "label": "fair",
+    "ey_pct": 5.59,
+    "forward_pe": 12.91,
+    "trailing_pe": 23.68,
+    "peg": 0.95,
+    "price_to_sales": 2.55,
+    "target_upside_pct": 10.61
+   },
+   "W": {
+    "label": "expensive",
+    "ey_pct": 1.67,
+    "forward_pe": 26.91,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1.15,
+    "target_upside_pct": 23.57
+   },
+   "BBAI": {
+    "label": "no profits",
+    "ey_pct": -10.4,
+    "forward_pe": -10.4,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.05,
+    "target_upside_pct": 56.25
+   },
+   "TEM": {
+    "label": "no profits",
+    "ey_pct": -1.97,
+    "forward_pe": -1841.21,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 8.8,
+    "target_upside_pct": 22.98
+   },
+   "GTLB": {
+    "label": "no profits",
+    "ey_pct": -1.18,
+    "forward_pe": 45.57,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.47,
+    "target_upside_pct": 18.61
+   },
+   "S": {
+    "label": "no profits",
+    "ey_pct": -3.88,
+    "forward_pe": 48.76,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.12,
+    "target_upside_pct": 10.88
+   },
+   "PSTG": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "ESTC": {
+    "label": "no profits",
+    "ey_pct": -0.31,
+    "forward_pe": 22.44,
+    "trailing_pe": 25.39,
+    "peg": null,
+    "price_to_sales": 5.18,
+    "target_upside_pct": 25.9
+   },
+   "CFLT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "FROG": {
+    "label": "no profits",
+    "ey_pct": -0.33,
+    "forward_pe": 83.79,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 21.71,
+    "target_upside_pct": 5.2
+   },
+   "BRZE": {
+    "label": "no profits",
+    "ey_pct": -2.13,
+    "forward_pe": 47.56,
+    "trailing_pe": null,
+    "peg": 1.63,
+    "price_to_sales": 6.36,
+    "target_upside_pct": 1.8
+   },
+   "ASAN": {
+    "label": "no profits",
+    "ey_pct": -7.08,
+    "forward_pe": 21.39,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.69,
+    "target_upside_pct": 5.2
+   },
+   "MNDY": {
+    "label": "expensive",
+    "ey_pct": 3.18,
+    "forward_pe": 10.42,
+    "trailing_pe": 26.76,
+    "peg": null,
+    "price_to_sales": 2.31,
+    "target_upside_pct": 29.59
+   },
+   "PD": {
+    "label": "expensive",
+    "ey_pct": 2.27,
+    "forward_pe": 10.68,
+    "trailing_pe": 7.76,
+    "peg": null,
+    "price_to_sales": 2.49,
+    "target_upside_pct": -16.18
+   },
+   "FSLY": {
+    "label": "no profits",
+    "ey_pct": -2.06,
+    "forward_pe": 24.12,
+    "trailing_pe": null,
+    "peg": 0.13,
+    "price_to_sales": 3.88,
+    "target_upside_pct": 42.85
+   },
+   "BL": {
+    "label": "expensive",
+    "ey_pct": 2.56,
+    "forward_pe": 10.61,
+    "trailing_pe": 44.66,
+    "peg": null,
+    "price_to_sales": 2.22,
+    "target_upside_pct": 25.73
+   },
+   "DT": {
+    "label": "expensive",
+    "ey_pct": 2.41,
+    "forward_pe": 20.77,
+    "trailing_pe": 82.47,
+    "peg": 0.96,
+    "price_to_sales": 5.86,
+    "target_upside_pct": 37.57
+   },
+   "PCOR": {
+    "label": "no profits",
+    "ey_pct": -0.5,
+    "forward_pe": 30.65,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.78,
+    "target_upside_pct": 11.64
+   },
+   "APPN": {
+    "label": "expensive",
+    "ey_pct": 0.45,
+    "forward_pe": 34.02,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.6,
+    "target_upside_pct": 0.89
+   },
+   "VERX": {
+    "label": "no profits",
+    "ey_pct": -0.7,
+    "forward_pe": 17.11,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 3.57,
+    "target_upside_pct": 17.21
+   },
+   "BILL": {
+    "label": "expensive",
+    "ey_pct": 1.88,
+    "forward_pe": 11.61,
+    "trailing_pe": 103.13,
+    "peg": 0.48,
+    "price_to_sales": 2.72,
+    "target_upside_pct": 13.56
+   },
+   "LMND": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -49.22,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.99,
+    "target_upside_pct": 30.0
+   },
+   "ROOT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 15.75,
+    "trailing_pe": 9.33,
+    "peg": null,
+    "price_to_sales": 0.43,
+    "target_upside_pct": 28.32
+   },
+   "DAVE": {
+    "label": "cheap",
+    "ey_pct": 6.14,
+    "forward_pe": 12.65,
+    "trailing_pe": 20.84,
+    "peg": null,
+    "price_to_sales": 5.29,
+    "target_upside_pct": 51.25
+   },
+   "MQ": {
+    "label": "expensive",
+    "ey_pct": 0.31,
+    "forward_pe": 36.73,
+    "trailing_pe": 14.9,
+    "peg": null,
+    "price_to_sales": 2.73,
+    "target_upside_pct": 14.3
+   },
+   "FOUR": {
+    "label": "fair",
+    "ey_pct": 5.31,
+    "forward_pe": 7.54,
+    "trailing_pe": 50.54,
+    "peg": 0.35,
+    "price_to_sales": 0.64,
+    "target_upside_pct": 17.67
+   },
+   "BTBT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.25,
+    "target_upside_pct": 393.68
+   },
+   "HUT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -10.6,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 23.25,
+    "target_upside_pct": 116.4
+   },
+   "BITF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "CIFR": {
+    "label": "no profits",
+    "ey_pct": -5.41,
+    "forward_pe": 83.29,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 21.33,
+    "target_upside_pct": 234.78
+   },
+   "WULF": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": -50.58,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 32.85,
+    "target_upside_pct": 106.83
+   },
+   "IREN": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 67.41,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 11.11,
+    "target_upside_pct": 211.47
+   },
+   "CORZ": {
+    "label": "no profits",
+    "ey_pct": -0.9,
+    "forward_pe": 41.79,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.64,
+    "target_upside_pct": 93.93
+   },
+   "CHPT": {
+    "label": "no profits",
+    "ey_pct": -37.83,
+    "forward_pe": -10.45,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.74,
+    "target_upside_pct": -37.45
+   },
+   "BLNK": {
+    "label": "no profits",
+    "ey_pct": -100.7,
+    "forward_pe": -1.93,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.73,
+    "target_upside_pct": 251.36
+   },
+   "BE": {
+    "label": "expensive",
+    "ey_pct": 0.96,
+    "forward_pe": 37.41,
+    "trailing_pe": 120.7,
+    "peg": 0.4,
+    "price_to_sales": 15.37,
+    "target_upside_pct": 42.53
+   },
+   "FCEL": {
+    "label": "no profits",
+    "ey_pct": -42.21,
+    "forward_pe": -9.81,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 5.2,
+    "target_upside_pct": 110.58
+   },
+   "SEDG": {
+    "label": "no profits",
+    "ey_pct": -5.73,
+    "forward_pe": 235.84,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1.14,
+    "target_upside_pct": 27.66
+   },
+   "ARRY": {
+    "label": "no profits",
+    "ey_pct": -0.07,
+    "forward_pe": 5.46,
+    "trailing_pe": null,
+    "peg": 0.48,
+    "price_to_sales": 0.66,
+    "target_upside_pct": 47.97
+   },
+   "QS": {
+    "label": "no profits",
+    "ey_pct": -17.69,
+    "forward_pe": -6.01,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": 41.13
+   },
+   "STEM": {
+    "label": "no profits",
+    "ey_pct": -12.88,
+    "forward_pe": -0.4,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.15,
+    "target_upside_pct": 172.93
+   },
+   "EVGO": {
+    "label": "no profits",
+    "ey_pct": -11.37,
+    "forward_pe": -3.82,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.18,
+    "target_upside_pct": 23.36
+   },
+   "MVST": {
+    "label": "no profits",
+    "ey_pct": -34.7,
+    "forward_pe": 2.46,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.29,
+    "target_upside_pct": 1257.47
+   },
+   "FLNC": {
+    "label": "no profits",
+    "ey_pct": -11.46,
+    "forward_pe": -8.91,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.35,
+    "target_upside_pct": 68.25
+   },
+   "OKLO": {
+    "label": "no profits",
+    "ey_pct": -8.24,
+    "forward_pe": -21.25,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1546.55,
+    "target_upside_pct": 128.5
+   },
+   "SMR": {
+    "label": "no profits",
+    "ey_pct": -17.79,
+    "forward_pe": -7.15,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 721.34,
+    "target_upside_pct": 79.22
+   },
+   "NNE": {
+    "label": "no profits",
+    "ey_pct": -17.76,
+    "forward_pe": -10.91,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2758.26,
+    "target_upside_pct": 216.07
+   },
+   "AMPX": {
+    "label": "no profits",
+    "ey_pct": -2.06,
+    "forward_pe": -809.0,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 9.35,
+    "target_upside_pct": 144.47
+   },
+   "CRSP": {
+    "label": "no profits",
+    "ey_pct": -11.09,
+    "forward_pe": -11.43,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 162.35,
+    "target_upside_pct": 102.76
+   },
+   "NTLA": {
+    "label": "no profits",
+    "ey_pct": -28.57,
+    "forward_pe": -3.82,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 27.35,
+    "target_upside_pct": 121.04
+   },
+   "BEAM": {
+    "label": "no profits",
+    "ey_pct": -15.82,
+    "forward_pe": -4.72,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 16.72,
+    "target_upside_pct": 110.45
+   },
+   "EDIT": {
+    "label": "no profits",
+    "ey_pct": -33.24,
+    "forward_pe": -2.88,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 6.61,
+    "target_upside_pct": 185.71
+   },
+   "SRPT": {
+    "label": "no profits",
+    "ey_pct": -0.37,
+    "forward_pe": 10.73,
+    "trailing_pe": 795.5,
+    "peg": null,
+    "price_to_sales": 0.87,
+    "target_upside_pct": 36.85
+   },
+   "RXRX": {
+    "label": "no profits",
+    "ey_pct": -31.23,
+    "forward_pe": -4.0,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 30.19,
+    "target_upside_pct": 121.38
+   },
+   "SDGR": {
+    "label": "no profits",
+    "ey_pct": -6.28,
+    "forward_pe": -25.01,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 8.44,
+    "target_upside_pct": 10.94
+   },
+   "DNA": {
+    "label": "no profits",
+    "ey_pct": -25.47,
+    "forward_pe": -3.42,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.92,
+    "target_upside_pct": -19.44
+   },
+   "ABSI": {
+    "label": "no profits",
+    "ey_pct": -8.96,
+    "forward_pe": -13.36,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 1055.42,
+    "target_upside_pct": 62.04
+   },
+   "CRBU": {
+    "label": "no profits",
+    "ey_pct": -264.18,
+    "forward_pe": -0.42,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.29,
+    "target_upside_pct": 1234.04
+   },
+   "VKTX": {
+    "label": "no profits",
+    "ey_pct": -21.29,
+    "forward_pe": -5.22,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": 250.36
+   },
+   "AXSM": {
+    "label": "no profits",
+    "ey_pct": -2.26,
+    "forward_pe": 41.12,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 8.45,
+    "target_upside_pct": 91.22
+   },
+   "IOVA": {
+    "label": "no profits",
+    "ey_pct": -6.58,
+    "forward_pe": -66.69,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 9.27,
+    "target_upside_pct": 90.92
+   },
+   "KRYS": {
+    "label": "expensive",
+    "ey_pct": 2.66,
+    "forward_pe": 32.9,
+    "trailing_pe": 41.25,
+    "peg": null,
+    "price_to_sales": 19.14,
+    "target_upside_pct": 27.89
+   },
+   "TGTX": {
+    "label": "expensive",
+    "ey_pct": 1.92,
+    "forward_pe": 21.96,
+    "trailing_pe": 95.9,
+    "peg": null,
+    "price_to_sales": 10.82,
+    "target_upside_pct": 20.61
+   },
+   "ARWR": {
+    "label": "no profits",
+    "ey_pct": -3.12,
+    "forward_pe": -13.85,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 13.98,
+    "target_upside_pct": 139.16
+   },
+   "DVAX": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "CYTK": {
+    "label": "no profits",
+    "ey_pct": -8.06,
+    "forward_pe": -13.09,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 68.15,
+    "target_upside_pct": 97.42
+   },
+   "SAVA": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": null,
+    "target_upside_pct": null
+   },
+   "LUNR": {
+    "label": "no profits",
+    "ey_pct": -6.52,
+    "forward_pe": -64.29,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.84,
+    "target_upside_pct": 112.26
+   },
+   "RDW": {
+    "label": "no profits",
+    "ey_pct": -10.62,
+    "forward_pe": -25.65,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 4.5,
+    "target_upside_pct": 58.93
+   },
+   "ACHR": {
+    "label": "no profits",
+    "ey_pct": -38.36,
+    "forward_pe": -5.26,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 280.09,
+    "target_upside_pct": 134.12
+   },
+   "JOBY": {
+    "label": "no profits",
+    "ey_pct": -17.46,
+    "forward_pe": -8.21,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 36.17,
+    "target_upside_pct": 66.99
+   },
+   "KTOS": {
+    "label": "expensive",
+    "ey_pct": 0.22,
+    "forward_pe": 30.76,
+    "trailing_pe": 286.65,
+    "peg": null,
+    "price_to_sales": 3.93,
+    "target_upside_pct": 117.1
+   },
+   "AVAV": {
+    "label": "no profits",
+    "ey_pct": -0.18,
+    "forward_pe": 27.06,
+    "trailing_pe": null,
+    "peg": 1.08,
+    "price_to_sales": 3.03,
+    "target_upside_pct": 77.91
+   },
+   "PL": {
+    "label": "no profits",
+    "ey_pct": -2.02,
+    "forward_pe": -11024.0,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 13.25,
+    "target_upside_pct": 119.69
+   },
+   "BKSY": {
+    "label": "no profits",
+    "ey_pct": -2.62,
+    "forward_pe": -82.22,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 7.16,
+    "target_upside_pct": 58.02
+   },
+   "SPCE": {
+    "label": "no profits",
+    "ey_pct": -68.54,
+    "forward_pe": -2.59,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 312.66,
+    "target_upside_pct": 54.71
+   },
+   "RCAT": {
+    "label": "no profits",
+    "ey_pct": -38.99,
+    "forward_pe": -8.72,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 8.19,
+    "target_upside_pct": 305.65
+   },
+   "DRS": {
+    "label": "fair",
+    "ey_pct": 4.43,
+    "forward_pe": 22.96,
+    "trailing_pe": 26.21,
+    "peg": 1.92,
+    "price_to_sales": 2.45,
+    "target_upside_pct": 46.33
+   },
+   "GME": {
+    "label": "fair",
+    "ey_pct": 3.9,
+    "forward_pe": 16.88,
+    "trailing_pe": 17.16,
+    "peg": null,
+    "price_to_sales": 3.71,
+    "target_upside_pct": 26.51
+   },
+   "AMC": {
+    "label": "fair",
+    "ey_pct": 4.98,
+    "forward_pe": 40.2,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.53,
+    "target_upside_pct": 18.66
+   },
+   "BYND": {
+    "label": "no profits",
+    "ey_pct": -66.7,
+    "forward_pe": -0.63,
+    "trailing_pe": 0.37,
+    "peg": null,
+    "price_to_sales": 0.4,
+    "target_upside_pct": 1.66
+   },
+   "PTON": {
+    "label": "cheap",
+    "ey_pct": 9.44,
+    "forward_pe": 22.17,
+    "trailing_pe": 19.22,
+    "peg": null,
+    "price_to_sales": 1.05,
+    "target_upside_pct": 34.61
+   },
+   "DJT": {
+    "label": "no profits",
+    "ey_pct": -7.65,
+    "forward_pe": null,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 209.04,
+    "target_upside_pct": null
+   },
+   "RUM": {
+    "label": "no profits",
+    "ey_pct": -4.64,
+    "forward_pe": -10.88,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 11.94,
+    "target_upside_pct": 315.56
+   },
+   "FUBO": {
+    "label": "no profits",
+    "ey_pct": -18.68,
+    "forward_pe": 17.01,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.04,
+    "target_upside_pct": 115.02
+   },
+   "OPEN": {
+    "label": "no profits",
+    "ey_pct": -19.24,
+    "forward_pe": -8.38,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 0.34,
+    "target_upside_pct": 75.91
+   },
+   "RKT": {
+    "label": null,
+    "ey_pct": null,
+    "forward_pe": 20.94,
+    "trailing_pe": null,
+    "peg": 0.63,
+    "price_to_sales": 3.28,
+    "target_upside_pct": 7.77
+   },
+   "Z": {
+    "label": "no profits",
+    "ey_pct": -1.19,
+    "forward_pe": 13.06,
+    "trailing_pe": null,
+    "peg": 0.11,
+    "price_to_sales": 2.34,
+    "target_upside_pct": 19.77
+   },
+   "INDI": {
+    "label": "no profits",
+    "ey_pct": -17.45,
+    "forward_pe": -126.83,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 2.13,
+    "target_upside_pct": 99.94
+   },
+   "AEHR": {
+    "label": "no profits",
+    "ey_pct": -0.23,
+    "forward_pe": 35.57,
+    "trailing_pe": null,
+    "peg": 0.64,
+    "price_to_sales": 39.25,
+    "target_upside_pct": 95.52
+   },
+   "LSCC": {
+    "label": "expensive",
+    "ey_pct": 0.6,
+    "forward_pe": 26.83,
+    "trailing_pe": 379.81,
+    "peg": null,
+    "price_to_sales": 20.7,
+    "target_upside_pct": 32.65
+   },
+   "POWI": {
+    "label": "expensive",
+    "ey_pct": 1.8,
+    "forward_pe": 25.68,
+    "trailing_pe": 58.01,
+    "peg": null,
+    "price_to_sales": 5.62,
+    "target_upside_pct": 32.37
+   },
+   "NVTS": {
+    "label": "no profits",
+    "ey_pct": -5.64,
+    "forward_pe": -40.0,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 61.35,
+    "target_upside_pct": 42.39
+   },
+   "CRDO": {
+    "label": "expensive",
+    "ey_pct": 2.01,
+    "forward_pe": 14.01,
+    "trailing_pe": 48.23,
+    "peg": null,
+    "price_to_sales": 16.07,
+    "target_upside_pct": 108.83
+   },
+   "ALAB": {
+    "label": "expensive",
+    "ey_pct": 1.02,
+    "forward_pe": 31.22,
+    "trailing_pe": 88.25,
+    "peg": null,
+    "price_to_sales": 25.07,
+    "target_upside_pct": 54.15
+   },
+   "SITM": {
+    "label": "expensive",
+    "ey_pct": 0.31,
+    "forward_pe": 25.15,
+    "trailing_pe": 458.82,
+    "peg": null,
+    "price_to_sales": 20.3,
+    "target_upside_pct": 55.56
+   },
+   "MTSI": {
+    "label": "expensive",
+    "ey_pct": 0.69,
+    "forward_pe": 20.75,
+    "trailing_pe": 55.81,
+    "peg": null,
+    "price_to_sales": 13.84,
+    "target_upside_pct": 35.94
+   },
+   "AMBA": {
+    "label": "no profits",
+    "ey_pct": -2.42,
+    "forward_pe": 57.17,
+    "trailing_pe": null,
+    "peg": null,
+    "price_to_sales": 6.38,
+    "target_upside_pct": 45.06
+   },
+   "RMBS": {
+    "label": "expensive",
+    "ey_pct": 3.29,
+    "forward_pe": 21.56,
+    "trailing_pe": 34.61,
+    "peg": null,
+    "price_to_sales": 11.27,
+    "target_upside_pct": 67.83
+   },
+   "ACLS": {
+    "label": "expensive",
+    "ey_pct": 2.89,
+    "forward_pe": 17.39,
+    "trailing_pe": 32.08,
+    "peg": null,
+    "price_to_sales": 3.74,
+    "target_upside_pct": 22.46
+   },
+   "CAMT": {
+    "label": "expensive",
+    "ey_pct": 2.48,
+    "forward_pe": 20.31,
+    "trailing_pe": 39.2,
+    "peg": 1.51,
+    "price_to_sales": 8.95,
+    "target_upside_pct": 46.54
+   },
+   "ONTO": {
+    "label": "expensive",
+    "ey_pct": 1.97,
+    "forward_pe": 16.25,
+    "trailing_pe": 68.75,
+    "peg": 0.61,
+    "price_to_sales": 7.82,
+    "target_upside_pct": 60.81
+   }
+  }
+ }
+}

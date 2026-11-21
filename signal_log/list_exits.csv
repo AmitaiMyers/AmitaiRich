@@ -94,3 +94,23 @@ date,strategy,ticker,reason
 2026-11-19,v7,VEEV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-19,v7,FRT,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-19,v7,AME,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-20,v0,CHPT,6-month momentum fell to +24% (needs > 25%)
+2026-11-20,v0,ETSY,6-month momentum fell to +23% (needs > 25%)
+2026-11-20,v0,TEM,SELL signal: closed -6.1% below its 200-day MA
+2026-11-20,v0,ANET,SELL signal: closed -0.6% below its 200-day MA
+2026-11-20,v0,NTAP,6-month momentum fell to +14% (needs > 25%)
+2026-11-20,v0,HPE,SELL signal: closed -3.9% below its 200-day MA
+2026-11-20,v0,SHOP,SELL signal: closed -5.2% below its 200-day MA
+2026-11-20,v0,PYPL,6-month momentum fell to +21% (needs > 25%)
+2026-11-20,v0,EL,6-month momentum fell to +13% (needs > 25%)
+2026-11-20,v0,S,6-month momentum fell to +22% (needs > 25%)
+2026-11-20,v0,HPQ,6-month momentum fell to +13% (needs > 25%)
+2026-11-20,v0,COR,6-month momentum fell to +24% (needs > 25%)
+2026-11-20,v0,ZBRA,6-month momentum fell to +18% (needs > 25%)
+2026-11-20,v0,DG,6-month momentum fell to +25% (needs > 25%)
+2026-11-20,v0,GPC,6-month momentum fell to +23% (needs > 25%)
+2026-11-20,v0,WST,6-month momentum fell to +24% (needs > 25%)
+2026-11-20,v0,ALL,6-month momentum fell to +24% (needs > 25%)
+2026-11-20,v0,HRB,6-month momentum fell to +21% (needs > 25%)
+2026-11-20,v7,ADI,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-20,v7,DGX,ranked 12 at the 2026-11-20 rebalance (list = top 10)
