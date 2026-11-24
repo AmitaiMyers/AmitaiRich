@@ -114,3 +114,6 @@ date,strategy,ticker,reason
 2026-11-20,v0,HRB,6-month momentum fell to +21% (needs > 25%)
 2026-11-20,v7,ADI,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
 2026-11-20,v7,DGX,ranked 12 at the 2026-11-20 rebalance (list = top 10)
+2026-11-23,v0,CRWD,6-month momentum fell to +24% (needs > 25%)
+2026-11-23,v7,TRGP,ranked 15 at the 2026-11-23 rebalance (list = top 10)
+2026-11-23,v7,MDT,ranked 17 at the 2026-11-23 rebalance (list = top 10)
