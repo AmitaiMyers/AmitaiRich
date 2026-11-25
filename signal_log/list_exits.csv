@@ -117,3 +117,10 @@ date,strategy,ticker,reason
 2026-11-23,v0,CRWD,6-month momentum fell to +24% (needs > 25%)
 2026-11-23,v7,TRGP,ranked 15 at the 2026-11-23 rebalance (list = top 10)
 2026-11-23,v7,MDT,ranked 17 at the 2026-11-23 rebalance (list = top 10)
+2026-11-24,v0,SHOP,6-month momentum fell to +24% (needs > 25%)
+2026-11-24,v0,HPE,SELL signal: closed -6.1% below its 200-day MA
+2026-11-24,v0,ZBRA,6-month momentum fell to +25% (needs > 25%)
+2026-11-24,v0,WST,6-month momentum fell to +24% (needs > 25%)
+2026-11-24,v0,CHPT,6-month momentum fell to +11% (needs > 25%)
+2026-11-24,v7,COST,ranked 11 at the 2026-11-24 rebalance (list = top 10)
+2026-11-24,v7,RJF,ranked 12 at the 2026-11-24 rebalance (list = top 10)

@@ -1,14 +1,14 @@
 {
  "phase": "paper",
- "generated": "2026-11-24T06:13:29",
+ "generated": "2026-11-25T04:36:51",
  "data": {
   "start": "2004-01-01",
-  "end": "2026-11-24"
+  "end": "2026-11-25"
  },
  "objective": "max CAGR with max drawdown within -40%",
  "tables": [
   {
-   "title": "Paper accounts since 2026-11-10 (data to 2026-11-23)",
+   "title": "Paper accounts since 2026-11-10 (data to 2026-11-24)",
    "note": null,
    "columns": [
     "strategy",
@@ -21,48 +21,48 @@
    "rows": [
     {
      "strategy": "v0",
-     "days": 10,
-     "value": 30362.0,
-     "return": -5.12,
+     "days": 11,
+     "value": 30904.0,
+     "return": -3.42,
      "maxDD": -7.2,
      "trades": 2
     },
     {
      "strategy": "v0m",
-     "days": 10,
-     "value": 30484.0,
-     "return": -4.74,
+     "days": 11,
+     "value": 30981.0,
+     "return": -3.18,
      "maxDD": -6.7,
      "trades": 2
     },
     {
      "strategy": "v7",
-     "days": 10,
-     "value": 30779.0,
-     "return": -3.81,
+     "days": 11,
+     "value": 30955.0,
+     "return": -3.27,
      "maxDD": -7.1,
      "trades": 1
     },
     {
      "strategy": "BENCH SPY",
-     "days": 10,
-     "value": 30808.0,
-     "return": -3.63,
+     "days": 11,
+     "value": 30661.0,
+     "return": -4.09,
      "maxDD": -9.1,
      "trades": 0
     },
     {
      "strategy": "BENCH RSP",
-     "days": 10,
-     "value": 30808.0,
-     "return": -3.63,
+     "days": 11,
+     "value": 30972.0,
+     "return": -3.12,
      "maxDD": -6.8,
      "trades": 0
     }
    ]
   },
   {
-   "title": "v0 holdings \u2014 next-open orders: BUY ALLE",
+   "title": "v0 holdings \u2014 next-open orders: BUY ROP",
    "note": "Production Growth Momentum Rider (ROC126 > 25% & close > SMA200; exit close < SMA200), restricted to point-in-time S&P 500 members; 20 positions, 1% risk.",
    "columns": [
     "strategy",
@@ -78,87 +78,87 @@
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 252.78,
-     "last": 212.08,
-     "pnl_pct": -16.1
+     "last": 227.38,
+     "pnl_pct": -10.0
     },
     {
      "strategy": "CRL",
      "entry": "2026-11-11",
      "shares": 4,
      "entry_price": 347.38,
-     "last": 338.26,
-     "pnl_pct": -2.6
+     "last": 336.13,
+     "pnl_pct": -3.2
     },
     {
      "strategy": "BBY",
      "entry": "2026-11-11",
      "shares": 19,
      "entry_price": 103.12,
-     "last": 97.0,
-     "pnl_pct": -5.9
+     "last": 99.62,
+     "pnl_pct": -3.4
     },
     {
      "strategy": "CDW",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 171.86,
-     "last": 170.06,
-     "pnl_pct": -1.0
+     "last": 164.16,
+     "pnl_pct": -4.5
     },
     {
      "strategy": "CRWD",
      "entry": "2026-11-11",
      "shares": 5,
      "entry_price": 235.35,
-     "last": 208.97,
-     "pnl_pct": -11.2
+     "last": 210.86,
+     "pnl_pct": -10.4
     },
     {
      "strategy": "MTD",
      "entry": "2026-11-11",
      "shares": 1,
      "entry_price": 1761.8,
-     "last": 1725.52,
-     "pnl_pct": -2.1
+     "last": 1704.0,
+     "pnl_pct": -3.3
     },
     {
      "strategy": "RVTY",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 161.07,
-     "last": 151.29,
-     "pnl_pct": -6.1
+     "last": 153.17,
+     "pnl_pct": -4.9
     },
     {
      "strategy": "WDAY",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 190.49,
-     "last": 176.08,
-     "pnl_pct": -7.6
+     "last": 179.23,
+     "pnl_pct": -5.9
     },
     {
      "strategy": "DLTR",
      "entry": "2026-11-11",
      "shares": 13,
      "entry_price": 139.88,
-     "last": 139.1,
-     "pnl_pct": -0.6
+     "last": 154.65,
+     "pnl_pct": 10.6
     },
     {
      "strategy": "A",
      "entry": "2026-11-11",
      "shares": 14,
      "entry_price": 178.99,
-     "last": 176.04,
-     "pnl_pct": -1.6
+     "last": 183.52,
+     "pnl_pct": 2.5
     },
     {
      "strategy": "IQV",
      "entry": "2026-11-11",
      "shares": 8,
      "entry_price": 276.89,
-     "last": 251.92,
+     "last": 252.01,
      "pnl_pct": -9.0
     },
     {
@@ -166,31 +166,31 @@
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 719.69,
-     "last": 688.08,
-     "pnl_pct": -4.4
+     "last": 695.62,
+     "pnl_pct": -3.3
     },
     {
      "strategy": "MPC",
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 394.85,
-     "last": 357.69,
-     "pnl_pct": -9.4
+     "last": 355.16,
+     "pnl_pct": -10.1
     },
     {
      "strategy": "ACN",
      "entry": "2026-11-11",
      "shares": 7,
      "entry_price": 255.18,
-     "last": 222.29,
-     "pnl_pct": -12.9
+     "last": 232.32,
+     "pnl_pct": -9.0
     },
     {
      "strategy": "TECH",
      "entry": "2026-11-11",
      "shares": 62,
      "entry_price": 72.75,
-     "last": 72.8,
+     "last": 72.81,
      "pnl_pct": 0.1
     },
     {
@@ -198,37 +198,37 @@
      "entry": "2026-11-20",
      "shares": 7,
      "entry_price": 259.25,
-     "last": 268.65,
-     "pnl_pct": 3.6
+     "last": 273.62,
+     "pnl_pct": 5.5
     },
     {
      "strategy": "BDX",
      "entry": "2026-11-20",
      "shares": 1,
      "entry_price": 213.26,
-     "last": 215.44,
-     "pnl_pct": 1.0
+     "last": 220.0,
+     "pnl_pct": 3.2
     },
     {
      "strategy": "SWK",
      "entry": "2026-11-20",
      "shares": 1,
      "entry_price": 107.82,
-     "last": 110.74,
-     "pnl_pct": 2.7
+     "last": 109.25,
+     "pnl_pct": 1.3
     },
     {
      "strategy": "REGN",
      "entry": "2026-11-23",
      "shares": 1,
      "entry_price": 923.18,
-     "last": 942.24,
-     "pnl_pct": 2.1
+     "last": 987.09,
+     "pnl_pct": 6.9
     }
    ]
   },
   {
-   "title": "v0m holdings \u2014 next-open orders: BUY ALLE, BUY LH",
+   "title": "v0m holdings \u2014 next-open orders: BUY ROP, BUY LH",
    "note": "v0 that skips buys after an extreme run-up (6-month momentum above +200%). Owner's idea (2026-11-10, MRNA at +425%): in development 6.5% vs 5.6% CAGR and validation 6.8% vs 5.6%, same max DD; a cap on distance above the 200-MA instead LOST return. Paper-traded only.",
    "columns": [
     "strategy",
@@ -244,79 +244,79 @@
      "entry": "2026-11-11",
      "shares": 4,
      "entry_price": 347.38,
-     "last": 338.26,
-     "pnl_pct": -2.6
+     "last": 336.13,
+     "pnl_pct": -3.2
     },
     {
      "strategy": "BBY",
      "entry": "2026-11-11",
      "shares": 19,
      "entry_price": 103.12,
-     "last": 97.0,
-     "pnl_pct": -5.9
+     "last": 99.62,
+     "pnl_pct": -3.4
     },
     {
      "strategy": "CDW",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 171.86,
-     "last": 170.06,
-     "pnl_pct": -1.0
+     "last": 164.16,
+     "pnl_pct": -4.5
     },
     {
      "strategy": "CRWD",
      "entry": "2026-11-11",
      "shares": 5,
      "entry_price": 235.35,
-     "last": 208.97,
-     "pnl_pct": -11.2
+     "last": 210.86,
+     "pnl_pct": -10.4
     },
     {
      "strategy": "MTD",
      "entry": "2026-11-11",
      "shares": 1,
      "entry_price": 1761.8,
-     "last": 1725.52,
-     "pnl_pct": -2.1
+     "last": 1704.0,
+     "pnl_pct": -3.3
     },
     {
      "strategy": "RVTY",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 161.07,
-     "last": 151.29,
-     "pnl_pct": -6.1
+     "last": 153.17,
+     "pnl_pct": -4.9
     },
     {
      "strategy": "WDAY",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 190.49,
-     "last": 176.08,
-     "pnl_pct": -7.6
+     "last": 179.23,
+     "pnl_pct": -5.9
     },
     {
      "strategy": "DLTR",
      "entry": "2026-11-11",
      "shares": 13,
      "entry_price": 139.88,
-     "last": 139.1,
-     "pnl_pct": -0.6
+     "last": 154.65,
+     "pnl_pct": 10.6
     },
     {
      "strategy": "A",
      "entry": "2026-11-11",
      "shares": 14,
      "entry_price": 178.99,
-     "last": 176.04,
-     "pnl_pct": -1.6
+     "last": 183.52,
+     "pnl_pct": 2.5
     },
     {
      "strategy": "IQV",
      "entry": "2026-11-11",
      "shares": 8,
      "entry_price": 276.89,
-     "last": 251.92,
+     "last": 252.01,
      "pnl_pct": -9.0
     },
     {
@@ -324,31 +324,31 @@
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 719.69,
-     "last": 688.08,
-     "pnl_pct": -4.4
+     "last": 695.62,
+     "pnl_pct": -3.3
     },
     {
      "strategy": "MPC",
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 394.85,
-     "last": 357.69,
-     "pnl_pct": -9.4
+     "last": 355.16,
+     "pnl_pct": -10.1
     },
     {
      "strategy": "ACN",
      "entry": "2026-11-11",
      "shares": 7,
      "entry_price": 255.18,
-     "last": 222.29,
-     "pnl_pct": -12.9
+     "last": 232.32,
+     "pnl_pct": -9.0
     },
     {
      "strategy": "TECH",
      "entry": "2026-11-11",
      "shares": 72,
      "entry_price": 72.75,
-     "last": 72.8,
+     "last": 72.81,
      "pnl_pct": 0.1
     },
     {
@@ -356,32 +356,32 @@
      "entry": "2026-11-20",
      "shares": 7,
      "entry_price": 259.25,
-     "last": 268.65,
-     "pnl_pct": 3.6
+     "last": 273.62,
+     "pnl_pct": 5.5
     },
     {
      "strategy": "BDX",
      "entry": "2026-11-20",
      "shares": 1,
      "entry_price": 213.26,
-     "last": 215.44,
-     "pnl_pct": 1.0
+     "last": 220.0,
+     "pnl_pct": 3.2
     },
     {
      "strategy": "SWK",
      "entry": "2026-11-20",
      "shares": 1,
      "entry_price": 107.82,
-     "last": 110.74,
-     "pnl_pct": 2.7
+     "last": 109.25,
+     "pnl_pct": 1.3
     },
     {
      "strategy": "REGN",
      "entry": "2026-11-23",
      "shares": 1,
      "entry_price": 923.18,
-     "last": 942.24,
-     "pnl_pct": 2.1
+     "last": 987.09,
+     "pnl_pct": 6.9
     }
    ]
   },
@@ -402,47 +402,47 @@
      "entry": "2026-11-11",
      "shares": 31,
      "entry_price": 102.44,
-     "last": 98.72,
-     "pnl_pct": -3.6
+     "last": 99.21,
+     "pnl_pct": -3.2
     },
     {
      "strategy": "REGN",
      "entry": "2026-11-11",
      "shares": 3,
      "entry_price": 904.07,
-     "last": 942.24,
-     "pnl_pct": 4.2
+     "last": 987.09,
+     "pnl_pct": 9.2
     },
     {
      "strategy": "EXPD",
      "entry": "2026-11-11",
      "shares": 16,
      "entry_price": 190.25,
-     "last": 195.53,
-     "pnl_pct": 2.8
+     "last": 197.81,
+     "pnl_pct": 4.0
     },
     {
      "strategy": "MPC",
      "entry": "2026-11-11",
      "shares": 8,
      "entry_price": 394.85,
-     "last": 357.69,
-     "pnl_pct": -9.4
+     "last": 355.16,
+     "pnl_pct": -10.1
     },
     {
      "strategy": "XEL",
      "entry": "2026-11-11",
      "shares": 39,
      "entry_price": 80.14,
-     "last": 80.51,
-     "pnl_pct": 0.5
+     "last": 80.82,
+     "pnl_pct": 0.8
     },
     {
      "strategy": "FTV",
      "entry": "2026-11-11",
      "shares": 47,
      "entry_price": 67.79,
-     "last": 65.73,
+     "last": 65.77,
      "pnl_pct": -3.0
     },
     {
@@ -450,32 +450,32 @@
      "entry": "2026-11-11",
      "shares": 17,
      "entry_price": 183.89,
-     "last": 171.64,
-     "pnl_pct": -6.7
+     "last": 163.0,
+     "pnl_pct": -11.4
     },
     {
      "strategy": "UDR",
      "entry": "2026-11-11",
      "shares": 87,
      "entry_price": 36.16,
-     "last": 35.68,
-     "pnl_pct": -1.3
+     "last": 36.17,
+     "pnl_pct": 0.0
     },
     {
      "strategy": "VEEV",
      "entry": "2026-11-11",
      "shares": 10,
      "entry_price": 309.93,
-     "last": 268.65,
-     "pnl_pct": -13.3
+     "last": 273.62,
+     "pnl_pct": -11.7
     },
     {
      "strategy": "APP",
      "entry": "2026-11-17",
      "shares": 7,
      "entry_price": 412.56,
-     "last": 373.92,
-     "pnl_pct": -9.4
+     "last": 381.11,
+     "pnl_pct": -7.6
     }
    ]
   }
@@ -483,6 +483,6 @@
  "verdict": {
   "winner": "-",
   "promoted": [],
-  "summary": "Forward paper trading of v0, v0m and v7 from 2026-11-10. Day 10 of paper trading (data to 2026-11-23). Judge after at least 6-12 months; short windows are mostly noise."
+  "summary": "Forward paper trading of v0, v0m and v7 from 2026-11-10. Day 11 of paper trading (data to 2026-11-24). Judge after at least 6-12 months; short windows are mostly noise."
  }
 }
