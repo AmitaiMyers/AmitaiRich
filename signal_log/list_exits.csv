@@ -133,3 +133,19 @@ date,strategy,ticker,reason
 2026-11-25,v0,IDXX,6-month momentum fell to +25% (needs > 25%)
 2026-11-25,v0,GME,6-month momentum fell to +24% (needs > 25%)
 2026-11-25,v0,ULTA,6-month momentum fell to +24% (needs > 25%)
+2026-11-27,v0,WDAY,6-month momentum fell to +24% (needs > 25%)
+2026-11-27,v0,HPQ,6-month momentum fell to +22% (needs > 25%)
+2026-11-27,v0,PAYX,6-month momentum fell to +24% (needs > 25%)
+2026-11-27,v0,BR,6-month momentum fell to +23% (needs > 25%)
+2026-11-27,v0,HRB,6-month momentum fell to +25% (needs > 25%)
+2026-11-27,v0,VRTX,6-month momentum fell to +19% (needs > 25%)
+2026-11-27,v7,MET,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,REGN,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,EXPD,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,MPC,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,XEL,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,FTV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,NTAP,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,UDR,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,VEEV,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
+2026-11-27,v7,FRT,"fails a buy filter today (not eligible, below its 200-day MA, or missed last quarter)"
